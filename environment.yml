@@ -2,6 +2,7 @@ name: template
 
 channels:
   - defaults
+  - bioconda
 
 dependencies:
   - pandas
