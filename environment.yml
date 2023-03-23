@@ -1,10 +1,7 @@
 name: template
 
 channels:
-  - bioconda
-  - conda-forge
   - defaults
 
 dependencies:
   - pandas
-  - openms
