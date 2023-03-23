@@ -1,0 +1,14 @@
+name: template
+
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python
+  - pip
+  - openms
+  - pip:
+    - pandas
+    - numpy
