@@ -1,7 +1,0 @@
-name: template
-
-channels:
-  - defaults
-
-dependencies:
-  - pandas
