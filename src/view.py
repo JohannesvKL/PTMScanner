@@ -9,7 +9,7 @@ from pyopenms import MSExperiment, MzMLFile
 
 
 @st.cache_data
-def get_dfs(file):
+def get_df(file):
     exp = MSExperiment()
     MzMLFile().load(str(Path(st.session_state["mzML-files"], file)), exp)
     df = exp.get_df()
@@ -23,9 +23,9 @@ def get_dfs(file):
         ],
     )
     if not df.empty:
-        return df[df["mslevel"] == 1], df[df["mslevel"] == 2]
+        return df
     else:
-        return pd.DataFrame(), pd.DataFrame()
+        return pd.DataFrame()
 
 
 @st.cache_resource
