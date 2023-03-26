@@ -3,6 +3,5 @@ streamlit-plotly-events
 pandas
 numpy
 plotly
-# --index-url https://pypi.cs.uni-tuebingen.de/simple/
-# pyopenms-nightly
-pyopenms
+--index-url https://pypi.cs.uni-tuebingen.de/simple/
+pyopenms-nightly
