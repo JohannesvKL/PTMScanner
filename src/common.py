@@ -187,7 +187,6 @@ You can share this unique workspace ID with other people.
                     st.checkbox(f.name[:-5], checked, key=f.name)
 
                 # Option to remove files
-                v_space(1)
                 st.markdown("⚠️ **Remove files**")
                 c1, c2 = st.columns(2)
                 if c1.button("**All**"):

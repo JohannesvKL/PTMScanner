@@ -1,12 +1,10 @@
 import streamlit as st
-import numpy as np
-import pandas as pd
-import holoviews as hv
-from holoviews import dim, opts
+from src.workflow import *
 
-hv.extension("bokeh")
-
-
-data = pd.DataFrame(np.random.randn(2, 100000), columns=["RT", "mz"])
+st.markdown(
+    "The result for each table dimension will be cached and not re-calculated again."
+)
+dimension = st.number_input("table dimension", 1, 10, 3)
+data = generate_random_table(dimension)
 
 st.dataframe(data)
