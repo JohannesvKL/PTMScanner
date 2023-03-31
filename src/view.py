@@ -5,7 +5,7 @@ from pathlib import Path
 import plotly.graph_objects as go
 import plotly.express as px
 
-from pyopenms import MSExperiment, MzMLFile
+from pyopenms import *
 
 
 @st.cache_data

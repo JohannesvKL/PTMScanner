@@ -16,15 +16,23 @@ def page_setup():
         initial_sidebar_state="auto",
         menu_items=None,
     )
+
+    # define directory where all workspaces will be stored
+    st.session_state["workspaces-dir"] = Path("..", "template-workspaces")
+
     if "workspace" not in st.session_state:
         # Local: workspace name at startup: default-workspace
         if "local" in sys.argv:
             st.session_state.location = "local"
-            st.session_state["workspace"] = Path("default-workspace")
+            st.session_state["workspace"] = Path(
+                st.session_state["workspaces-dir"], "default"
+            )
         # Online: create a random key as workspace name
         else:
             st.session_state.location = "online"
-            st.session_state["workspace"] = Path(str(uuid.uuid1()))
+            st.session_state["workspace"] = Path(
+                st.session_state["workspaces-dir"], str(uuid.uuid1())
+            )
     # Make sure important directories exist
     st.session_state["workspace"].mkdir(parents=True, exist_ok=True)
     st.session_state["mzML-files"] = Path(st.session_state["workspace"], "mzML-files")
@@ -114,11 +122,15 @@ def sidebar(page=""):
             if st.session_state["location"] == "online":
                 new_workspace = st.text_input("enter workspace", "")
                 if st.button("**Enter Workspace**") and new_workspace:
-                    st.session_state["workspace"] = Path(new_workspace)
+                    path = Path(st.session_state["workspaces-dir"], new_workspace)
+                    if path.exists():
+                        st.session_state["workspace"] = path
+                    else:
+                        st.warning("⚠️ Workspace does not exist.")
                 st.info(
                     f"""💡 Your workspace ID:
 
-**{st.session_state['workspace']}**
+**{st.session_state['workspace'].name}**
 
 You can share this unique workspace ID with other people.
 
@@ -128,65 +140,70 @@ You can share this unique workspace ID with other people.
                 # Show available workspaces
                 options = [
                     file.name
-                    for file in Path(".").iterdir()
+                    for file in st.session_state["workspaces-dir"].iterdir()
                     if file.is_dir()
-                    and file.name
-                    not in (
-                        ".git",
-                        ".gitignore",
-                        ".streamlit",
-                        "example-data",
-                        "pages",
-                        "src",
-                        "assets",
-                    )
                 ]
-                chosen_workspace = st.selectbox(
+
+                # Let user chose an already existing workspace
+                chosen = st.selectbox(
                     "choose existing workspace",
                     options,
-                    index=options.index(str(st.session_state["workspace"])),
+                    index=options.index(str(st.session_state["workspace"].stem)),
                 )
-                if chosen_workspace:
-                    st.session_state["workspace"] = Path(chosen_workspace)
+                if chosen:
+                    st.session_state["workspace"] = Path(
+                        st.session_state["workspaces-dir"], chosen
+                    )
 
                 # Create or Remove workspaces
-                st.text_input("create/remove workspace", "", key="create-remove")
-                path = Path(st.session_state["create-remove"])
-                if st.button("**Create Workspace**") and path.name:
+                create_remove = st.text_input("create/remove workspace", "")
+                path = Path(
+                    st.session_state["workspaces-dir"],
+                    create_remove,
+                )
+                # Create new workspace
+                if st.button("**Create Workspace**"):
                     path.mkdir(parents=True, exist_ok=True)
                     st.session_state["workspace"] = path
+                    st.experimental_rerun()
+                # Remove existing workspace and fall back to default
                 if st.button("⚠️ Delete Workspace") and path.exists:
                     shutil.rmtree(path)
-                    st.session_state["workspace"] = Path("default-workspace")
+                    st.session_state["workspace"] = Path(
+                        st.session_state["workspaces-dir"], "default"
+                    )
+                    st.experimental_rerun()
             st.markdown("***")
 
         elif page == "files":
-            # Show currently available mzML files
-            st.markdown("### Uploaded Files")
-            for f in sorted(Path(st.session_state["mzML-files"]).iterdir()):
-                if f.name in st.session_state:
-                    checked = st.session_state[f.name]
-                else:
-                    checked = True
-                st.checkbox(f.name[:-5], checked, key=f.name)
+            if any(st.session_state["mzML-files"].iterdir()):
+                # Show currently available mzML files
+                st.markdown("### Uploaded Files")
+                for f in sorted(st.session_state["mzML-files"].iterdir()):
+                    if f.name in st.session_state:
+                        checked = st.session_state[f.name]
+                    else:
+                        checked = True
+                    st.checkbox(f.name[:-5], checked, key=f.name)
 
-            # Option to remove files
-            v_space(1)
-            st.markdown("⚠️ **Remove files**")
-            c1, c2 = st.columns(2)
-            if c1.button("**All**"):
-                reset_directory(st.session_state["mzML-files"])
+                # Option to remove files
+                v_space(1)
+                st.markdown("⚠️ **Remove files**")
+                c1, c2 = st.columns(2)
+                if c1.button("**All**"):
+                    reset_directory(st.session_state["mzML-files"])
+                    st.experimental_rerun()
 
-            if c2.button("**Un**selected"):
-                for file in [
-                    Path(st.session_state["mzML-files"], key)
-                    for key, value in st.session_state.items()
-                    if key.endswith("mzML") and not value  # e.g. unchecked
-                ]:
-                    file.unlink()
-                st.experimental_rerun()
+                if c2.button("**Un**selected"):
+                    for file in [
+                        Path(st.session_state["mzML-files"], key)
+                        for key, value in st.session_state.items()
+                        if key.endswith("mzML") and not value  # e.g. unchecked
+                    ]:
+                        file.unlink()
+                    st.experimental_rerun()
 
-            st.markdown("***")
+                st.markdown("***")
         st.image("assets/OpenMS.png", "powered by")
 
 
