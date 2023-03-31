@@ -4,7 +4,12 @@ import io
 from pathlib import Path
 import shutil
 import sys
+import os
 import uuid
+
+# things to do depending on the repository:
+# set the repository name in case of running with docker
+# set the name for the workspaces directory
 
 
 def page_setup():
@@ -17,10 +22,13 @@ def page_setup():
         menu_items=None,
     )
 
-    # define directory where all workspaces will be stored
-    st.session_state["workspaces-dir"] = Path("..", "template-workspaces")
-
+    # Should run once at app start-up
     if "workspace" not in st.session_state:
+        # in docker need to set working directory to repository directory
+        if "docker" in sys.argv:
+            os.chdir("streamlit-template")
+        # define directory where all workspaces will be stored
+        st.session_state["workspaces-dir"] = Path("..", "template-workspaces")
         # Local: workspace name at startup: default-workspace
         if "local" in sys.argv:
             st.session_state.location = "local"
