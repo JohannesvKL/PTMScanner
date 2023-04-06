@@ -19,8 +19,10 @@ def content():
         [f.name for f in st.session_state["mzML-files"].iterdir()],
         key="view_file",
     )
+    if not st.session_state["view_file"]:
+        return
 
-    df = get_df(st.session_state.view_file)
+    df = get_df(Path(st.session_state["mzML-files"], st.session_state.view_file))
     df_MS1, df_MS2 = (
         df[df["mslevel"] == 1],
         df[df["mslevel"] == 2],

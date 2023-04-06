@@ -11,7 +11,8 @@ from pyopenms import *
 @st.cache_data
 def get_df(file):
     exp = MSExperiment()
-    MzMLFile().load(str(Path(st.session_state["mzML-files"], file)), exp)
+    # MzMLFile().load(str(Path(st.session_state["mzML-files"], file)), exp)
+    MzMLFile().load(str(file), exp)
     df = exp.get_df()
     df.insert(0, "mslevel", [spec.getMSLevel() for spec in exp])
     df.insert(
