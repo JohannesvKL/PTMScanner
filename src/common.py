@@ -28,7 +28,7 @@ def page_setup():
         if "docker" in sys.argv:
             os.chdir("streamlit-template")
         # define directory where all workspaces will be stored
-        st.session_state["workspaces-dir"] = Path("..", "template-workspaces")
+        st.session_state["workspaces-dir"] = Path("..", "workspaces-template")
         # Local: workspace name at startup: default-workspace
         if "local" in sys.argv:
             st.session_state.location = "local"
