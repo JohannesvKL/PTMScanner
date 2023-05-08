@@ -13,7 +13,7 @@ import uuid
 
 
 def page_setup():
-    # streamlit configs
+    # Streamlit configs
     st.set_page_config(
         page_title="OpenMS App Template",
         page_icon="assets/OpenMS.png",
@@ -41,10 +41,20 @@ def page_setup():
             st.session_state["workspace"] = Path(
                 st.session_state["workspaces-dir"], str(uuid.uuid1())
             )
+
     # Make sure important directories exist
     st.session_state["workspace"].mkdir(parents=True, exist_ok=True)
-    st.session_state["mzML-files"] = Path(st.session_state["workspace"], "mzML-files")
+    st.session_state["mzML-files"] = Path(
+        st.session_state["workspace"], "mzML-files")
     st.session_state["mzML-files"].mkdir(parents=True, exist_ok=True)
+
+    # Keep track of selected mzML files across all pages
+    path = Path(st.session_state["workspace"], "selected-mzML.txt")
+    path.touch(exist_ok=True)
+
+    # Global variables
+    if "image-format" not in st.session_state:
+        st.session_state["image-format"] = "svg"
 
 
 def v_space(n, col=None):
@@ -81,7 +91,6 @@ def open_df(file):
 def show_table(df, title, col=""):
     text = f"##### {title}\n{df.shape[0]} rows, {df.shape[1]} columns"
     if col:
-        col.markdown(text)
         col.download_button(
             "Download Table",
             df.to_csv(sep="\t").encode("utf-8"),
@@ -89,7 +98,6 @@ def show_table(df, title, col=""):
         )
         col.dataframe(df)
     else:
-        st.markdown(text)
         st.download_button(
             "Download Table",
             df.to_csv(sep="\t").encode("utf-8"),
@@ -123,14 +131,54 @@ def reset_directory(path: Path):
     path.mkdir(parents=True, exist_ok=True)
 
 
+# Functionality to update the text file with selected mzML files
+def update_selected_mzML():
+    with open(Path(st.session_state["workspace"], "selected-mzML.txt"), "w") as f:
+        f.write(
+            "\n".join([file+".mzML" for file in st.session_state.selected]))
+
+
+def remove_selected_mzML(to_remove=[]):
+    with open(Path(st.session_state["workspace"], "selected-mzML.txt"), "r") as f:
+        keep = [line.strip() for line in f.readlines()
+                if line.strip() not in to_remove]
+    with open(Path(st.session_state["workspace"], "selected-mzML.txt"), "w") as f:
+        f.write("\n".join(keep))
+    # empty list means remove all
+    if not to_remove:
+        Path(st.session_state["workspace"], "selected-mzML.txt").unlink()
+        Path(st.session_state["workspace"],
+             "selected-mzML.txt").touch(exist_ok=True)
+
+
+def add_mzML_file(name):
+    if name and name.endswith(".mzML"):
+        with open(Path(st.session_state["workspace"], "selected-mzML.txt"), "r") as f:
+            files = [l.strip() for l in f.readlines()]
+            if name not in files:
+                files.append(name)
+        with open(Path(st.session_state["workspace"], "selected-mzML.txt"), "w") as f:
+            f.write("\n".join(files))
+
+
+def get_selected_mzML_files():
+    with open(Path(st.session_state["workspace"], "selected-mzML.txt"), "r") as f:
+        return [name.strip() for name in f.readlines()]
+
+
+def update_img_format():
+    st.session_state["image-format"] = st.session_state.img_format
+
+
 def sidebar(page=""):
     with st.sidebar:
         if page == "main":
-            st.markdown("### Workspaces")
+            st.markdown("🖥️ **Workspaces**")
             if st.session_state["location"] == "online":
                 new_workspace = st.text_input("enter workspace", "")
                 if st.button("**Enter Workspace**") and new_workspace:
-                    path = Path(st.session_state["workspaces-dir"], new_workspace)
+                    path = Path(
+                        st.session_state["workspaces-dir"], new_workspace)
                     if path.exists():
                         st.session_state["workspace"] = path
                     else:
@@ -156,7 +204,8 @@ You can share this unique workspace ID with other people.
                 chosen = st.selectbox(
                     "choose existing workspace",
                     options,
-                    index=options.index(str(st.session_state["workspace"].stem)),
+                    index=options.index(
+                        str(st.session_state["workspace"].stem)),
                 )
                 if chosen:
                     st.session_state["workspace"] = Path(
@@ -164,7 +213,8 @@ You can share this unique workspace ID with other people.
                     )
 
                 # Create or Remove workspaces
-                create_remove = st.text_input("create/remove workspace", "")
+                create_remove = st.text_input(
+                    "create/remove workspace", "")
                 path = Path(
                     st.session_state["workspaces-dir"],
                     create_remove,
@@ -181,37 +231,27 @@ You can share this unique workspace ID with other people.
                         st.session_state["workspaces-dir"], "default"
                     )
                     st.experimental_rerun()
-            st.markdown("***")
 
-        elif page == "files":
-            if any(st.session_state["mzML-files"].iterdir()):
-                # Show currently available mzML files
-                st.markdown("### Uploaded Files")
-                for f in sorted(st.session_state["mzML-files"].iterdir()):
-                    if f.name in st.session_state:
-                        checked = st.session_state[f.name]
-                    else:
-                        checked = True
-                    st.checkbox(f.name[:-5], checked, key=f.name)
+        if page == "":
+            st.markdown("📁 **mzML files**")
+            with open(Path(st.session_state["workspace"], "selected-mzML.txt"), "r") as f:
+                selected_files = [
+                    Path(mzML_file.strip()).stem for mzML_file in f.readlines()]
+            st.multiselect("mzML files",  options=[Path(f).stem for f in Path(st.session_state["mzML-files"]).glob("*.mzML")],
+                           default=selected_files, key="selected", on_change=update_selected_mzML, label_visibility="collapsed")
 
-                # Option to remove files
-                st.markdown("⚠️ **Remove files**")
-                c1, c2 = st.columns(2)
-                if c1.button("**All**"):
-                    reset_directory(st.session_state["mzML-files"])
-                    st.experimental_rerun()
-
-                if c2.button("**Un**selected"):
-                    for file in [
-                        Path(st.session_state["mzML-files"], key)
-                        for key, value in st.session_state.items()
-                        if key.endswith("mzML") and not value  # e.g. unchecked
-                    ]:
-                        file.unlink()
-                    st.experimental_rerun()
-
-                st.markdown("***")
+        st.markdown("---")
         st.image("assets/OpenMS.png", "powered by")
+        st.markdown("---")
+
+        with st.expander("⚙️ **Settings**"):
+            img_formats = ["svg", "png", "jpeg", "webp"]
+            st.selectbox(
+                "image export format",
+                img_formats,
+                img_formats.index(
+                    st.session_state["image-format"]), on_change=update_img_format, key="img_format"
+            )
 
 
 WARNINGS = {

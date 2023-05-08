@@ -9,20 +9,16 @@ def content():
     sidebar()
     st.title("View raw MS data")
 
-    # st.session_state.view_spectra_dict = get_spectra_dict(
-    #     st.session_state["mzML-files"]
-    # )
-
-    c1, c2 = st.columns(2)
-    c1.selectbox(
+    st.selectbox(
         "choose file",
-        [f.name for f in st.session_state["mzML-files"].iterdir()],
-        key="view_file",
+        get_selected_mzML_files(),
+        key="view-file",
     )
-    if not st.session_state["view_file"]:
+    if not st.session_state["view-file"]:
         return
 
-    df = get_df(Path(st.session_state["mzML-files"], st.session_state.view_file))
+    df = get_df(
+        Path(st.session_state["mzML-files"], st.session_state["view-file"]))
     df_MS1, df_MS2 = (
         df[df["mslevel"] == 1],
         df[df["mslevel"] == 2],
@@ -58,7 +54,8 @@ def content():
                 prec_mz = df_MS2.iloc[0, 0]
             spec = df_MS2.loc[
                 (
-                    abs(df_MS2["RT"] - rt) + abs(df_MS2["precursormz"] - prec_mz)
+                    abs(df_MS2["RT"] - rt) +
+                    abs(df_MS2["precursormz"] - prec_mz)
                 ).idxmin(),
                 :,
             ]
@@ -68,7 +65,8 @@ def content():
                 "#00CC96",
             )
         else:
-            st.plotly_chart(st.session_state.view_fig_map, use_container_width=True)
+            st.plotly_chart(st.session_state.view_fig_map,
+                            use_container_width=True)
 
         # BPC and MS1 spec
         st.markdown("### Base Peak Chromatogram (BPC)")
@@ -82,7 +80,8 @@ def content():
         else:
             st.session_state.view_MS1_RT = df_MS1.loc[0, "RT"]
 
-        spec = df_MS1.loc[df_MS1["RT"] == st.session_state.view_MS1_RT].squeeze()
+        spec = df_MS1.loc[df_MS1["RT"] ==
+                          st.session_state.view_MS1_RT].squeeze()
 
         plot_ms_spectrum(
             spec,
