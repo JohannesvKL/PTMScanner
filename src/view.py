@@ -32,7 +32,8 @@ def get_df(file):
 @st.cache_resource
 def plot_2D_map(df_ms1, df_ms2, cutoff):
     fig = go.Figure()
-    ints = np.concatenate([df_ms1.loc[index, "intarray"] for index in df_ms1.index])
+    ints = np.concatenate([df_ms1.loc[index, "intarray"]
+                          for index in df_ms1.index])
     int_filter = ints > cutoff  # show only ints over cutoff threshold
     ints = ints[int_filter]
     mzs = np.concatenate([df_ms1.loc[index, "mzarray"] for index in df_ms1.index])[
@@ -102,7 +103,8 @@ def plot_2D_map(df_ms1, df_ms2, cutoff):
 
 @st.cache_resource
 def plot_bpc(df):
-    intensity = np.array([max(intensity_array) for intensity_array in df["intarray"]])
+    intensity = np.array([max(intensity_array)
+                         for intensity_array in df["intarray"]])
     fig = px.line(df, x="RT", y=intensity)
     fig.update_traces(line_color="#555FF5", line_width=3)
     # fig.add_trace(

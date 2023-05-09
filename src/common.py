@@ -6,6 +6,7 @@ import shutil
 import sys
 import os
 import uuid
+import json
 
 # things to do depending on the repository:
 # set the repository name in case of running with docker
@@ -17,7 +18,7 @@ def page_setup():
     st.set_page_config(
         page_title="OpenMS App Template",
         page_icon="assets/OpenMS.png",
-        layout="wide",
+        # layout="wide",
         initial_sidebar_state="auto",
         menu_items=None,
     )
@@ -55,6 +56,31 @@ def page_setup():
     # Global variables
     if "image-format" not in st.session_state:
         st.session_state["image-format"] = "svg"
+
+
+def load_params():
+    # path = Path(st.session_state["workspace"], "params.json")
+    # if path.exists():
+    #     # Opening JSON file
+    #     with open(path, "r") as f:
+    #         return json.load(f)
+    # else:
+    #     return {}
+    path = Path(st.session_state["workspace"], "params.json")
+    if path.exists():
+        # Opening JSON file
+        with open(path, "r") as f:
+            st.session_state["p"] = json.load(f)
+    else:
+        st.session_state["p"] = {}
+
+
+def save_params(params):
+    for key, value in st.session_state["p"].items():
+        if isinstance(value, (str, int, float, dict, list)) and key != "p":
+            st.session_state["p"][key] = value
+    with open(Path(st.session_state["workspace"], "params.json"), "w") as outfile:
+        json.dump(st.session_state["p"], outfile)
 
 
 def v_space(n, col=None):

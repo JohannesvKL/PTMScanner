@@ -24,7 +24,8 @@ def content():
                 "mzML files", accept_multiple_files=accept_multiple
             )
             # User needs to click button to upload selected files
-            if st.form_submit_button("Add uploaded mzML files to workspace", type="primary"):
+            cols = st.columns(3)
+            if cols[1].form_submit_button("Add to workspace", type="primary"):
                 # Need to have a list of uploaded files to copy to the mzML dir,
                 # in case of online only a single item is return, so we put it in the list
                 if st.session_state.location == "online":
@@ -48,9 +49,11 @@ def content():
 
         # Local file upload option: via directory path
         if st.session_state.location == "local":
+            v_space(2)
             upload_dir = st.text_input("path to folder with mzML files")
             upload_dir = r"{}".format(upload_dir)
-            if st.button("Copy files to workspace", type="primary"):
+            cols = st.columns(3)
+            if cols[1].button("Copy files to workspace", type="primary"):
                 uploaded_mzML = Path("example-data", "mzML").glob("*.mzML")
                 with st.spinner("Uploading files..."):
                     for file in Path(upload_dir).glob("*.mzML"):
@@ -61,7 +64,8 @@ def content():
 
     with tabs[1]:
         st.markdown("Short information text about the example data.")
-        if st.button("Load Example Data", type="primary"):
+        cols = st.columns(3)
+        if cols[1].button("Load Example Data", type="primary"):
             for file in Path("example-data", "mzML").glob("*.mzML"):
                 shutil.copy(file, Path(st.session_state["mzML-files"]))
                 add_mzML_file(file.name)
