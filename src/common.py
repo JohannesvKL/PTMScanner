@@ -53,14 +53,13 @@ def page_setup(page="default"):
     params = load_params()
 
     sidebar(params, page)
-    # Load and return initial parameters
+
     return params
 
 
 def load_params():
     path = Path(st.session_state["workspace"], "params.json")
     if path.exists():
-        # Opening JSON file
         with open(path, "r") as f:
             return json.load(f)
     else:
@@ -68,12 +67,13 @@ def load_params():
             return json.load(f)
 
 
-def save_params(params, check_sesion_state=True):
-    if check_sesion_state:
+def save_params(params, check_session_state=True):
+    # get data from session state (e.g. from a widget key)
+    # set check_session_state False if parameter has been modified otherwise
+    if check_session_state:
         for key, value in st.session_state.items():
-            if isinstance(value, (str, int, float, dict, list)):
-                if not any([x in key for x in ["FormSubmitter", "location", "mzML-upload"]]):
-                    params[key] = value
+            if key in params.keys():
+                params[key] = value
     with open(Path(st.session_state["workspace"], "params.json"), "w") as outfile:
         json.dump(params, outfile, indent=4)
 

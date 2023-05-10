@@ -28,7 +28,7 @@ def save_uploaded_mzML(uploaded_files, params):
                 Path(f.name).stem)
     st.success("Successfully added uploaded files!")
 
-    save_params(params, check_sesion_state=False)
+    save_params(params, check_session_state=False)
     return params
 
 
@@ -45,7 +45,7 @@ def copy_local_mzML_files_from_directory(mzML_directory, params):
                 params["selected-mzML-files"].append(
                     f.stem)
     st.success("Successfully added local files!")
-    save_params(params, check_sesion_state=False)
+    save_params(params, check_session_state=False)
     return params
 
 
@@ -55,7 +55,7 @@ def load_example_mzML_files(params):
         if f.stem not in params["selected-mzML-files"]:
             params["selected-mzML-files"].append(f.stem)
     st.success("Example mzML files loaded!")
-    save_params(params, check_sesion_state=False)
+    save_params(params, check_session_state=False)
     return params
 
 
@@ -64,7 +64,7 @@ def remove_selected_mzML_files(to_remove, params):
         Path(mzML_dir, f+".mzML").unlink()
         params["selected-mzML-files"].remove(f)
     st.success("Selected mzML files removed!")
-    save_params(params, check_sesion_state=False)
+    save_params(params, check_session_state=False)
     return params
 
 
@@ -72,5 +72,5 @@ def remove_all_mzML_files(params):
     reset_directory(mzML_dir)
     params["selected-mzML-files"] = []
     st.success("All mzML files removed!")
-    save_params(params, check_sesion_state=False)
+    save_params(params, check_session_state=False)
     return params
