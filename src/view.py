@@ -107,37 +107,6 @@ def plot_bpc(df):
                          for intensity_array in df["intarray"]])
     fig = px.line(df, x="RT", y=intensity)
     fig.update_traces(line_color="#555FF5", line_width=3)
-    # fig.add_trace(
-    #     go.Scatter(
-    #         x=[ms1_rt],
-    #         y=[intensity[np.abs(df["RT"] - ms1_rt).argmin()]],
-    #         name="MS1 spectrum",
-    #         text="MS1",
-    #         textposition="top center",
-    #         textfont=dict(color="#EF553B", size=20),
-    #     )
-    # )
-    # fig.data[1].update(
-    #     mode="markers+text",
-    #     marker_symbol="x",
-    #     marker=dict(color="#EF553B", size=12),
-    # )
-    # if ms2_rt > 0:
-    #     fig.add_trace(
-    #         go.Scatter(
-    #             x=[ms2_rt],
-    #             y=[intensity[np.abs(df["RT"] - ms2_rt).argmin()]],
-    #             name="MS2 spectrum",
-    #             text="MS2",
-    #             textposition="top center",
-    #             textfont=dict(color="#00CC96", size=20),
-    #         )
-    #     )
-    #     fig.data[2].update(
-    #         mode="markers+text",
-    #         marker_symbol="x",
-    #         marker=dict(color="#00CC96", size=12),
-    #     )
     fig.update_traces(showlegend=False)
     fig.update_layout(
         showlegend=False,
@@ -175,5 +144,4 @@ def plot_ms_spectrum(spec, title, color):
     )
     fig.layout.template = "plotly_white"
     fig.update_yaxes(fixedrange=True)
-    st.plotly_chart(fig, use_container_width=True)
-    return
+    return fig

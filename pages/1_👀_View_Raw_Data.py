@@ -5,47 +5,47 @@ from streamlit_plotly_events import plotly_events
 
 
 def content():
-    page_setup()
-    sidebar()
+    params = page_setup()
     st.title("View raw MS data")
 
-    st.selectbox(
+    selected_file = st.selectbox(
         "choose file",
-        get_selected_mzML_files(),
-        key="view-file",
+        [f.name for f in Path(st.session_state["workspace"],
+                              "mzML-files").iterdir()],
     )
-    if not st.session_state["view-file"]:
+    if not selected_file:
         return
 
     df = get_df(
-        Path(st.session_state["mzML-files"], st.session_state["view-file"]))
+        Path(st.session_state["workspace"], "mzML-files", selected_file))
     df_MS1, df_MS2 = (
         df[df["mslevel"] == 1],
         df[df["mslevel"] == 2],
     )
 
     if not df_MS1.empty:
-        st.markdown("### Peak Map and MS2 spectra")
+        st.markdown("### Peak Map")
         c1, c2 = st.columns(2)
         c1.number_input(
             "2D map intensity cutoff",
             1000,
             1000000000,
-            5000,
+            params["2D-map-intensity-cutoff"],
             1000,
-            key="cutoff",
+            key="2D-map-intensity-cutoff",
+            on_change=save_params,
+            args=[params]
         )
-        if not df_MS2.empty:
-            c2.markdown("##")
-            c2.markdown("💡 Click anywhere to show the closest MS2 spectrum.")
-        st.session_state.view_fig_map = plot_2D_map(
+        v_space(1, c2)
+        c2.markdown("💡 Click anywhere to show the closest MS2 spectrum.")
+        map2D = plot_2D_map(
             df_MS1,
             df_MS2,
-            st.session_state.cutoff,
+            params["2D-map-intensity-cutoff"],
         )
+        map_points = plotly_events(map2D)
         # Determine RT and mz positions from clicks in the map to get closest MS2 spectrum
         if not df_MS2.empty:
-            map_points = plotly_events(st.session_state.view_fig_map)
             if map_points:
                 rt = map_points[0]["x"]
                 prec_mz = map_points[0]["y"]
@@ -59,35 +59,36 @@ def content():
                 ).idxmin(),
                 :,
             ]
-            plot_ms_spectrum(
+            title = f"MS2 spectrum @precursor m/z {round(spec['precursormz'], 4)} @RT {round(spec['RT'], 2)}"
+
+            ms2_fig = plot_ms_spectrum(
                 spec,
-                f"MS2 spectrum @precursor m/z {round(spec['precursormz'], 4)} @RT {round(spec['RT'], 2)}",
-                "#00CC96",
+                title,
+                "#00CC96"
             )
-        else:
-            st.plotly_chart(st.session_state.view_fig_map,
-                            use_container_width=True)
+            show_fig(ms2_fig, title.replace(" ", "_"), params)
 
         # BPC and MS1 spec
         st.markdown("### Base Peak Chromatogram (BPC)")
         st.markdown("💡 Click a point in the BPC to show the MS1 spectrum.")
-        st.session_state.view_fig_bpc = plot_bpc(df_MS1)
+        bpc_fig = plot_bpc(df_MS1)
 
         # Determine RT positions from clicks in BPC to show MS1 at this position
-        bpc_points = plotly_events(st.session_state.view_fig_bpc)
+        bpc_points = plotly_events(bpc_fig)
         if bpc_points:
-            st.session_state.view_MS1_RT = bpc_points[0]["x"]
+            ms1_rt = bpc_points[0]["x"]
         else:
-            st.session_state.view_MS1_RT = df_MS1.loc[0, "RT"]
+            ms1_rt = df_MS1.loc[0, "RT"]
 
-        spec = df_MS1.loc[df_MS1["RT"] ==
-                          st.session_state.view_MS1_RT].squeeze()
+        spec = df_MS1.loc[df_MS1["RT"] == ms1_rt].squeeze()
 
-        plot_ms_spectrum(
+        title = f"MS1 spectrum @RT {spec['RT']}"
+        fig = plot_ms_spectrum(
             spec,
-            f"MS1 spectrum @RT {spec['RT']}",
+            title,
             "#EF553B",
         )
+        show_fig(fig, title.replace(" ", "_"), params)
 
 
 if __name__ == "__main__":

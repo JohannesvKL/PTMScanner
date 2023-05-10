@@ -1,9 +1,7 @@
 import streamlit as st
 from src.common import *
 
-page_setup()
-
-sidebar(page="main")
+params = page_setup(page="main")
 
 st.markdown(
     """# Template App
