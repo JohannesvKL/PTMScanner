@@ -45,27 +45,30 @@ def content():
                 params = copy_local_mzML_files_from_directory(
                     local_mzML_dir, params)
 
-    # Two columns to display and delete files
-    v_space(1)
-    cols = st.columns([0.45, 0.10, 0.45])
-    # Display all mzML files currently in workspace
-    with cols[2]:
-        df = pd.DataFrame(
-            {"file name": [f.name for f in Path(mzML_dir).iterdir()]})
-        st.markdown("##### mzML files in current workspace:")
-        show_table(
-            df, f"mzML-files-in-workspace-{Path(st.session_state['workspace']).stem}")
-    # Remove files
-    with cols[0]:
-        with st.expander("remove mzML files"):
-            to_remove = st.multiselect("select mzML files",
-                                       options=[f.stem for f in sorted(mzML_dir.iterdir())])
-            c1, c2 = st.columns(2)
-            if c2.button("Remove **selected**", type="primary", disabled=not any(to_remove)):
-                remove_selected_mzML_files(to_remove, params)
+    if any(Path(mzML_dir).iterdir()):
+        # Two columns to display and delete files
+        v_space(1)
+        cols = st.columns([0.45, 0.10, 0.45])
+        # Display all mzML files currently in workspace
+        with cols[2]:
+            df = pd.DataFrame(
+                {"file name": [f.name for f in Path(mzML_dir).iterdir()]})
+            st.markdown("##### mzML files in current workspace:")
+            show_table(
+                df, f"mzML-files-in-workspace-{Path(st.session_state['workspace']).stem}")
+        # Remove files
+        with cols[0]:
+            with st.expander("remove mzML files"):
+                to_remove = st.multiselect("select mzML files",
+                                           options=[f.stem for f in sorted(mzML_dir.iterdir())])
+                c1, c2 = st.columns(2)
+                if c2.button("Remove **selected**", type="primary", disabled=not any(to_remove)):
+                    remove_selected_mzML_files(to_remove, params)
+                    st.experimental_rerun()
 
-            if c1.button("⚠️ Remove **all**", disabled=not any(mzML_dir.iterdir())):
-                remove_all_mzML_files(params)
+                if c1.button("⚠️ Remove **all**", disabled=not any(mzML_dir.iterdir())):
+                    remove_all_mzML_files(params)
+                    st.experimental_rerun()
 
 
 if __name__ == "__main__":

@@ -159,9 +159,10 @@ You can share this unique workspace ID with other people.
                 img_formats,
                 img_formats.index(params["image-format"]), on_change=save_params, args=[params], key="image-format"
             )
+        # Indicator for current workspace
         if page != "main":
             st.info(
-                f"workspace: **{Path(st.session_state['workspace']).stem}**")
+                f"**{Path(st.session_state['workspace']).stem}**")
 
 
 def v_space(n, col=None):
@@ -173,7 +174,7 @@ def v_space(n, col=None):
 
 
 def show_table(df, download_name):
-    st.dataframe(df)
+    st.dataframe(df, use_container_width=True)
     st.download_button(
         "Download Table",
         df.to_csv(sep="\t").encode("utf-8"),
