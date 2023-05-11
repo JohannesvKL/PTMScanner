@@ -26,4 +26,5 @@ df = generate_random_table(xdimension, st.session_state["example-y-dimension"])
 # Display dataframe via custom show_table function, which will render a download button as well
 show_table(df, download_name="random-table")
 
+# At the end of each page, always save parameters (including any changes via widgets with key)
 save_params(params)

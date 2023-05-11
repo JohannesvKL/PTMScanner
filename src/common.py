@@ -241,6 +241,7 @@ You can share this unique workspace ID with other people.
                 img_formats,
                 img_formats.index(params["image-format"]), key="image-format"
             )
+            # Button to reset parameters, sidebar widgets are settings and will not be resettet!
             if st.button("⚠️ Load default parameters"):
                 params = load_params(default=True)
 
