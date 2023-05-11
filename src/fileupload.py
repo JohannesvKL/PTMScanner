@@ -1,76 +1,127 @@
-import streamlit as st
-from src.common import *
-from pathlib import Path
 import shutil
+from pathlib import Path
+
+import streamlit as st
+
+from src.common import reset_directory
 
 
-mzML_dir = Path(st.session_state["workspace"], "mzML-files")
+# Specify mzML file location in workspace
+mzML_dir: Path = Path(st.session_state.workspace, "mzML-files")
+
+
+def add_to_selected_mzML(filename: str):
+    """
+    Add the given filename to the list of selected mzML files.
+
+    Args:
+        filename (str): The filename to be added to the list of selected mzML files.
+
+    Returns:
+        None
+    """
+    # Check if file in params selected mzML files, if not add it
+    if filename not in st.session_state["selected-mzML-files"]:
+        st.session_state["selected-mzML-files"].append(filename)
 
 
 @st.cache_data
-def save_uploaded_mzML(uploaded_files, params):
-    # Need to have a list of uploaded files to copy to the mzML dir,
-    # in case of online only a single item is return, so we put it in the list
+def save_uploaded_mzML(uploaded_files: list[bytes]) -> None:
+    """
+    Saves uploaded mzML files to the mzML directory.
+
+    Args:
+        uploaded_files (List[bytes]): List of uploaded mzML files.
+
+    Returns:
+        None
+    """
+    # A list of files is required, since online allows only single upload, create a list
     if st.session_state.location == "online":
         uploaded_files = [uploaded_files]
-
     # If no files are uploaded, exit early
     if not uploaded_files:
         st.warning("Upload some files first.")
-        return params
-
+        return
+    # Write files from buffer to workspace mzML directory, add to selected files
     for f in uploaded_files:
         if f.name not in [f.name for f in mzML_dir.iterdir()] and f.name.endswith("mzML"):
             with open(Path(mzML_dir, f.name), "wb") as fh:
                 fh.write(f.getbuffer())
-        if Path(f.name).stem not in params["selected-mzML-files"]:
-            params["selected-mzML-files"].append(
-                Path(f.name).stem)
+        add_to_selected_mzML(Path(f.name).stem)
     st.success("Successfully added uploaded files!")
-
-    save_params(params, check_session_state=False)
-    return params
 
 
 @st.cache_data
-def copy_local_mzML_files_from_directory(mzML_directory, params):
-    if not any(Path(mzML_directory).glob("*.mzML")):
+def copy_local_mzML_files_from_directory(local_mzML_directory: str) -> None:
+    """
+    Copies local mzML files from a specified directory to the mzML directory.
+
+    Args:
+        local_mzML_directory (str): Path to the directory containing the mzML files.
+
+    Returns:
+        None
+    """
+    # Check if local directory contains mzML files, if not exit early
+    if not any(Path(local_mzML_directory).glob("*.mzML")):
         st.warning("No mzML files found in specified folder.")
-        return params
-    files = Path(mzML_directory).glob("*.mzML")
+        return
+    # Copy all mzML files to workspace mzML directory, add to selected files
+    files = Path(local_mzML_directory).glob("*.mzML")
     for f in files:
         if f.name not in mzML_dir.iterdir():
             shutil.copy(f, mzML_dir)
-            if f.stem not in params["selected-mzML-files"]:
-                params["selected-mzML-files"].append(
-                    f.stem)
+        add_to_selected_mzML(f.stem)
     st.success("Successfully added local files!")
-    save_params(params, check_session_state=False)
-    return params
 
 
-def load_example_mzML_files(params):
+def load_example_mzML_files() -> None:
+    """
+    Copies example mzML files to the mzML directory.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+    # Copy files from example-data/mzML to workspace mzML directory, add to selected files
     for f in Path("example-data", "mzML").glob("*.mzML"):
         shutil.copy(f, mzML_dir)
-        if f.stem not in params["selected-mzML-files"]:
-            params["selected-mzML-files"].append(f.stem)
+        add_to_selected_mzML(f.stem)
     st.success("Example mzML files loaded!")
-    save_params(params, check_session_state=False)
-    return params
 
 
-def remove_selected_mzML_files(to_remove, params):
+def remove_selected_mzML_files(to_remove: list[str]) -> None:
+    """
+    Removes selected mzML files from the mzML directory.
+
+    Args:
+        to_remove (List[str]): List of mzML files to remove.
+
+    Returns:
+        None
+    """
+    # remove all given files from mzML workspace directory and selected files
     for f in to_remove:
         Path(mzML_dir, f+".mzML").unlink()
-        params["selected-mzML-files"].remove(f)
+        st.session_state.params["selected-mzML-files"].remove(f)
     st.success("Selected mzML files removed!")
-    save_params(params, check_session_state=False)
-    return params
 
 
-def remove_all_mzML_files(params):
+def remove_all_mzML_files() -> None:
+    """
+    Removes all mzML files from the mzML directory.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+    # reset (delete and re-create) mzML directory in workspace
     reset_directory(mzML_dir)
-    params["selected-mzML-files"] = []
+    # reset selected mzML list
+    st.session_state.params["selected-mzML-files"] = []
     st.success("All mzML files removed!")
-    save_params(params, check_session_state=False)
-    return params

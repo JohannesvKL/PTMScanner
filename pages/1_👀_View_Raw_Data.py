@@ -1,23 +1,20 @@
 import streamlit as st
-from src.view import *
-from src.common import *
 from streamlit_plotly_events import plotly_events
 
+from src.common import *
+from src.view import *
 
-def content():
-    params = page_setup()
-    st.title("View raw MS data")
+params = page_setup()
+st.title("View raw MS data")
 
-    selected_file = st.selectbox(
-        "choose file",
-        [f.name for f in Path(st.session_state["workspace"],
-                              "mzML-files").iterdir()],
-    )
-    if not selected_file:
-        return
-
+selected_file = st.selectbox(
+    "choose file",
+    [f.name for f in Path(st.session_state.workspace,
+                          "mzML-files").iterdir()],
+)
+if selected_file:
     df = get_df(
-        Path(st.session_state["workspace"], "mzML-files", selected_file))
+        Path(st.session_state.workspace, "mzML-files", selected_file))
     df_MS1, df_MS2 = (
         df[df["mslevel"] == 1],
         df[df["mslevel"] == 2],
@@ -33,15 +30,14 @@ def content():
             params["2D-map-intensity-cutoff"],
             1000,
             key="2D-map-intensity-cutoff",
-            on_change=save_params,
-            args=[params]
+            # on_change=save_params, args=[params]
         )
         v_space(1, c2)
         c2.markdown("💡 Click anywhere to show the closest MS2 spectrum.")
         map2D = plot_2D_map(
             df_MS1,
             df_MS2,
-            params["2D-map-intensity-cutoff"],
+            st.session_state["2D-map-intensity-cutoff"],
         )
         map_points = plotly_events(map2D)
         # Determine RT and mz positions from clicks in the map to get closest MS2 spectrum
@@ -66,7 +62,7 @@ def content():
                 title,
                 "#00CC96"
             )
-            show_fig(ms2_fig, title.replace(" ", "_"), params)
+            show_fig(ms2_fig, title.replace(" ", "_"))
 
         # BPC and MS1 spec
         st.markdown("### Base Peak Chromatogram (BPC)")
@@ -88,11 +84,6 @@ def content():
             title,
             "#EF553B",
         )
-        show_fig(fig, title.replace(" ", "_"), params)
+        show_fig(fig, title.replace(" ", "_"))
 
-
-if __name__ == "__main__":
-    # try:
-    content()
-    # except:
-    #     st.warning(ERRORS["visualization"])
+save_params(params)
