@@ -27,7 +27,7 @@ save_params()
 
 - **Pages** must be placed in the `pages` directory.
 - It is recommended to use a separate file for defining functions per page in the `src` directory.
-- The `src` directory contains a set of useful functions for common use (e.g. rendering a table with download button).
+- The `src/common.py` file contains a set of useful functions for common use (e.g. rendering a table with download button).
 
 ## Layout of the template app
 
