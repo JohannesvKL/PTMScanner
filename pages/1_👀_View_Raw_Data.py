@@ -29,8 +29,7 @@ if selected_file:
             1000000000,
             params["2D-map-intensity-cutoff"],
             1000,
-            key="2D-map-intensity-cutoff",
-            # on_change=save_params, args=[params]
+            key="2D-map-intensity-cutoff"
         )
         v_space(1, c2)
         c2.markdown("💡 Click anywhere to show the closest MS2 spectrum.")

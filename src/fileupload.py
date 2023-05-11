@@ -106,7 +106,7 @@ def remove_selected_mzML_files(to_remove: list[str]) -> None:
     # remove all given files from mzML workspace directory and selected files
     for f in to_remove:
         Path(mzML_dir, f+".mzML").unlink()
-        st.session_state.params["selected-mzML-files"].remove(f)
+        st.session_state["selected-mzML-files"].remove(f)
     st.success("Selected mzML files removed!")
 
 
@@ -123,5 +123,5 @@ def remove_all_mzML_files() -> None:
     # reset (delete and re-create) mzML directory in workspace
     reset_directory(mzML_dir)
     # reset selected mzML list
-    st.session_state.params["selected-mzML-files"] = []
+    st.session_state["selected-mzML-files"] = []
     st.success("All mzML files removed!")

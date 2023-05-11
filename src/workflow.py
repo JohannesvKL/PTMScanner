@@ -6,8 +6,8 @@ import streamlit as st
 
 
 @st.cache_data
-def generate_random_table(dimension):
+def generate_random_table(x, y):
     """Example for a cached table"""
-    df = pd.DataFrame(np.random.randn(dimension, dimension))
+    df = pd.DataFrame(np.random.randn(x, y))
     time.sleep(3)
     return df

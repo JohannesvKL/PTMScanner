@@ -14,7 +14,7 @@ APP_NAME = "OpenMS App Template"
 REPOSITORY_NAME = "openms-streamlit-template"
 
 
-def load_params() -> dict[str, Any]:
+def load_params(default: bool = False) -> dict[str, Any]:
     """
     Load parameters from a JSON file and return a dictionary containing them.
 
@@ -25,6 +25,9 @@ def load_params() -> dict[str, Any]:
     and update the values in the parameter dictionary accordingly. Also make sure that all items from
     the parameters dictionary are accessible from the session state as well.
 
+    Args:
+        default (bool): Load default parameters. Defaults to True.
+
     Returns:
         dict[str, Any]: A dictionary containing the parameters.
     """
@@ -32,7 +35,7 @@ def load_params() -> dict[str, Any]:
     path = Path(st.session_state.workspace, "params.json")
 
     # Load the parameters from the file, or from the default file if the parameter file does not exist
-    if path.exists():
+    if path.exists() and not default:
         with open(path, "r") as f:
             params = json.load(f)
     else:
@@ -40,9 +43,10 @@ def load_params() -> dict[str, Any]:
             params = json.load(f)
 
     # Check if any parameters have been modified during the current session and update the parameter dictionary
-    for key, value in st.session_state.items():
-        if key in params.keys():
-            params[key] = value
+    if not default:
+        for key, value in st.session_state.items():
+            if key in params.keys():
+                params[key] = value
 
     # Update the session state with the loaded or updated parameters
     for key, value in params.items():
@@ -133,7 +137,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
     params = load_params()
 
     # Render the sidebar
-    render_sidebar(params, page)
+    params = render_sidebar(params, page)
 
     # Return the loaded parameters
     return params
@@ -237,24 +241,33 @@ You can share this unique workspace ID with other people.
                 img_formats,
                 img_formats.index(params["image-format"]), key="image-format"
             )
+            if st.button("⚠️ Load default parameters"):
+                params = load_params(default=True)
+
         # Indicator for current workspace
         if page != "main":
             st.info(
                 f"**{Path(st.session_state['workspace']).stem}**")
 
+        return params
 
-def v_space(n: int) -> None:
+
+def v_space(n: int, col=None) -> None:
     """
     Prints empty strings to create vertical space in the Streamlit app.
 
     Args:
         n (int): An integer representing the number of empty lines to print.
+        col: A streamlit column can be passed to add vertical space there.
 
     Returns:
         None
     """
     for _ in range(n):
-        st.write("#")
+        if col:
+            col.write("#")
+        else:
+            st.write("#")
 
 
 def show_table(df: pd.DataFrame, download_name: str = "") -> None:
