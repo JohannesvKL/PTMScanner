@@ -1,6 +1,6 @@
-# How to use the OpenMS streamlit template
+# OpenMS streamlit template [![Open Template!](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://openms-template.streamlit.app/)
 
-This template app is for running pyOpenMS workflows in a web application.
+This is a template app for pyOpenMS workflows in a web application.
 
 ## Template specific concepts
 
