@@ -110,21 +110,29 @@ def page_setup(page: str = "") -> dict[str, Any]:
 
     # Determine the workspace for the current session
     if "workspace" not in st.session_state:
-        # If running in a Docker container, set working directory to the repository directory
-        if "docker" in sys.argv:
-            os.chdir(REPOSITORY_NAME)
+        # Check location
+        if "local" in sys.argv:
+            st.session_state.location = "local"
+        else:
+            st.session_state.location = "online"
 
-        # Define the directory where all workspaces will be stored outside of the repository directory
-        workspaces_dir = Path("..", "workspaces-"+REPOSITORY_NAME)
+        # Define the directory where all workspaces will be stored
+        if st.session_state.location == "online":
+            workspaces_dir = Path("workspaces-"+REPOSITORY_NAME)
+            # Outside of the repository directory for local and docker
+            # If running in a Docker container, set working directory to the repository directory
+            if "docker" in sys.argv:
+                workspaces_dir = Path("..", "workspaces-"+REPOSITORY_NAME)
+                os.chdir(REPOSITORY_NAME)
+        else:
+            workspaces_dir = Path("..", "workspaces-"+REPOSITORY_NAME)
 
         # If running locally, use the default workspace
         if "local" in sys.argv:
-            st.session_state.location = "local"
             st.session_state.workspace = Path(workspaces_dir, "default")
 
         # If running online, create a new workspace with a random UUID
         else:
-            st.session_state.location = "online"
             st.session_state.workspace = Path(
                 workspaces_dir, str(uuid.uuid1()))
 

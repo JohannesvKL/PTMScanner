@@ -4,7 +4,8 @@ This is a template app for pyOpenMS workflows in a web application.
 
 ## Template specific concepts
 
-- **Workspaces:** Directories outside the repository where all data generated and uploaded can be stored as well as a workspace specific parameter file.
+- **Workspaces:** Directories where all data generated and uploaded can be stored as well as a workspace specific parameter file.
+Running the app locally will put the workspaces outside of the repository directory. Running online (e.g. streamlit cloud) the workspaces will be inside the repository directory.
 - **Run the app local and online (default):** Launching the app with the local argument let's the user create/remove workspaces. The online version is for hosting where the user gets a workspace with a specific ID.
 
 run locally:
