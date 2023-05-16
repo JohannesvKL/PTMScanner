@@ -8,6 +8,10 @@ from src.fileupload import *
 
 params = page_setup()
 
+# Make sure "selected-mzML-files" is in session state
+if "selected-mzML-files" not in st.session_state:
+    st.session_state["selected-mzML-files"] = params["selected-mzML-files"]
+
 st.title("File Upload")
 
 tabs = ["File Upload", "Example Data"]
