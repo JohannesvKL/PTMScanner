@@ -11,7 +11,7 @@ import pandas as pd
 
 # set these variables according to your project
 APP_NAME = "OpenMS App Template"
-REPOSITORY_NAME = "openms-streamlit-template"
+REPOSITORY_NAME = "streamlit-template"
 
 
 def load_params(default: bool = False) -> dict[str, Any]:
@@ -48,11 +48,6 @@ def load_params(default: bool = False) -> dict[str, Any]:
             if key in params.keys():
                 params[key] = value
 
-    # Update the session state with the loaded or updated parameters
-    for key, value in params.items():
-        if key not in st.session_state.keys():
-            st.session_state[key] = value
-
     # Return the parameter dictionary
     return params
 
@@ -80,7 +75,6 @@ def save_params(params: dict[str, Any]) -> None:
     for key, value in st.session_state.items():
         if key in params.keys():
             params[key] = value
-
     # Save the parameter dictionary to a JSON file in the workspace directory
     path = Path(st.session_state.workspace, "params.json")
     with open(path, "w") as outfile:
@@ -108,8 +102,11 @@ def page_setup(page: str = "") -> dict[str, Any]:
         menu_items=None,
     )
 
-    # Determine the workspace for the current session
+    # Determine the workspace for the current session, should run once at startup
     if "workspace" not in st.session_state:
+        # Clear any previous caches
+        st.cache_data.clear()
+        st.cache_resource.clear()
         # Check location
         if "local" in sys.argv:
             st.session_state.location = "local"

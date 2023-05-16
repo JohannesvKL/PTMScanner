@@ -5,7 +5,6 @@ from src.workflow import *
 
 # Page name "workflow" will show mzML file selector in sidebar
 params = page_setup(page="workflow")
-
 st.title("Workflow")
 
 # Define two widgets with values from paramter file
@@ -15,7 +14,7 @@ st.title("Workflow")
 xdimension = st.number_input(
     label="x dimension", min_value=1, max_value=20, value=params["example-x-dimension"], step=1, key="example-x-dimension")
 
-st.number_input(label="x dimension", min_value=1, max_value=20,
+st.number_input(label="y dimension", min_value=1, max_value=20,
                 value=params["example-y-dimension"], step=1, key="example-y-dimension")
 
 # Get a dataframe with x and y dimensions via time consuming (sleep) cached function
