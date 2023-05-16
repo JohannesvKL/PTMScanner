@@ -9,5 +9,5 @@ import streamlit as st
 def generate_random_table(x, y):
     """Example for a cached table"""
     df = pd.DataFrame(np.random.randn(x, y))
-    time.sleep(3)
+    time.sleep(2)
     return df
