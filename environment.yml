@@ -1,0 +1,16 @@
+###### TODO: how use exact version specifiers for all packages ######
+name: streamlit-env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - plotly
+  - pip
+  - numpy
+  - pandas
+  - mono
+  - pip: # dependencies only available through pip
+      # streamlit dependencies
+    - streamlit
+    - streamlit-plotly-events
+    - streamlit-aggrid
