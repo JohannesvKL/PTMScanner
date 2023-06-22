@@ -10,4 +10,3 @@ plotly
 pyopenms
 ## for pyopenms nightly
 # --index-url https://pypi.cs.uni-tuebingen.de/simple/
-# pyopenms-nightly
