@@ -1,14 +1,16 @@
 import streamlit as st
-
 from src.common import *
+from streamlit.web import cli
 
-params = page_setup(page="main")
 
+#params = page_setup(page="main")
 
-st.markdown(
-    """# Template App
+if __name__ == "__main__":
+    st.markdown(
+        """# Template App
 
-A template for an OpenMS streamlit app."""
-)
+    A template for an OpenMS streamlit app."""
+    )
 
-save_params(params)
+#save_params(params)
+

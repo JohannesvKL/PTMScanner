@@ -1,2 +1,6 @@
 workspaces-openms-streamlit-template
+build
+dist/run_app.exe
+dist/workspaces-openms-streamlit-template
+hooks/__pycache__/
 build.log
