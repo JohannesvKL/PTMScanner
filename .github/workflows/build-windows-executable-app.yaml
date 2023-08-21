@@ -6,7 +6,7 @@ jobs:
     runs-on: windows-latest
 
     env:
-      OPENMS_VERSION: 3.0.0
+      OPENMS_VERSION: 3.0.0 
 
     steps:
     - name: Checkout
