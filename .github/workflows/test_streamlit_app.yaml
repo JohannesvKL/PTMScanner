@@ -35,10 +35,17 @@ jobs:
           echo myenv is activated
         )
         
+    - name: Debug Environment
+      shell: cmd
+      run: |
+        echo Current directory: %CD%
+        echo Path to myenv: %CD%\myenv
+        dir %CD%\myenv\Scripts
+
     - name: Write function to cli.py
       shell: bash
       run: |
-        head -n -2 D:/a/streamlit-help/streamlit-help/myenv/Lib/site-packages/streamlit/web/cli.py > temp_cli.py
+        head -n -2 D:/a/streamlit-template/streamlit-template/myenv/Lib/site-packages/streamlit/web/cli.py > temp_cli.py
 
         cat << EOF >> temp_cli.py
         def _main_run_clExplicit(file, command_line, args=[], flag_options=[]):
@@ -50,7 +57,7 @@ jobs:
             main()
         EOF
 
-        mv temp_cli.py D:/a/streamlit-help/streamlit-help/myenv/Lib/site-packages/streamlit/web/cli.py 
+        mv temp_cli.py D:/a/streamlit-template/streamlit-template/myenv/Lib/site-packages/streamlit/web/cli.py 
 
     - name: Compile app with pyinstaller
       shell: cmd
@@ -85,7 +92,7 @@ jobs:
         cp -r dist artifacts/
         cp -r build artifacts/
         cp run_app.spec artifacts/ 
-        cp D:/a/streamlit-help/streamlit-help/myenv/Lib/site-packages/streamlit/web/cli.py artifacts/ 
+        cp D:/a/streamlit-template/streamlit-template/myenv/Lib/site-packages/streamlit/web/cli.py artifacts/ 
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
