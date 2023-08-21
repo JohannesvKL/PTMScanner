@@ -71,7 +71,6 @@ jobs:
       shell: bash
       run: |
         cp run_app_temp.spec run_app.spec
-        pwd
    
     - name: Make executable
       shell: cmd
