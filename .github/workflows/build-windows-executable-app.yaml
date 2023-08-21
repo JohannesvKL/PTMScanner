@@ -174,28 +174,20 @@ jobs:
         python-version: ${{ env.PYTHON_VERSION }}
 
     - name: Setup virtual environment
+      shell: cmd
       run: |
         python -m venv myenv
 
-        ./myenv/Scripts/Activate.bat 
-
-        ./myenv/Scripts/deactivate.bat 
-
-        python -m pip install --upgrade pip
+        call myenv\Scripts\activate.bat   
 
         pip install -r requirements.txt
 
         pip install pyinstaller
 
-    - name: Compile app with pyinstaller
-      run: |
-        pyinstaller --onefile --additional-hooks-dir ./hooks run_app.py --clean
-
-
     - name: Write function to cli.py
       shell: bash
       run: |
-        head -n -2 C:/hostedtoolcache/windows/Python/${PYTHON_VERSION}/x64/Lib/site-packages/streamlit/web/cli.py > temp_cli.py
+        head -n -2 D:/a/streamlit-template/streamlit-template/myenv/Lib/site-packages/streamlit/web/cli.py > temp_cli.py
 
         cat << EOF >> temp_cli.py
         def _main_run_clExplicit(file, command_line, args=[], flag_options=[]):
@@ -207,7 +199,13 @@ jobs:
             main()
         EOF
 
-        mv temp_cli.py C:/hostedtoolcache/windows/Python/${PYTHON_VERSION}/x64/Lib/site-packages/streamlit/web/cli.py 
+        mv temp_cli.py D:/a/streamlit-template/streamlit-template/myenv/Lib/site-packages/streamlit/web/cli.py  
+
+    - name: Compile app with pyinstaller
+      shell: cmd
+      run: |
+        call myenv\Scripts\activate.bat 
+        pyinstaller --onefile --additional-hooks-dir ./hooks run_app.py --clean
 
 
     - name: Copy everything to dist directory
@@ -218,10 +216,17 @@ jobs:
         cp assets dist/assets
         cp openms-bin dist/bin
         cp share dist/share
-
+        cp app.py dist/
+    
+    - name: Modify .spec file
+      shell: bash
+      run: |
+        cp run_app_temp.spec run_app.spec
 
     - name: Make executable
+      shell: cmd
       run: |
+        call myenv\Scripts\activate.bat
         pyinstaller run_app.spec --clean
 
     - name: Upload artifact
