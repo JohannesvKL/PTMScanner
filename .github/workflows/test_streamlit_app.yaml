@@ -1,5 +1,6 @@
-name: Build executable for Windows
-on: [push]
+name: Test streamlit executable for Windows
+on: 
+  workflow_dispatch:
 
 jobs:
   build-executable:
