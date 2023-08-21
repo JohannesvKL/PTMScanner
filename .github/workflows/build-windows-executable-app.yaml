@@ -216,6 +216,7 @@ jobs:
         cp assets dist/assets
         cp openms-bin dist/bin
         cp share dist/share
+        cp app.py dist/
     
     - name: Modify .spec file
       shell: bash
