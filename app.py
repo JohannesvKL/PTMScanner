@@ -3,7 +3,7 @@ from src.common import *
 from streamlit.web import cli
 
 
-#params = page_setup(page="main")
+params = page_setup(page="main")
 
 if __name__ == "__main__":
     st.markdown(
@@ -12,5 +12,5 @@ if __name__ == "__main__":
     A template for an OpenMS streamlit app."""
     )
 
-#save_params(params)
+save_params(params)
 
