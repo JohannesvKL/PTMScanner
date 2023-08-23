@@ -78,10 +78,15 @@ WORKDIR /openms-build/pyOpenMS
 RUN pip install dist/*.whl
 
 
-
-# Cleanup OpenMS source folder. Probably needs a make install to have share available
+# Copy share folder and remove source directory.
 WORKDIR /
-RUN rm -rf /OpenMS
+RUN mkdir app
+RUN cp -r OpenMS/share/OpenMS /app/openms-share
+RUN rm -rf OpenMS
+
+# Copy TOPP tools bin directory and remove build directory.
+RUN cp -r openms-build/bin app/openms-bin
+RUN rm -rf openms-build
 
 # Prepare and run streamlit app.
 FROM compile-openms AS run-app
