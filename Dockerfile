@@ -1,7 +1,7 @@
 # This Dockerfile builds OpenMS, the TOPP tools, pyOpenMS and thidparty tools.
 # It also adds a basic streamlit server that serves a pyOpenMS-based app.
 # hints:
-# build image and give it a name (here: streamlitapp) with: docker build --no-cache -t streamlitapp:latest . 2>&1 | tee build.log 
+# build image and give it a name (here: streamlitapp) with: docker build --no-cache -t streamlitapp:latest --build-arg GITHUB_TOKEN=<your-github-token> . 2>&1 | tee build.log 
 # check if image was build: docker image ls
 # run container: docker run -p 8501:8501 streamlitappsimple:latest
 # debug container after build (comment out ENTRYPOINT) and run container with interactive /bin/bash shell
@@ -11,11 +11,18 @@ FROM ubuntu:22.04 AS setup-build-system
 ARG OPENMS_REPO=https://github.com/OpenMS/OpenMS.git
 ARG OPENMS_BRANCH=develop
 ARG PORT=8501
+# GitHub token to download latest OpenMS executable for Windows from Github action artifact.
+ARG GITHUB_TOKEN
+# Streamlit app Gihub user name (to download artifact from).
+ARG GITHUB_USER=OpenMS
+# Streamlit app Gihub repository name (to download artifact from).
+ARG GITHUB_REPO=streamlit-template
+
 USER root
 
 # Install required Ubuntu packages.
 RUN apt-get -y update
-RUN apt-get install -y --no-install-recommends --no-install-suggests g++ autoconf automake patch libtool make git gpg wget ca-certificates curl libgtk2.0-dev openjdk-8-jdk
+RUN apt-get install -y --no-install-recommends --no-install-suggests g++ autoconf automake patch libtool make git gpg wget ca-certificates curl jq libgtk2.0-dev openjdk-8-jdk
 RUN update-ca-certificates
 RUN apt-get install -y --no-install-recommends --no-install-suggests libsvm-dev libeigen3-dev coinor-libcbc-dev libglpk-dev libzip-dev zlib1g-dev libxerces-c-dev libbz2-dev libomp-dev libhdf5-dev
 RUN apt-get install -y --no-install-recommends --no-install-suggests libboost-date-time1.74-dev \
@@ -102,6 +109,12 @@ COPY pages/ /app/pages
 
 # TODO install cron (TODO: think about automatic clean up of temporary files and workspaces)
 # RUN apt-get install -y cron
+
+# Download latest OpenMS App executable for Windows from Github actions workflow.
+RUN WORKFLOW_ID=$(curl -s "https://api.github.com/repos/$GITHUB_USER/$GITHUB_REPO/actions/workflows" | jq -r '.workflows[] | select(.name == "Build executable for Windows") | .id') \
+    && SUCCESSFUL_RUNS=$(curl -s "https://api.github.com/repos/$GITHUB_USER/$GITHUB_REPO/actions/runs?workflow_id=$WORKFLOW_ID&status=success" | jq -r '.workflow_runs[0].id') \
+    && ARTIFACT_ID=$(curl -s "https://api.github.com/repos/$GITHUB_USER/$GITHUB_REPO/actions/runs/$SUCCESSFUL_RUNS/artifacts" | jq -r '.artifacts[] | select(.name == "OpenMS-App") | .id') \
+    && curl -LJO -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$GITHUB_USER/$GITHUB_REPO/actions/artifacts/$ARTIFACT_ID/zip" -o /app/OpenMS-App
 
 # Run app as container entrypoint.
 EXPOSE $PORT
