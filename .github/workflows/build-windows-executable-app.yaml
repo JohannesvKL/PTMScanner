@@ -229,6 +229,16 @@ jobs:
         call myenv\Scripts\activate.bat
         pyinstaller run_app.spec --clean
 
+    - name: Delete OpenMS bin artifact
+    - uses: geekyeggo/delete-artifact@v2
+      with:
+          name: OpenMS-bin
+
+    - name: Delete OpenMS share artifact
+    - uses: geekyeggo/delete-artifact@v2
+      with:
+          name: OpenMS-share
+
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
