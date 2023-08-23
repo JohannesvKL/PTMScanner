@@ -25,21 +25,23 @@ RUN apt-get install -y --no-install-recommends --no-install-suggests libboost-da
                                                                      libboost-random1.74-dev
 RUN apt-get install -y --no-install-recommends --no-install-suggests qtbase5-dev libqt5svg5-dev libqt5opengl5-dev
 
-# Download and install Miniconda.
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
-    bash miniconda.sh -b -p /opt/miniconda && \
-    rm miniconda.sh
-ENV PATH="/opt/miniconda/bin:${PATH}"
+# Download and install mamba.
+ENV PATH="/root/mambaforge/bin:${PATH}"
+RUN wget -q \
+    https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh \
+    && bash Mambaforge-Linux-x86_64.sh -b \
+    && rm -f Mambaforge-Linux-x86_64.sh
+RUN mamba --version
 
-# Setup conda environment.
+# Setup mamba environment.
 COPY environment.yml ./environment.yml
-RUN conda env create -f environment.yml
-RUN echo "conda activate streamlit-env" >> ~/.bashrc
+RUN mamba env create -f environment.yml
+RUN echo "mamba activate streamlit-env" >> ~/.bashrc
 SHELL ["/bin/bash", "--rcfile", "~/.bashrc"]
-SHELL ["conda", "run", "-n", "streamlit-env", "/bin/bash", "-c"]
+SHELL ["mamba", "run", "-n", "streamlit-env", "/bin/bash", "-c"]
 
-# Install up-to-date cmake via conda and packages for pyOpenMS build.
-RUN conda install cmake
+# Install up-to-date cmake via mamba and packages for pyOpenMS build.
+RUN mamba install cmake
 RUN pip install --upgrade pip && python -m pip install -U setuptools nose Cython autowrap pandas numpy pytest
 
 # Clone OpenMS branch and the associcated contrib+thirdparties+pyOpenMS-doc submodules.
@@ -98,4 +100,4 @@ COPY pages/ /app/pages
 
 # Run app as container entrypoint.
 EXPOSE $PORT
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "streamlit-env", "streamlit", "run", "app.py"]
+ENTRYPOINT ["mamba", "run", "--no-capture-output", "-n", "streamlit-env", "streamlit", "run", "app.py"]
