@@ -9,21 +9,14 @@ python -m venv <myenv>
 # activate an environment
 .\myenv\Scripts\Activate.bat 
 
-# install libraries
+# install require packages
 pip install -r requirements.txt
+
+#install pyinstaller
+pip install pyinstaller
 ```
 
 ## streamlit files
-
-create an app.py file as example and add content.<br />
-some example file is here<br />
-```
-import streamlit as st
-from streamlit.web import cli
-
-if __name__ == "__main__":
-    st.header("Hello World")
-```
 
 create a run_app.py and add this lines of codes<br />
 ```

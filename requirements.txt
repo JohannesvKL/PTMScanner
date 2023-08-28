@@ -8,5 +8,6 @@ pandas
 numpy
 plotly
 pyopenms
+captcha
 ## for pyopenms nightly
 # --index-url https://pypi.cs.uni-tuebingen.de/simple/
