@@ -85,8 +85,15 @@ port = 8502
 ``` 
 
 ## copy necessary files to output folder
-copy .streamlit folder into dist (output) folder<br />
-copy app.py (main streamlit files) into dist (output) folder<br />
+```
+cp -r .streamlit dist/.streamlit
+cp -r pages dist/pages
+cp -r src dist/src
+cp -r assets dist/assets
+cp app.py dist/
+
+``` 
+
 
 ## add datas in run_app.spec (.spec file)
 Add DATAS to the run_app.spec just created by compilation<br />
