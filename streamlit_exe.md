@@ -9,11 +9,8 @@ python -m venv <myenv>
 # activate an environment
 .\myenv\Scripts\Activate.bat 
 
-# deactivate an environment
-.\myenv\Scripts\deactivate.bat 
-
-# install libraries (you will use)
-pip install streamlit pyinstaller
+# install libraries
+pip install -r requirements.txt
 ```
 
 ## streamlit files
@@ -64,7 +61,9 @@ from PyInstaller.utils.hooks import copy_metadata
 datas = []
 datas += copy_metadata('streamlit')
 datas += copy_metadata('streamlit_plotly_events')
-datas += copy_metadata('pyopenms')  
+datas += copy_metadata('pyopenms')
+## can add new package e-g
+datas += copy_metadata('captcha')
 ```
 
 ## compile the app 
@@ -97,7 +96,7 @@ copy .streamlit folder into dist (output) folder<br />
 copy app.py (main streamlit files) into dist (output) folder<br />
 
 ## add datas in run_app.spec (.spec file)
-Add DATAS to the new hook we created<br />
+Add DATAS to the run_app.spec just created by compilation<br />
 ```
 datas=[
         ("myenv/Lib/site-packages/altair/vegalite/v4/schema/vega-lite-schema.json","./altair/vegalite/v4/schema/"),
@@ -105,6 +104,8 @@ datas=[
         ("myenv/Lib/site-packages/streamlit/runtime", "./streamlit/runtime"),
         ("myenv/Lib/site-packages/streamlit_plotly_events", "./streamlit_plotly_events/"),
         ("myenv/Lib/site-packages/pyopenms", "./pyopenms/"),
+        ## have to add new datas e-g we add in hook captcha
+        ("myenv/Lib/site-packages/captcha", "./captcha/")
     ]
 ```    
 ## run final step to make executable
