@@ -74,10 +74,9 @@ WORKDIR /openms-build
 # Configure.
 RUN /bin/bash -c "cmake -DCMAKE_BUILD_TYPE='Release' -DCMAKE_PREFIX_PATH='/OpenMS/contrib-build/;/usr/;/usr/local' -DHAS_XSERVER=OFF -DBOOST_USE_STATIC=OFF -DPYOPENMS=ON ../OpenMS -DPY_MEMLEAK_DISABLE=On"
 
-# Build TOPP tools, clean up and add to PATH.
+# Build TOPP tools and clean up.
 RUN make -j4 TOPP
 RUN rm -rf src doc CMakeFiles
-ENV PATH="/openms-build/bin/:${PATH}"
 
 # Build pyOpenMS wheels and install via pip.
 RUN make -j4 pyopenms
@@ -85,14 +84,23 @@ WORKDIR /openms-build/pyOpenMS
 RUN pip install dist/*.whl
 
 
-# Copy share folder and remove source directory.
 WORKDIR /
-RUN mkdir app
-RUN cp -r OpenMS/share/OpenMS /app/openms-share
-RUN rm -rf OpenMS
+RUN mkdir openms
 
-# Copy TOPP tools bin directory and remove build directory.
-RUN cp -r openms-build/bin app/openms-bin
+# Copy TOPP tools bin directory, add to PATH.
+RUN cp -r openms-build/bin /openms/bin
+ENV PATH="/openms/bin/:${PATH}"
+
+# Copy TOPP tools bin directory, add to PATH.
+RUN cp -r openms-build/lib /openms/lib
+ENV LD_LIBRARY_PATH="/openms/lib/:${LD_LIBRARY_PATH}"
+
+# Copy share folder, add to PATH, remove source directory.
+RUN cp -r OpenMS/share/OpenMS /openms/share
+RUN rm -rf OpenMS
+ENV OPENMS_DATA_PATH="/openms/share/"
+
+# Remove build directory.
 RUN rm -rf openms-build
 
 # Prepare and run streamlit app.
