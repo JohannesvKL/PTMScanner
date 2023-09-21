@@ -6,56 +6,134 @@ from streamlit.source_util import (
     get_pages,
     _on_pages_changed
 )
+
 from captcha.image import ImageCaptcha
 import random, string
 
-def delete_page(main_script_path_str, page_name):
+def delete_all_pages(main_script_path_str: str) -> None:
     """
-    delete page from app
+    Delete all pages except the main page from an app's configuration.
 
     Args:
-        main_script_path_str: main page (e-g app)
-        page_name: Page want to delete (e-g Analyze)
+        main_script_path_str (str): The name of the main page, typically the app's name.
+
+    Returns:
+        None
+
+    """
+    # Get all pages from the app's configuration
+    current_pages = get_pages(main_script_path_str)
+    
+    # Create a list to store keys pages to delete
+    keys_to_delete = []
+
+    # Iterate over all pages and add keys to delete list if the desired page is found
+    for key, value in current_pages.items():
+        if value['page_name'] != main_script_path_str:
+            keys_to_delete.append(key)
+
+    # Delete the keys from current pages
+    for key in keys_to_delete:
+        del current_pages[key]
+
+    # Refresh the pages configuration
+    _on_pages_changed.send()
+
+def delete_page(main_script_path_str: str, page_name: str) -> None:
+    """
+    Delete a specific page from an app's configuration.
+
+    Args:
+        main_script_path_str (str): The name of the main page, typically the app's name.
+        page_name (str): The name of the page to be deleted.
 
     Returns:
         None
     """
-    #get all pages
-    current_pages = get_pages(main_script_path_str)
+    # Get all pages
+    current_pages= get_pages(main_script_path_str)
 
-    #iterate over all pages and del if desire page found
+    # Iterate over all pages and delete the desired page if found
     for key, value in current_pages.items():
         if value['page_name'] == page_name:
             del current_pages[key]
-            break
-        else:
-            pass
 
-    #refresh the pages config
+    # Refresh the pages configuration
     _on_pages_changed.send()
-    
-def add_page(main_script_path_str, page_name):
+
+
+def restore_all_pages(main_script_path_str: str) -> None:
     """
-    add page in app
+    restore all pages found in the "pages" directory to an app's configuration.
 
     Args:
-        main_script_path_str: main page (e-g app)
-        page_name: Page want to delete (e-g Analyze)
+        main_script_path_str (str): The name of the main page, typically the app's name.
 
     Returns:
         None
     """
-    #get all pages    
+    # Get all pages
     pages = get_pages(main_script_path_str)
+
+    # Obtain the path to the main script
     main_script_path = Path(main_script_path_str)
+
+    # Define the directory where pages are stored
     pages_dir = main_script_path.parent / "pages"
+
+    # Iterate over all .py files in the "pages" directory
+    for script_path in pages_dir.glob("*.py"):
+        script_path_str = str(script_path.resolve())
+
+        # Calculate the MD5 hash of the script path
+        psh = calc_md5(script_path_str)
+
+        # Obtain the page icon and name
+        pi, pn = page_icon_and_name(script_path)
+
+        # Add the new page configuration
+        pages[psh] = {
+            "page_script_hash": psh,
+            "page_name": pn,
+            "icon": pi,
+            "script_path": script_path_str,
+        }
+
+    # Refresh the page configuration
+    _on_pages_changed.send()
+
+
+def add_page(main_script_path_str: str, page_name: str) -> None:
+    """
+    Add a new page to an app's configuration.
+
+    Args:
+        main_script_path_str (str): The name of the main page, typically the app's name.
+        page_name (str): The name of the page to be added.
+
+    Returns:
+        None
+    """
+    # Get all pages
+    pages = get_pages(main_script_path_str)
+
+    # Obtain the path to the main script
+    main_script_path = Path(main_script_path_str)
+
+    # Define the directory where pages are stored
+    pages_dir = main_script_path.parent / "pages"
+
+    # Find the script path corresponding to the new page
     script_path = [f for f in pages_dir.glob("*.py") if f.name.find(page_name) != -1][0]
     script_path_str = str(script_path.resolve())
-    pi, pn = page_icon_and_name(script_path)
 
+    # Calculate the MD5 hash of the script path
     psh = calc_md5(script_path_str)
 
-    #add new page config
+    # Obtain the page icon and name
+    pi, pn = page_icon_and_name(script_path)
+
+    # Add the new page configuration
     pages[psh] = {
         "page_script_hash": psh,
         "page_name": pn,
@@ -63,7 +141,7 @@ def add_page(main_script_path_str, page_name):
         "script_path": script_path_str,
     }
 
-    #refresh the page config
+    # Refresh the page configuration
     _on_pages_changed.send()
 
 
@@ -72,7 +150,16 @@ width = 400
 height = 180
 
 # define the function for the captcha control
-def captcha_control():
+def captcha_control() -> None:
+    """
+    Captcha control function to verify if the user is not a robot.
+
+    This function displays a captcha image and allows the user to enter the captcha text.
+    It verifies whether the entered captcha text matches the generated captcha.
+
+    Returns:
+        None
+    """
     #control if the captcha is correct
     if 'controllo' not in st.session_state or st.session_state['controllo'] == False:
         st.title("Makesure you are not a robot🤖")
@@ -110,3 +197,22 @@ def captcha_control():
         else:
             #wait for the button click
             st.stop()
+
+def check_captcha(params) -> None:
+    """
+    Check if the user is accessing a page other than the main page and apply captcha if necessary.
+
+    Args:
+        params (dict): Parameters from a JSON file, typically containing configuration information.
+
+    Returns:
+        None
+    """
+    # If the app is run locally and captcha control is disabled in the parameters, set the session variable to True
+    if st.session_state.location == "local" and params["controllo"] == False:
+        st.session_state['controllo'] = True
+
+    # If run in hosted mode and captcha control is enabled, show captcha as long as it has not been solved
+    if 'controllo' not in st.session_state or params["controllo"] == False:
+        # Apply captcha by calling the captcha_control function
+        captcha_control()

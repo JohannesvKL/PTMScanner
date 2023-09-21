@@ -7,17 +7,8 @@ from src.captcha_ import *
 
 params = page_setup()
 
-#if local no need captcha
-if st.session_state.location == "local":
-    params["controllo"] = True
-    st.session_state["controllo"] = True
-
-#if controllo is false means not captcha applied
-if 'controllo' not in st.session_state or params["controllo"] == False:
-    #apply captcha
-    captcha_control()
-        
-### main content of page
+# check captcha locally and in hosted mode
+check_captcha(params)
 
 st.title("View raw MS data")
 selected_file = st.selectbox(

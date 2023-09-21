@@ -1,50 +1,54 @@
 import streamlit as st
 import subprocess
 
-def run_subprocess(args, variables, result_dict):
+def run_subprocess(args: list[str], variables: list[str], result_dict: dict) -> None:
     """
-    run subprocess 
+    Run a subprocess and capture its output.
+
     Args:
-        args: command with args
-        variables: variable if any
-        result_dict: contain success (success flag) and log (capture long log)
-                     should contain result_dict["success"], result_dict["log"]
+        args (List[str]): The command and its arguments as a list of strings.
+        variables (List[str]): Additional variables needed for the subprocess (not used in this code).
+        result_dict (Dict[str, Union[bool, str]]): A dictionary to store the success status (bool) and the captured log (str).
+
     Returns:
         None
     """
 
-    # run subprocess and get every line of executable log in same time
+    # Run the subprocess and capture its output
     process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
+    # Lists to store the captured standard output and standard error
     stdout_ = []
     stderr_ = []
 
+    # Capture the standard output of the subprocess
     while True:
         output = process.stdout.readline()
         if output == '' and process.poll() is not None:
             break
         if output:
-            #print every line of exec on page
+            # Print every line of standard output on the Streamlit page
             st.text(output.strip())
-            #append line to store log
+            # Append the line to store in the log
             stdout_.append(output.strip())
 
+    # Capture the standard error of the subprocess
     while True:
         error = process.stderr.readline()
         if error == '' and process.poll() is not None:
             break
         if error:
-            #print every line of exec on page even error
+            # Print every line of standard error on the Streamlit page, marking it as an error
             st.error(error.strip())
-            #append line to store log of error
+            # Append the line to store in the log of errors
             stderr_.append(error.strip())
 
-    #check if process run successfully
+    # Check if the subprocess ran successfully (return code 0)
     if process.returncode == 0:
         result_dict["success"] = True
-        #save in to log all lines
+        # Save all lines from standard output to the log
         result_dict["log"] = " ".join(stdout_)
     else:
         result_dict["success"] = False
-        #save in to log all lines even process cause error
+        # Save all lines from standard error to the log, even if the process encountered an error
         result_dict["log"] = " ".join(stderr_)
