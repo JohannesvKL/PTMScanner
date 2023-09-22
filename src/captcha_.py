@@ -197,22 +197,4 @@ def captcha_control() -> None:
         else:
             #wait for the button click
             st.stop()
-
-def check_captcha(params) -> None:
-    """
-    Check if the user is accessing a page other than the main page and apply captcha if necessary.
-
-    Args:
-        params (dict): Parameters from a JSON file, typically containing configuration information.
-
-    Returns:
-        None
-    """
-    # If the app is run locally and captcha control is disabled in the parameters, set the session variable to True
-    if st.session_state.location == "local" and params["controllo"] == False:
-        st.session_state['controllo'] = True
-
-    # If run in hosted mode and captcha control is enabled, show captcha as long as it has not been solved
-    if 'controllo' not in st.session_state or params["controllo"] == False:
-        # Apply captcha by calling the captcha_control function
-        captcha_control()
+   

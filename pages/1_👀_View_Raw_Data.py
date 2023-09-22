@@ -7,8 +7,10 @@ from src.captcha_ import *
 
 params = page_setup()
 
-# check captcha locally and in hosted mode
-check_captcha(params)
+# If run in hosted mode, show captcha as long as it has not been solved
+if 'controllo' not in st.session_state or params["controllo"] == False:
+    # Apply captcha by calling the captcha_control function
+    captcha_control()
 
 st.title("View raw MS data")
 selected_file = st.selectbox(

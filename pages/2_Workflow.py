@@ -9,8 +9,10 @@ from src.captcha_ import *
 # Page name "workflow" will show mzML file selector in sidebar also the run_subprocess example
 params = page_setup(page="workflow")
 
-# check captcha locally and in hosted mode
-check_captcha(params)
+# If run in hosted mode, show captcha as long as it has not been solved
+if 'controllo' not in st.session_state or params["controllo"] == False:
+    # Apply captcha by calling the captcha_control function
+    captcha_control()
 
 st.title("Workflow")
 

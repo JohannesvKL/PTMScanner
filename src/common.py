@@ -127,6 +127,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
         # If running locally, use the default workspace
         if "local" in sys.argv:
             st.session_state.workspace = Path(workspaces_dir, "default")
+            # not any captcha so, controllo should be true
+            st.session_state['controllo'] = True
 
         # If running online, create a new workspace with a random UUID
         else:
