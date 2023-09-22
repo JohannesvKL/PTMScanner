@@ -6,9 +6,9 @@ def run_subprocess(args: list[str], variables: list[str], result_dict: dict) -> 
     Run a subprocess and capture its output.
 
     Args:
-        args (List[str]): The command and its arguments as a list of strings.
-        variables (List[str]): Additional variables needed for the subprocess (not used in this code).
-        result_dict (Dict[str, Union[bool, str]]): A dictionary to store the success status (bool) and the captured log (str).
+        args (list[str]): The command and its arguments as a list of strings.
+        variables (list[str]): Additional variables needed for the subprocess (not used in this code).
+        result_dict dict: A dictionary to store the success status (bool) and the captured log (str).
 
     Returns:
         None
