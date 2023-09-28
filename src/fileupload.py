@@ -72,34 +72,46 @@ def load_example_mzML_files() -> None:
     st.success("Example mzML files loaded!")
 
 
-def remove_selected_mzML_files(to_remove: list[str]) -> None:
+def remove_selected_mzML_files(to_remove: list[str], params: dict) -> dict:
     """
     Removes selected mzML files from the mzML directory.
 
     Args:
         to_remove (List[str]): List of mzML files to remove.
+        params (dict): Parameters.
+
 
     Returns:
-        None
+        dict: parameters with updated mzML files
     """
     mzML_dir = Path(st.session_state.workspace, "mzML-files")
     # remove all given files from mzML workspace directory and selected files
     for f in to_remove:
         Path(mzML_dir, f+".mzML").unlink()
+    for k, v in params.items():
+        if type(v) == list:
+            if f in v:
+                params[k].remove(f)
     st.success("Selected mzML files removed!")
+    return params
 
 
-def remove_all_mzML_files() -> None:
+def remove_all_mzML_files(params: dict) -> dict:
     """
     Removes all mzML files from the mzML directory.
 
     Args:
-        None
+        params (dict): Parameters.
 
     Returns:
-        None
+        dict: parameters with updated mzML files
     """
     mzML_dir = Path(st.session_state.workspace, "mzML-files")
     # reset (delete and re-create) mzML directory in workspace
     reset_directory(mzML_dir)
+    # reset all parameter items which have mzML in key and are list
+    for k, v in params.items():
+        if "mzML" in k and type(v) == list:
+            params[k] = []
     st.success("All mzML files removed!")
+    return params

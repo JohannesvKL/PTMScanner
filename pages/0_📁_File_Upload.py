@@ -61,11 +61,13 @@ if any(Path(mzML_dir).iterdir()):
                                    options=[f.stem for f in sorted(mzML_dir.iterdir())])
         c1, c2 = st.columns(2)
         if c2.button("Remove **selected**", type="primary", disabled=not any(to_remove)):
-            remove_selected_mzML_files(to_remove)
+            params = remove_selected_mzML_files(to_remove, params)
+            save_params(params)
             st.rerun()
 
         if c1.button("⚠️ Remove **all**", disabled=not any(mzML_dir.iterdir())):
-            remove_all_mzML_files()
+            params = remove_all_mzML_files(params)
+            save_params(params)
             st.rerun()
 
 save_params(params)
