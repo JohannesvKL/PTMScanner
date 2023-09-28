@@ -76,11 +76,14 @@ else:
     if 'controllo' not in st.session_state or st.session_state['controllo'] == False:
         delete_page("app", "File_Upload")
         delete_page("app", "View_Raw_Data")
-        delete_page("app", "Workflow")
+        delete_page("app", "Simple_Workflow")
+        delete_page("app", "Workflow_with_mzML_files")
         captcha_control()
     else:
         main()
         add_page("app", "File_Upload")
         add_page("app", "View_Raw_Data")
-        add_page("app", "Workflow")
+        add_page("app", "Simple_Workflow")
+        add_page("app", "Workflow_with_mzML_files")
+        
 
