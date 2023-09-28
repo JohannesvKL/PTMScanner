@@ -61,13 +61,13 @@ else:
                     col1.empty()
                     col2.empty()
                     st.session_state['controllo'] = True
-                    st.experimental_rerun() 
+                    st.rerun() 
                 else:
                     # if the captcha is wrong, the controllo session state is set to False and the captcha is regenerated
                     st.error("🚨 Captch is wrong")
                     del st.session_state['Captcha']
                     del st.session_state['controllo']
-                    st.experimental_rerun()
+                    st.rerun()
             else:
                 #wait for the button click
                 st.stop()
@@ -76,11 +76,14 @@ else:
     if 'controllo' not in st.session_state or st.session_state['controllo'] == False:
         delete_page("app", "File_Upload")
         delete_page("app", "View_Raw_Data")
-        delete_page("app", "Workflow")
+        delete_page("app", "Simple_Workflow")
+        delete_page("app", "Workflow_with_mzML_files")
         captcha_control()
     else:
         main()
         add_page("app", "File_Upload")
         add_page("app", "View_Raw_Data")
-        add_page("app", "Workflow")
+        add_page("app", "Simple_Workflow")
+        add_page("app", "Workflow_with_mzML_files")
+        
 

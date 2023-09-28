@@ -8,10 +8,6 @@ from src.fileupload import *
 
 params = page_setup()
 
-# Make sure "selected-mzML-files" is in session state
-if "selected-mzML-files" not in st.session_state:
-    st.session_state["selected-mzML-files"] = params["selected-mzML-files"]
-
 st.title("File Upload")
 
 tabs = ["File Upload", "Example Data"]
@@ -26,11 +22,14 @@ with tabs[0]:
             "mzML files", accept_multiple_files=(st.session_state.location == "local"))
         cols = st.columns(3)
         if cols[1].form_submit_button("Add files to workspace", type="primary"):
-            save_uploaded_mzML(files)
+            if files:
+                save_uploaded_mzML(files)
+            else:
+                st.warning("Select files first.")
 
 # Example mzML files
 with tabs[1]:
-    st.markdown("Short information text about the example data.")
+    st.markdown("Short information text on example data.")
     cols = st.columns(3)
     if cols[1].button("Load Example Data", type="primary"):
         load_example_mzML_files()
@@ -47,6 +46,7 @@ if st.session_state.location == "local":
         if cols[1].button("Copy files to workspace", type="primary", disabled=(local_mzML_dir == "")):
             copy_local_mzML_files_from_directory(local_mzML_dir)
 
+mzML_dir = Path(st.session_state.workspace, "mzML-files")
 if any(Path(mzML_dir).iterdir()):
     v_space(2)
     # Display all mzML files currently in workspace
@@ -62,10 +62,10 @@ if any(Path(mzML_dir).iterdir()):
         c1, c2 = st.columns(2)
         if c2.button("Remove **selected**", type="primary", disabled=not any(to_remove)):
             remove_selected_mzML_files(to_remove)
-            st.experimental_rerun()
+            st.rerun()
 
         if c1.button("⚠️ Remove **all**", disabled=not any(mzML_dir.iterdir())):
             remove_all_mzML_files()
-            st.experimental_rerun()
+            st.rerun()
 
 save_params(params)
