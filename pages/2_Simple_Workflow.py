@@ -4,8 +4,9 @@ from src.common import *
 from src.workflow import *
 
 # Page name "workflow" will show mzML file selector in sidebar
-params = page_setup(page="workflow")
-st.title("Workflow")
+params = page_setup()
+st.title("Simple Workflow")
+st.markdown("Example for a simple workflow with quick execution times.")
 
 # Define two widgets with values from paramter file
 # To save them as parameters use the same key as in the json file
