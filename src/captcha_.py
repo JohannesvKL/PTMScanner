@@ -187,13 +187,13 @@ def captcha_control() -> None:
                 col1.empty()
                 col2.empty()
                 st.session_state['controllo'] = True
-                st.experimental_rerun() 
+                st.rerun() 
             else:
                 # if the captcha is wrong, the controllo session state is set to False and the captcha is regenerated
                 st.error("🚨 Captch is wrong")
                 del st.session_state['Captcha']
                 del st.session_state['controllo']
-                st.experimental_rerun()
+                st.rerun()
         else:
             #wait for the button click
             st.stop()

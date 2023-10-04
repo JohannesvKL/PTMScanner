@@ -3,18 +3,19 @@ import threading
 
 from src.common import *
 from src.workflow import *
-from src.run_subprocess import *
 from src.captcha_ import *
+from src.run_subprocess import *
 
-# Page name "workflow" will show mzML file selector in sidebar also the run_subprocess example
-params = page_setup(page="workflow")
+# Page name "workflow" will show mzML file selector in sidebar
+params = page_setup()
 
 # If run in hosted mode, show captcha as long as it has not been solved
 if 'controllo' not in st.session_state or params["controllo"] == False:
     # Apply captcha by calling the captcha_control function
     captcha_control()
 
-st.title("Workflow")
+st.title("Simple Workflow")
+st.markdown("Example for a simple workflow with quick execution times.")
 
 # Define tabs for navigation
 tabs = ["Table example", "Run Subprocess example"]
@@ -43,7 +44,10 @@ with tabs[0]:
 
 # Example for running a subprocess
 with tabs[1]:
-     
+    st.markdown("""                 
+        This example demonstrates how to run an external process (here the Linux command "grep") as a subprocess to get ids from selected mzML file
+        """)
+    
     # This example demonstrates how to run an external process (here the Linux command "grep") as a subprocess
     # display the process output. Also works with longer running process like e.g., calling an OpenMS TOPP tool 
 
@@ -56,9 +60,14 @@ with tabs[1]:
     # Create two columns for the Streamlit app layout
     col1, col2 = st.columns(2)
 
-    # Create a text area for the user to enter the mzML file name
-    mzML_file = col1.text_area('Enter mzML file name', height=10, placeholder="mzML file name", help="Provide the mzML file name without .mzML extension")
-    mzML_file_path = os.path.join(mzML_dir, mzML_file+'.mzML')
+    # Use the `glob` method to get a list of all files in the directory
+    file_list = list(mzML_dir.glob('*'))
+   
+    # select box to select file from user
+    file_name = st.selectbox("**Please select file**", [file.stem for file in file_list])
+
+    # full path of file
+    mzML_file_path = os.path.join(mzML_dir, str(file_name)+'.mzML')
 
     # Create a dictionary to capture the output and status of the subprocess
     result_dict = {}
@@ -83,7 +92,7 @@ with tabs[1]:
             terminate_subprocess()
             st.warning("Process terminated. The analysis may not be complete.")
             # Reset the page
-            st.experimental_rerun() 
+            st.rerun() 
 
         # Display a status message while running the analysis
         with st.status("Please wait until fetching all ids from mzML 😑"):

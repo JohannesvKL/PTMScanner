@@ -9,23 +9,14 @@ from src.captcha_ import *
 
 params = page_setup()
 
- # If run in hosted mode, show captcha as long as it has not been solved
+# If run in hosted mode, show captcha as long as it has not been solved
 if 'controllo' not in st.session_state or params["controllo"] == False:
-     # Apply captcha by calling the captcha_control function
+    # Apply captcha by calling the captcha_control function
     captcha_control()
-
-# Make sure "selected-mzML-files" is in session state
-if "selected-mzML-files" not in st.session_state:
-    st.session_state["selected-mzML-files"] = params["selected-mzML-files"]
-
-# mzML directory path
-mzML_dir: Path = Path(st.session_state.workspace, "mzML-files")
 
 st.title("File Upload")
 
-# Define tabs for navigation
 tabs = ["File Upload", "Example Data"]
-
 if st.session_state.location == "local":
     tabs.append("Files from local folder")
 
@@ -37,11 +28,14 @@ with tabs[0]:
             "mzML files", accept_multiple_files=(st.session_state.location == "local"))
         cols = st.columns(3)
         if cols[1].form_submit_button("Add files to workspace", type="primary"):
-            save_uploaded_mzML(files)
+            if files:
+                save_uploaded_mzML(files)
+            else:
+                st.warning("Select files first.")
 
 # Example mzML files
 with tabs[1]:
-    st.markdown("Short information text about the example data.")
+    st.markdown("Short information text on example data.")
     cols = st.columns(3)
     if cols[1].button("Load Example Data", type="primary"):
         load_example_mzML_files()
@@ -58,6 +52,7 @@ if st.session_state.location == "local":
         if cols[1].button("Copy files to workspace", type="primary", disabled=(local_mzML_dir == "")):
             copy_local_mzML_files_from_directory(local_mzML_dir)
 
+mzML_dir = Path(st.session_state.workspace, "mzML-files")
 if any(Path(mzML_dir).iterdir()):
     v_space(2)
     # Display all mzML files currently in workspace
@@ -69,14 +64,16 @@ if any(Path(mzML_dir).iterdir()):
     # Remove files
     with st.expander("🗑️ Remove mzML files"):
         to_remove = st.multiselect("select mzML files",
-                                options=[f.stem for f in sorted(mzML_dir.iterdir())])
+                                   options=[f.stem for f in sorted(mzML_dir.iterdir())])
         c1, c2 = st.columns(2)
         if c2.button("Remove **selected**", type="primary", disabled=not any(to_remove)):
-            remove_selected_mzML_files(to_remove)
-            st.experimental_rerun()
+            params = remove_selected_mzML_files(to_remove, params)
+            save_params(params)
+            st.rerun()
 
         if c1.button("⚠️ Remove **all**", disabled=not any(mzML_dir.iterdir())):
-            remove_all_mzML_files()
-            st.experimental_rerun()
+            params = remove_all_mzML_files(params)
+            save_params(params)
+            st.rerun()
 
 save_params(params)

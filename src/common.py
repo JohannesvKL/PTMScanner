@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 import uuid
+import json
 from typing import Any
 from pathlib import Path
 
@@ -10,7 +11,7 @@ import streamlit as st
 import pandas as pd
 
 # set these variables according to your project
-APP_NAME = "OpenMS App Template"
+APP_NAME = "OpenMS Streamlit App"
 REPOSITORY_NAME = "streamlit-template"
 
 
@@ -42,12 +43,6 @@ def load_params(default: bool = False) -> dict[str, Any]:
         with open("assets/default-params.json", "r") as f:
             params = json.load(f)
 
-    # Check if any parameters have been modified during the current session and update the parameter dictionary
-    if not default:
-        for key, value in st.session_state.items():
-            if key in params.keys():
-                params[key] = value
-
     # Return the parameter dictionary
     return params
 
@@ -69,16 +64,19 @@ def save_params(params: dict[str, Any]) -> None:
         params (dict[str, Any]): A dictionary containing the parameters to be saved.
 
     Returns:
-        None
+        dict[str, Any]: Updated parameters.
     """
     # Update the parameter dictionary with any modified parameters from the current session
     for key, value in st.session_state.items():
         if key in params.keys():
             params[key] = value
+
     # Save the parameter dictionary to a JSON file in the workspace directory
     path = Path(st.session_state.workspace, "params.json")
     with open(path, "w") as outfile:
         json.dump(params, outfile, indent=4)
+    
+    return params
 
 
 def page_setup(page: str = "") -> dict[str, Any]:
@@ -102,7 +100,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
         menu_items=None,
     )
 
-    # Determine the workspace for the current session, should run once at startup
+    # Determine the workspace for the current session
     if "workspace" not in st.session_state:
         # Clear any previous caches
         st.cache_data.clear()
@@ -112,45 +110,28 @@ def page_setup(page: str = "") -> dict[str, Any]:
             st.session_state.location = "local"
         else:
             st.session_state.location = "online"
-
+        # if we run the packaged windows version, we start within the Python directory -> need to change working directory to ..\streamlit-template
+        if "windows" in sys.argv:
+            os.chdir("../streamlit-template")
         # Define the directory where all workspaces will be stored
+        workspaces_dir = Path("..", "workspaces-"+REPOSITORY_NAME)
         if st.session_state.location == "online":
-            workspaces_dir = Path("workspaces-"+REPOSITORY_NAME)
-            # Outside of the repository directory for local and docker
-            # If running in a Docker container, set working directory to the repository directory
-            if "docker" in sys.argv:
-                workspaces_dir = Path("..", "workspaces-"+REPOSITORY_NAME)
-                os.chdir(REPOSITORY_NAME)
+            st.session_state.workspace = Path(workspaces_dir, str(uuid.uuid1()))
         else:
-            workspaces_dir = Path("..", "workspaces-"+REPOSITORY_NAME)
-
-        # If running locally, use the default workspace
-        if "local" in sys.argv:
             st.session_state.workspace = Path(workspaces_dir, "default")
             # not any captcha so, controllo should be true
             st.session_state['controllo'] = True
-
-        # If running online, create a new workspace with a random UUID
-        else:
-            st.session_state.workspace = Path(
-                workspaces_dir, str(uuid.uuid1()))
 
     # Make sure the necessary directories exist
     st.session_state.workspace.mkdir(parents=True, exist_ok=True)
     Path(st.session_state.workspace,
          "mzML-files").mkdir(parents=True, exist_ok=True)
 
-    # Load parameters from the parameter file
-    params = load_params()
-
     # Render the sidebar
-    params = render_sidebar(params, page)
-
-    # Return the loaded parameters
+    params = render_sidebar(page)
     return params
 
-
-def render_sidebar(params: dict[str, Any], page: str = "") -> None:
+def render_sidebar(page: str = "") -> None:
     """
     Renders the sidebar on the Streamlit app, which includes the workspace switcher,
     the mzML file selector, the logo, and settings.
@@ -167,6 +148,7 @@ def render_sidebar(params: dict[str, Any], page: str = "") -> None:
     Returns:
         None
     """
+    params = load_params()
     with st.sidebar:
         # The main page has workspace switcher
         if page == "main":
@@ -198,6 +180,9 @@ You can share this unique workspace ID with other people.
             elif st.session_state.location == "local":
                 # Define callback function to change workspace
                 def change_workspace():
+                    for key in params.keys():
+                        if key in st.session_state.keys():
+                            del st.session_state[key]
                     st.session_state.workspace = Path(
                         workspaces_dir, st.session_state["chosen-workspace"]
                     )
@@ -221,7 +206,7 @@ You can share this unique workspace ID with other people.
                 if st.button("**Create Workspace**"):
                     path.mkdir(parents=True, exist_ok=True)
                     st.session_state.workspace = path
-                    st.experimental_rerun()
+                    st.rerun()
                 # Remove existing workspace and fall back to default
                 if st.button("⚠️ Delete Workspace"):
                     if path.exists():
@@ -229,18 +214,9 @@ You can share this unique workspace ID with other people.
                         st.session_state.workspace = Path(
                             workspaces_dir, "default"
                         )
-                        st.experimental_rerun()
+                        st.rerun()
 
-        # Workflow pages have mzML file selector, there can be multiple workflow pages which share mzML file selection
-        if page == "workflow":
-            st.markdown("📁 **mzML files**")
-            st.multiselect("mzML files",  options=[Path(f).stem for f in Path(st.session_state.workspace, "mzML-files").glob("*.mzML")],
-                           default=params["selected-mzML-files"], key="selected-mzML-files", label_visibility="collapsed")
-            st.markdown("---")
-
-        # All pages have logo and settings
-        st.image("assets/OpenMS.png", "powered by")
-        st.markdown("---")
+        # All pages have settings, workflow indicator and logo
         with st.expander("⚙️ **Settings**"):
             img_formats = ["svg", "png", "jpeg", "webp"]
             st.selectbox(
@@ -248,17 +224,11 @@ You can share this unique workspace ID with other people.
                 img_formats,
                 img_formats.index(params["image-format"]), key="image-format"
             )
-            # Button to reset parameters, sidebar widgets are settings and will not be resettet!
-            if st.button("⚠️ Load default parameters"):
-                params = load_params(default=True)
-
-        # Indicator for current workspace
         if page != "main":
             st.info(
                 f"**{Path(st.session_state['workspace']).stem}**")
-
-        return params
-
+        st.image("assets/OpenMS.png", "powered by")
+    return params
 
 def v_space(n: int, col=None) -> None:
     """
@@ -288,7 +258,7 @@ def show_table(df: pd.DataFrame, download_name: str = "") -> None:
         download_name (str): The name to give to the downloaded file. Defaults to empty string.
 
     Returns:
-        None
+        df (pd.DataFrame): The possibly edited dataframe.
     """
     # Show dataframe using container width
     st.dataframe(df, use_container_width=True)
@@ -299,6 +269,7 @@ def show_table(df: pd.DataFrame, download_name: str = "") -> None:
             df.to_csv(sep="\t").encode("utf-8"),
             download_name.replace(" ", "-") + ".tsv",
         )
+    return df
 
 
 def show_fig(fig, download_name: str, container_width: bool = True) -> None:
@@ -347,7 +318,9 @@ def reset_directory(path: Path) -> None:
     Returns:
         None
     """
-    shutil.rmtree(path)
+    path = Path(path)
+    if path.exists():
+        shutil.rmtree(path)
     path.mkdir(parents=True, exist_ok=True)
 
 

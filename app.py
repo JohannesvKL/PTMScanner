@@ -44,7 +44,5 @@ else:
 
         # Restore all pages (assuming "app" is the main page)
         restore_all_pages("app")
-
-
-
+        
 
