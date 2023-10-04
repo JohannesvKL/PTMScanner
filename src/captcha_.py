@@ -6,6 +6,7 @@ from streamlit.source_util import (
     get_pages,
     _on_pages_changed
 )
+import os
 
 from captcha.image import ImageCaptcha
 import random, string
@@ -81,8 +82,13 @@ def restore_all_pages(main_script_path_str: str) -> None:
     # Define the directory where pages are stored
     pages_dir = main_script_path.parent / "pages"
 
+    # To store the pages for later, to add in ascending order
+    pages_temp = []
+
     # Iterate over all .py files in the "pages" directory
     for script_path in pages_dir.glob("*.py"):
+        
+        # append path with file name 
         script_path_str = str(script_path.resolve())
 
         # Calculate the MD5 hash of the script path
@@ -91,13 +97,29 @@ def restore_all_pages(main_script_path_str: str) -> None:
         # Obtain the page icon and name
         pi, pn = page_icon_and_name(script_path)
 
-        # Add the new page configuration
-        pages[psh] = {
+        # Extract the index from the page name
+        index = int(os.path.basename(script_path.stem).split("_")[0])
+
+        # Add the page data to the temporary list
+        pages_temp.append((index, {
             "page_script_hash": psh,
             "page_name": pn,
             "icon": pi,
             "script_path": script_path_str,
-        }
+        }))
+
+    # Sort the pages_temp list by index in ascending order as defined in pages folder e-g 0_, 1_ etc
+    pages_temp.sort(key=lambda x: x[0])
+
+    # Add pages
+    for index, page_data in pages_temp:
+        # Add the new page configuration
+        pages[page_data['page_script_hash']] = {
+            "page_script_hash": page_data['page_script_hash'],
+            "page_name": page_data['page_name'],
+            "icon": page_data['icon'],
+            "script_path": page_data['script_path'],
+        } 
 
     # Refresh the page configuration
     _on_pages_changed.send()
