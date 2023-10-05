@@ -36,11 +36,10 @@ else:
     def captcha_control():
         #control if the captcha is correct
         if 'controllo' not in st.session_state or st.session_state['controllo'] == False:
-            st.title("Makesure you are not a robot🤖")
+            st.title("Make sure you are not a robot🤖")
             
             # define the session state for control if the captcha is correct
             st.session_state['controllo'] = False
-            col1, col2 = st.columns(2)
             
             # define the session state for the captcha text because it doesn't change during refreshes 
             if 'Captcha' not in st.session_state:
@@ -49,17 +48,17 @@ else:
             #setup the captcha widget
             image = ImageCaptcha(width=width, height=height)
             data = image.generate(st.session_state['Captcha'])
-            col1.image(data)
-            capta2_text = col2.text_area('Enter captcha text', height=20)
+            st.image(data)
+            col1, col2 = st.columns([20, 80])
+            capta2_text = col1.text_input('Enter captcha text')
             
-            
-            if st.button("Verify the code"):
+            v_space(1, col2)
+            if col2.button("Verify the code", type="primary"):
                 capta2_text = capta2_text.replace(" ", "")
                 # if the captcha is correct, the controllo session state is set to True
                 if st.session_state['Captcha'].lower() == capta2_text.lower().strip():
                     del st.session_state['Captcha']
                     col1.empty()
-                    col2.empty()
                     st.session_state['controllo'] = True
                     st.rerun() 
                 else:
