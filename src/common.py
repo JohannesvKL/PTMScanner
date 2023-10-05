@@ -119,6 +119,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
             st.session_state.workspace = Path(workspaces_dir, str(uuid.uuid1()))
         else:
             st.session_state.workspace = Path(workspaces_dir, "default")
+            # not any captcha so, controllo should be true
+            st.session_state['controllo'] = True
 
     # Make sure the necessary directories exist
     st.session_state.workspace.mkdir(parents=True, exist_ok=True)

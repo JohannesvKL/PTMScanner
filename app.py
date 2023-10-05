@@ -1,9 +1,10 @@
 import streamlit as st
 from captcha.image import ImageCaptcha
-import random, string
 from src.common import *
 from streamlit.web import cli
 from pathlib import Path
+import sys
+
 from src.captcha_ import *
 
 params = page_setup(page="main")
@@ -22,12 +23,13 @@ def main():
                 )
     save_params(params)
 
-## In local mode no captcha 
+# Check if the script is run in local mode (e.g., "streamlit run app.py local")
 if "local" in sys.argv:
+    # In local mode, run the main function without applying captcha
     main()
 
+# If not in local mode, assume it's hosted/online mode
 else:
-   
     length_captcha = 5
     width = 400
     height = 180
@@ -71,18 +73,19 @@ else:
                 #wait for the button click
                 st.stop()
         
-    # WORK LIKE MULTIPAGE APP         
+    # WORK LIKE MULTIPAGE APP
     if 'controllo' not in st.session_state or st.session_state['controllo'] == False:
-        delete_page("app", "File_Upload")
-        delete_page("app", "View_Raw_Data")
-        delete_page("app", "Simple_Workflow")
-        delete_page("app", "Workflow_with_mzML_files")
+        # hide app pages as long as captcha not solved
+        delete_all_pages("app")
+
+        # Apply captcha control to verify the user
         captcha_control()
-    else:
+
+    else:     
+        # Run the main function
         main()
-        add_page("app", "File_Upload")
-        add_page("app", "View_Raw_Data")
-        add_page("app", "Simple_Workflow")
-        add_page("app", "Workflow_with_mzML_files")
+
+        # Restore all pages (assuming "app" is the main page)
+        restore_all_pages("app")
         
 

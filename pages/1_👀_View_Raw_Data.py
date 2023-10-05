@@ -3,14 +3,20 @@ from streamlit_plotly_events import plotly_events
 
 from src.common import *
 from src.view import *
+from src.captcha_ import *
 
 params = page_setup()
-st.title("View raw MS data")
 
+# If run in hosted mode, show captcha as long as it has not been solved
+if 'controllo' not in st.session_state or params["controllo"] == False:
+    # Apply captcha by calling the captcha_control function
+    captcha_control()
+
+st.title("View raw MS data")
 selected_file = st.selectbox(
     "choose file",
     [f.name for f in Path(st.session_state.workspace,
-                          "mzML-files").iterdir()],
+                        "mzML-files").iterdir()],
 )
 if selected_file:
     df = get_df(
