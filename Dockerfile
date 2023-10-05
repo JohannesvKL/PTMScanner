@@ -22,7 +22,7 @@ USER root
 
 # Install required Ubuntu packages.
 RUN apt-get -y update
-RUN apt-get install -y --no-install-recommends --no-install-suggests g++ autoconf automake patch libtool make git gpg wget ca-certificates curl jq libgtk2.0-dev openjdk-8-jdk
+RUN apt-get install -y --no-install-recommends --no-install-suggests g++ autoconf automake patch libtool make git gpg wget ca-certificates curl jq libgtk2.0-dev openjdk-8-jdk cron
 RUN update-ca-certificates
 RUN apt-get install -y --no-install-recommends --no-install-suggests libsvm-dev libeigen3-dev coinor-libcbc-dev libglpk-dev libzip-dev zlib1g-dev libxerces-c-dev libbz2-dev libomp-dev libhdf5-dev
 RUN apt-get install -y --no-install-recommends --no-install-suggests libboost-date-time1.74-dev \
@@ -114,9 +114,17 @@ COPY src/ /app/src
 COPY assets/ /app/assets
 COPY example-data/ /app/example-data
 COPY pages/ /app/pages
+COPY clean-up-workspaces.py /app/clean-up-workspaces.py
 
-# TODO install cron (TODO: think about automatic clean up of temporary files and workspaces)
-# RUN apt-get install -y cron
+# add cron job to the crontab
+RUN echo "* * * * * /root/mambaforge/envs/streamlit-env/bin/python /app/clean-up-workspaces.py >> /app/clean-up-workspaces.log 2>&1" | crontab -
+
+# create entrypoint script to start cron service and launch streamlit app
+RUN echo "#!/bin/bash" > /app/entrypoint.sh
+RUN echo "service cron start" >> /app/entrypoint.sh
+RUN echo "mamba run --no-capture-output -n streamlit-env streamlit run app.py" >> /app/entrypoint.sh
+# make the script executable
+RUN chmod +x /app/entrypoint.sh
 
 # Download latest OpenMS App executable for Windows from Github actions workflow.
 RUN WORKFLOW_ID=$(curl -s "https://api.github.com/repos/$GITHUB_USER/$GITHUB_REPO/actions/workflows" | jq -r '.workflows[] | select(.name == "Build executable for Windows") | .id') \
@@ -126,4 +134,4 @@ RUN WORKFLOW_ID=$(curl -s "https://api.github.com/repos/$GITHUB_USER/$GITHUB_REP
 
 # Run app as container entrypoint.
 EXPOSE $PORT
-ENTRYPOINT ["mamba", "run", "--no-capture-output", "-n", "streamlit-env", "streamlit", "run", "app.py"]
+ENTRYPOINT ["/app/entrypoint.sh"]
