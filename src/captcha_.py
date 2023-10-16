@@ -185,28 +185,29 @@ def captcha_control():
         if 'Captcha' not in st.session_state:
                 st.session_state['Captcha'] = ''.join(random.choices(string.ascii_uppercase + string.digits, k=length_captcha))
         
-        #setup the captcha widget
-        image = ImageCaptcha(width=width, height=height)
-        data = image.generate(st.session_state['Captcha'])
-        st.image(data)
-        col1, col2 = st.columns([20, 80])
-        capta2_text = col1.text_input('Enter captcha text')
-        
-        v_space(1, col2)
-        if col2.button("Verify the code", type="primary"):
-            capta2_text = capta2_text.replace(" ", "")
-            # if the captcha is correct, the controllo session state is set to True
-            if st.session_state['Captcha'].lower() == capta2_text.lower().strip():
-                del st.session_state['Captcha']
-                col1.empty()
-                st.session_state['controllo'] = True
-                st.rerun() 
+        col1, _ = st.columns(2)
+        with col1.form("captcha-form"):
+            #setup the captcha widget
+            image = ImageCaptcha(width=width, height=height)
+            data = image.generate(st.session_state['Captcha'])
+            st.image(data)
+            c1, c2 = st.columns([70, 30])
+            capta2_text = c1.text_input('Enter captcha text', max_chars=5)
+            c2.markdown("##")
+            if c2.form_submit_button("Verify the code", type="primary"):
+                capta2_text = capta2_text.replace(" ", "")
+                # if the captcha is correct, the controllo session state is set to True
+                if st.session_state['Captcha'].lower() == capta2_text.lower().strip():
+                    del st.session_state['Captcha']
+                    col1.empty()
+                    st.session_state['controllo'] = True
+                    st.rerun() 
+                else:
+                    # if the captcha is wrong, the controllo session state is set to False and the captcha is regenerated
+                    st.error("🚨 Captch is wrong")
+                    del st.session_state['Captcha']
+                    del st.session_state['controllo']
+                    st.rerun()
             else:
-                # if the captcha is wrong, the controllo session state is set to False and the captcha is regenerated
-                st.error("🚨 Captch is wrong")
-                del st.session_state['Captcha']
-                del st.session_state['controllo']
-                st.rerun()
-        else:
-            #wait for the button click
-            st.stop()
+                #wait for the button click
+                st.stop()
