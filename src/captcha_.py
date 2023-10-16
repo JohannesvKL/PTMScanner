@@ -188,6 +188,7 @@ def captcha_control():
         col1, _ = st.columns(2)
         with col1.form("captcha-form"):
             #setup the captcha widget
+            st.info("Please enter the captcha as text. Note: If your captcha is not accepted, you might need to disable your ad blocker.")
             image = ImageCaptcha(width=width, height=height)
             data = image.generate(st.session_state['Captcha'])
             st.image(data)
