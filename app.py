@@ -1,7 +1,5 @@
 import streamlit as st
-from captcha.image import ImageCaptcha
 from src.common import *
-from streamlit.web import cli
 from pathlib import Path
 import sys
 
@@ -20,6 +18,7 @@ def main():
                     data=file,
                     file_name="OpenMS-App.zip",
                     mime="archive/zip",
+                    type="primary"
                 )
     save_params(params)
 
