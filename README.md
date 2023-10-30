@@ -2,6 +2,10 @@
 
 This is a template app for OpenMS workflows in a web application.
 
+## Requires
+
+Python <= 3.10
+
 ## Features
 
 - Workspaces for user data with unique shareable IDs
