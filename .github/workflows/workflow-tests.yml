@@ -1,4 +1,4 @@
-name: Pylint
+name: Test workflow functions
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pylint
-    - name: Analysing the code with pylint
+        pip install pytest
+    - name: Running test cases
       run: |
-        pylint $(git ls-files '*.py') --disable=C0103,C0114,C0301,C0411,W0212,W0631,W0602,W1514,W2402,E0401,E1101,F0001,R1732 --errors-only
+        pytest test.py

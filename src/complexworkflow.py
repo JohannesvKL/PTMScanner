@@ -6,6 +6,26 @@ import time
 from src.common import reset_directory
 
 
+def mzML_file_get_num_spectra(filepath):
+    """
+    Load an mzML file, retrieve the number of spectra, and return it.
+
+    This function loads an mzML file specified by `filepath` and extracts the number of spectra
+    contained within the file using the OpenMS library. It temporarily pauses for 2 seconds to
+    simulate a heavy task before retrieving the number of spectra.
+
+    Args:
+        filepath (str): The path to the mzML file to be loaded and analyzed.
+
+    Returns:
+        int: The number of spectra present in the mzML file.
+    """
+    exp = poms.MSExperiment()
+    poms.MzMLFile().load(filepath, exp)
+    time.sleep(2)
+    return exp.size()
+
+
 def run_workflow(params, result_dir):
     """Load each mzML file into pyOpenMS Experiment and get the number of spectra."""
 
@@ -25,13 +45,15 @@ def run_workflow(params, result_dir):
             st.write(f"Reading mzML file: {file} ...")
 
             # reading mzML file, getting num spectra and adding some extra time
-            path = str(
-                Path(st.session_state["workspace"], "mzML-files", file + ".mzML")
+            num_spectra.append(
+                mzML_file_get_num_spectra(
+                    str(
+                        Path(
+                            st.session_state["workspace"], "mzML-files", file + ".mzML"
+                        )
+                    )
+                )
             )
-            exp = poms.MSExperiment()
-            poms.MzMLFile().load(path, exp)
-            num_spectra.append(exp.size())
-            time.sleep(2)
 
         # set status as complete and collapse box
         status.update(label="Complete!", expanded=False)
