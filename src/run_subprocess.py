@@ -1,6 +1,7 @@
 import streamlit as st
 import subprocess
 
+
 def run_subprocess(args: list[str], variables: list[str], result_dict: dict) -> None:
     """
     Run a subprocess and capture its output.
@@ -15,7 +16,9 @@ def run_subprocess(args: list[str], variables: list[str], result_dict: dict) -> 
     """
 
     # Run the subprocess and capture its output
-    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    process = subprocess.Popen(
+        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+    )
 
     # Lists to store the captured standard output and standard error
     stdout_ = []
@@ -24,7 +27,7 @@ def run_subprocess(args: list[str], variables: list[str], result_dict: dict) -> 
     # Capture the standard output of the subprocess
     while True:
         output = process.stdout.readline()
-        if output == '' and process.poll() is not None:
+        if output == "" and process.poll() is not None:
             break
         if output:
             # Print every line of standard output on the Streamlit page
@@ -35,7 +38,7 @@ def run_subprocess(args: list[str], variables: list[str], result_dict: dict) -> 
     # Capture the standard error of the subprocess
     while True:
         error = process.stderr.readline()
-        if error == '' and process.poll() is not None:
+        if error == "" and process.poll() is not None:
             break
         if error:
             # Print every line of standard error on the Streamlit page, marking it as an error

@@ -27,7 +27,9 @@ def save_uploaded_mzML(uploaded_files: list[bytes]) -> None:
         return
     # Write files from buffer to workspace mzML directory, add to selected files
     for f in uploaded_files:
-        if f.name not in [f.name for f in mzML_dir.iterdir()] and f.name.endswith("mzML"):
+        if f.name not in [f.name for f in mzML_dir.iterdir()] and f.name.endswith(
+            "mzML"
+        ):
             with open(Path(mzML_dir, f.name), "wb") as fh:
                 fh.write(f.getbuffer())
     st.success("Successfully added uploaded files!")
@@ -87,9 +89,9 @@ def remove_selected_mzML_files(to_remove: list[str], params: dict) -> dict:
     mzML_dir = Path(st.session_state.workspace, "mzML-files")
     # remove all given files from mzML workspace directory and selected files
     for f in to_remove:
-        Path(mzML_dir, f+".mzML").unlink()
+        Path(mzML_dir, f + ".mzML").unlink()
     for k, v in params.items():
-        if type(v) == list:
+        if isinstance(v, list):
             if f in v:
                 params[k].remove(f)
     st.success("Selected mzML files removed!")
@@ -111,7 +113,7 @@ def remove_all_mzML_files(params: dict) -> dict:
     reset_directory(mzML_dir)
     # reset all parameter items which have mzML in key and are list
     for k, v in params.items():
-        if "mzML" in k and type(v) == list:
+        if "mzML" in k and isinstance(v, list):
             params[k] = []
     st.success("All mzML files removed!")
     return params

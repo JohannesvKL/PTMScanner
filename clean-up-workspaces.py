@@ -15,7 +15,9 @@ current_time = time.time()
 threshold = current_time - (86400 * 7)
 
 # Print current time
-print(f"Current Time: {datetime.utcfromtimestamp(current_time).strftime('%Y-%m-%d %H:%M:%S UTC')}\n")
+print(
+    f"Current Time: {datetime.utcfromtimestamp(current_time).strftime('%Y-%m-%d %H:%M:%S UTC')}\n"
+)
 
 # Collect remaining dirctories to print out later
 remaining_directories = []
@@ -25,14 +27,16 @@ for directory in workspaces_directory.iterdir():
     if directory.is_dir():
         # Get the directory's modification time
         modification_time = os.path.getmtime(directory)
-        
+
         # Check if the modification time is less than the threshold
         if modification_time < threshold:
             # Calculate the time difference in seconds
             time_difference = current_time - modification_time
-            
+
             # Print the directory name and the time difference in minutes
-            print(f"Deleting directory: {directory.name}, Last Modified: {time_difference / 86400:.1f} days ago")
+            print(
+                f"Deleting directory: {directory.name}, Last Modified: {time_difference / 86400:.1f} days ago"
+            )
 
             # Remove workspace
             shutil.rmtree(directory)
@@ -43,10 +47,12 @@ for directory in workspaces_directory.iterdir():
 if remaining_directories:
     print(f"\nRemaining directories in {workspaces_directory.name}:")
     for directory in remaining_directories:
-        print(f"{directory.name}, Last Modified: {(current_time - os.path.getmtime(directory)) / 60:.2f} minutes ago")
+        print(
+            f"{directory.name}, Last Modified: {(current_time - os.path.getmtime(directory)) / 60:.2f} minutes ago"
+        )
 else:
     print(f"\n{workspaces_directory.name} is empty.")
 
 
 # Print separator
-print(100*"-")
+print(100 * "-")

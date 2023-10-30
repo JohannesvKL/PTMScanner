@@ -62,8 +62,7 @@ def plot_2D_map(df_ms1: pd.DataFrame, df_ms2: pd.DataFrame, cutoff: int) -> go.F
     """
     fig = go.Figure()
     # Get all intensities in a 1D array
-    ints = np.concatenate([df_ms1.loc[index, "intarray"]
-                          for index in df_ms1.index])
+    ints = np.concatenate([df_ms1.loc[index, "intarray"] for index in df_ms1.index])
     # Keep intensities over cutoff threshold
     int_filter = ints > cutoff
     ints = ints[int_filter]
@@ -140,8 +139,7 @@ def plot_bpc(df: pd.DataFrame) -> go.Figure:
     Returns:
         A plotly Figure object containing the BPC plot.
     """
-    intensity = np.array([max(intensity_array)
-                         for intensity_array in df["intarray"]])
+    intensity = np.array([max(intensity_array) for intensity_array in df["intarray"]])
     fig = px.line(df, x="RT", y=intensity)
     fig.update_traces(line_color="#555FF5", line_width=3)
     fig.update_traces(showlegend=False)
