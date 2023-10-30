@@ -16,8 +16,6 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build the full Docker image
       run: docker build . --file Dockerfile --tag streamlitapp:latest
-    - name: Run full docker container
-      run: docker run streamlitapp:latest
 
   build-simple-app:
 
@@ -27,5 +25,3 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build the Docker image (pyOpenMS only)
       run: docker build . --file Dockerfile_simple --tag streamlitapp-simple:latest
-    - name: Run pyOpenMS only docker container
-      run: docker run streamlitapp-simple:latest
