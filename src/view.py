@@ -4,8 +4,9 @@ from pathlib import Path
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-from pyopenms import *
+import pyopenms as poms
 
+from typing import Union
 
 @st.cache_data
 def get_df(file: Union[str, Path]) -> pd.DataFrame:
@@ -22,8 +23,8 @@ def get_df(file: Union[str, Path]) -> pd.DataFrame:
         columns contain NumPy arrays with the m/z and intensity values for each
         spectrum in the mzML file, respectively.
     """
-    exp = MSExperiment()
-    MzMLFile().load(str(file), exp)
+    exp = poms.MSExperiment()
+    poms.MzMLFile().load(str(file), exp)
     df = exp.get_df()
     # MSlevel for each scan
     df.insert(0, "mslevel", [spec.getMSLevel() for spec in exp])
@@ -38,8 +39,7 @@ def get_df(file: Union[str, Path]) -> pd.DataFrame:
     )
     if not df.empty:
         return df
-    else:
-        return pd.DataFrame()
+    return pd.DataFrame()
 
 
 @st.cache_resource
@@ -122,7 +122,7 @@ def plot_2D_map(df_ms1: pd.DataFrame, df_ms2: pd.DataFrame, cutoff: int) -> go.F
     fig.update_traces(
         marker_colorscale=color_scale,
         hovertext=ints.round(),
-        selector=dict(type="scattergl"),
+        selector={"type": 'scattergl'},
     )
     return fig
 

@@ -2,7 +2,7 @@ import streamlit as st
 import subprocess
 
 
-def run_subprocess(args: list[str], variables: list[str], result_dict: dict) -> None:
+def run_subprocess(args: list[str], result_dict: dict) -> None:
     """
     Run a subprocess and capture its output.
 

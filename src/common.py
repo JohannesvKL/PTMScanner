@@ -3,7 +3,6 @@ import os
 import shutil
 import sys
 import uuid
-import json
 from typing import Any
 from pathlib import Path
 
@@ -37,10 +36,10 @@ def load_params(default: bool = False) -> dict[str, Any]:
 
     # Load the parameters from the file, or from the default file if the parameter file does not exist
     if path.exists() and not default:
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             params = json.load(f)
     else:
-        with open("assets/default-params.json", "r") as f:
+        with open("assets/default-params.json", "r", encoding="utf-8") as f:
             params = json.load(f)
 
     # Return the parameter dictionary
@@ -73,7 +72,7 @@ def save_params(params: dict[str, Any]) -> None:
 
     # Save the parameter dictionary to a JSON file in the workspace directory
     path = Path(st.session_state.workspace, "params.json")
-    with open(path, "w") as outfile:
+    with open(path, "w", encoding="utf-8") as outfile:
         json.dump(params, outfile, indent=4)
 
     return params

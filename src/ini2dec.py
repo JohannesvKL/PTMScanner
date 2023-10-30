@@ -25,6 +25,7 @@ import xml.etree.ElementTree as ET
 
 
 def ini2dict(path: str, sections: list):
+    """Converts a OpenMS ini file to dictionary."""
     # Parse the XML configuration
     tree = ET.parse(path)
     root = tree.getroot()

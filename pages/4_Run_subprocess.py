@@ -74,15 +74,13 @@ if st.button("Extract ids"):
         # Define the command to run as a subprocess (example: grep)
         args = ["grep", "idRef", mzML_file_path]
 
-        # Add any additional variables needed for the subprocess (if any)
-        variables = []
 
         # Display the command that will be executed
         message = f"Running command: {' '.join(args)}"
         st.code(message)
 
         # Run the subprocess command
-        run_subprocess(args, variables, result_dict)
+        run_subprocess(args, result_dict)
 
     # Check if the subprocess was successful
     if result_dict["success"]:

@@ -1,16 +1,12 @@
 from pathlib import Path
 import streamlit as st
-from streamlit.source_util import (
-    page_icon_and_name,
-    calc_md5,
-    get_pages,
-    _on_pages_changed,
-)
-import os
+from streamlit.source_util import page_icon_and_name, calc_md5, get_pages, _on_pages_changed
 
 from captcha.image import ImageCaptcha
-import random, string
-from src.common import *
+
+import random
+import string
+import os
 
 
 def delete_all_pages(main_script_path_str: str) -> None:
@@ -181,8 +177,23 @@ height = 180
 
 # define the function for the captcha control
 def captcha_control():
+    """
+    Control and verification of a CAPTCHA to ensure the user is not a robot.
+
+    This function implements CAPTCHA control to verify that the user is not a robot.
+    It displays a CAPTCHA image and prompts the user to enter the corresponding text.
+    If the entered text matches the CAPTCHA, the control is set to True; otherwise, it remains False.
+
+    If the CAPTCHA is incorrect, it is regenerated and the control state is set to False.
+    This function also handles user interactions and reruns the Streamlit app accordingly.
+
+    The CAPTCHA text is generated as a session state and should not change during refreshes.
+
+    Returns:
+        None
+    """
     # control if the captcha is correct
-    if "controllo" not in st.session_state or st.session_state["controllo"] == False:
+    if "controllo" not in st.session_state or st.session_state["controllo"] is False:
         st.title("Make sure you are not a robot🤖")
 
         # define the session state for control if the captcha is correct
