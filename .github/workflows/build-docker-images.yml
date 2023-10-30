@@ -28,4 +28,4 @@ jobs:
     - name: Build the Docker image (pyOpenMS only)
       run: docker build . --file Dockerfile_simple --tag streamlitapp-simple:latest
     - name: Run pyOpenMS only docker container
-      run: docker run streamlitappsimple:latest
+      run: docker run streamlitapp-simple:latest
