@@ -1,14 +1,14 @@
 import streamlit as st
 
-from src.common import *
-from src.workflow import *
-from src.captcha_ import *
+from src.common import page_setup, save_params, show_table
+from src import workflow
+from src.captcha_ import captcha_control
 
 # Page name "workflow" will show mzML file selector in sidebar
 params = page_setup()
 
 # If run in hosted mode, show captcha as long as it has not been solved
-if 'controllo' not in st.session_state or params["controllo"] == False:
+if "controllo" not in st.session_state or params["controllo"] is False:
     # Apply captcha by calling the captcha_control function
     captcha_control()
 
@@ -20,15 +20,27 @@ st.markdown("Example for a simple workflow with quick execution times.")
 
 # We access the x-dimension via local variable
 xdimension = st.number_input(
-    label="x dimension", min_value=1, max_value=20, value=params["example-x-dimension"], step=1, key="example-x-dimension")
+    label="x dimension",
+    min_value=1,
+    max_value=20,
+    value=params["example-x-dimension"],
+    step=1,
+    key="example-x-dimension",
+)
 
-st.number_input(label="y dimension", min_value=1, max_value=20,
-                value=params["example-y-dimension"], step=1, key="example-y-dimension")
+st.number_input(
+    label="y dimension",
+    min_value=1,
+    max_value=20,
+    value=params["example-y-dimension"],
+    step=1,
+    key="example-y-dimension",
+)
 
 # Get a dataframe with x and y dimensions via time consuming (sleep) cached function
 # If the input has been given before, the function does not run again
 # Input x from local variable, input y from session state via key
-df = generate_random_table(xdimension, st.session_state["example-y-dimension"])
+df = workflow.generate_random_table(xdimension, st.session_state["example-y-dimension"])
 
 # Display dataframe via custom show_table function, which will render a download button as well
 show_table(df, download_name="random-table")
