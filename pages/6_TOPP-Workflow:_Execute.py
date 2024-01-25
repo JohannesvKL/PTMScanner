@@ -18,35 +18,31 @@ from src.common import page_setup
 # If the log file exists, its contents are displayed. It checks for a pid dir 
 # to see if the workflow is running. The page reruns periodically to update the log.
 # """
-
 params = page_setup()
 
-# set up the workflow directory and page name
-workflow_dir = Path(st.session_state.workspace, "TOPP-workflow")
-st.title("TOPP Workflow")
+wf = TOPPWorkflow()
 
-# if not workflow_dir.exists():
-#     workflow_dir.mkdir(parents=True, exist_ok=True)
-
-# log_file = Path(workflow_dir, "log.txt")
-# pid_dir = Path(workflow_dir, "pids")
 
 # Everything else can be left unchanged
-wf = TOPPWorkflow(workflow_dir)
 
-if not wf.pid_dir.exists():
-    wf.show_input_section()
-else:
-    if st.button("Stop Workflow", type="primary", use_container_width=True):
+st.title(f"{wf.name}: Execute")
+
+cols = st.columns(3)
+
+if wf.pid_dir.exists():
+    if cols[1].button("Stop Workflow", type="primary", use_container_width=True):
         wf.stop()
         st.rerun()
+else:
+    cols[1].button("Start Workflow", type="primary", use_container_width=True,
+                                on_click=wf.start_workflow_process)
 
 if wf.log_file.exists():
     if wf.pid_dir.exists():
         with st.spinner("**Workflow running...**"):
             with open(wf.log_file, "r") as f:
                 st.code(f.read(), language="neon", line_numbers=True)
-            time.sleep(5)
+            time.sleep(2)
             st.rerun()
     else:
         with st.expander("**Log file content of last run**"):
