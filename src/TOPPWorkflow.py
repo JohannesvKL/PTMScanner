@@ -3,6 +3,7 @@ from pathlib import Path
 from .workflow.WorkflowManager import WorkflowManager
 from .workflow.Files import Files
 
+
 class TOPPWorkflow(WorkflowManager):
 
     def __init__(self):
@@ -14,7 +15,10 @@ class TOPPWorkflow(WorkflowManager):
 
         mzML_files = Files(Path(st.session_state["workspace"], "mzML-files"))
 
-        self.ui.input("mzML-files", mzML_files, "mzML files", "multiselect")
+        self.ui.input("mzML-files",
+                      options=mzML_files,
+                      name="mzML files",
+                      widget_type="multiselect")
 
         tabs = st.tabs(
             ["**Feature Detection**", "**Adduct Detection**", "**SIRIUS Export**"])
@@ -30,16 +34,24 @@ class TOPPWorkflow(WorkflowManager):
         # Input files
         in_mzML = Files(self.params["mzML-files"])
         self.logger.log(f"Number of input mzML files: {len(in_mzML)}")
-        
+
         # Feature Detection
         out_ffm = Files(in_mzML, "featureXML", "feature-detection")
-        self.executor.run_topp("FeatureFinderMetabo", {"in": in_mzML, "out": out_ffm})
-        
+        self.executor.run_topp("FeatureFinderMetabo", {
+                               "in": in_mzML, "out": out_ffm}, False)
+
         # Adduct Detection
-        self.executor.run_topp("MetaboliteAdductDecharger", {"in": out_ffm, "out_fm": out_ffm})
+        # self.executor.run_topp("MetaboliteAdductDecharger", {
+        #                        "in": out_ffm, "out_fm": out_ffm}, False)
 
         # SiriusExport
         in_mzML.combine()
         out_ffm.combine()
         out_se = Files(["sirius-export.ms"], None, "sirius-export")
-        self.executor.run_topp("SiriusExport", {"in": in_mzML, "in_featureinfo": out_ffm, "out": out_se})
+        self.executor.run_topp(
+            "SiriusExport", {"in": in_mzML, "in_featureinfo": out_ffm, "out": out_se}, False)
+
+        # SIRIUS
+        out_sirius = Files("sirius-project", None, "sirius")
+        self.executor.run_command(["sirius", "--input", out_se[0], "--project", out_sirius[0], "--maxmz", "300",
+                                   "--no-compression", "formula", "passatutto", "write-summaries"], False)

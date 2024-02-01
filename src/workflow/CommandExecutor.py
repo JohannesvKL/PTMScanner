@@ -44,10 +44,10 @@ class CommandExecutor:
         stdout, stderr = process.communicate()
         # Remove pid from pid file
         pid_file_path.unlink()
+        end_time = time.time()
+        prefix = "Command finished:\n"+" ".join(command)+f"\nTotal time to run command: {end_time - start_time} seconds\n"
         # Write the output to the log file
         if write_log:
-            end_time = time.time()
-            prefix = "Command finished:\n"+" ".join(command)+f"\nTotal time to run command: {end_time - start_time} seconds\n"
             if stdout:
                self.logger.log(f"{prefix}Console log:\n\n{stdout.decode()}")
             if stderr:
@@ -58,7 +58,9 @@ class CommandExecutor:
     def run_topp(self, tool: str, input_output: dict, show_log: bool = True) -> None:
         # check input: any input lists must be same length, other items can be a single string
         # e.g. input_mzML : [list of n mzML files], output_featureXML : [list of n featureXML files], input_database : database.tsv
+        
         io_lengths = [len(v) for v in input_output.values()]
+        
         if 1 in io_lengths:
             io_lengths.remove(1)
         if  len(set(io_lengths)) > 1:
@@ -66,7 +68,7 @@ class CommandExecutor:
             return
 
         n_processes = max(io_lengths)
-        
+
         commands = []
         
         params = ParameterManager().load_parameters()

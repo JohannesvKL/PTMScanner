@@ -11,6 +11,8 @@ class Files:
     def __init__(self, files: Union[List[Union[str, Path]], Path, "Files"],
                  file_type: str = None,
                  results_dir: str = None):
+        if isinstance(files, str):
+            files = [files]
         if isinstance(files, Files):
             files = files.files
         if isinstance(files, Path):
@@ -144,4 +146,7 @@ class Files:
         return str(self.files)
 
     def __len__(self):
-        return sum(1 if isinstance(file, str) else len(file) for file in self.files)
+        return len(self.files)
+
+    def __getitem__(self, index):
+        return self.files[index]

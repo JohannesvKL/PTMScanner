@@ -78,13 +78,13 @@ class WorkflowManager():
         if self.logger.log_file.exists():
             if self.executor.pid_dir.exists():
                 with st.spinner("**Workflow running...**"):
-                    with open(self.logger.log_file, "r") as f:
+                    with open(self.logger.log_file, "r", encoding="utf-8") as f:
                         st.code(f.read(), language="neon", line_numbers=True)
                     time.sleep(2)
-                    st.rerun()
+                st.rerun()
             else:
                 with st.expander("**Log file content of last run**", expanded=True):
-                    with open(self.logger.log_file, "r") as f:
+                    with open(self.logger.log_file, "r", encoding="utf-8") as f:
                         st.code(f.read(), language="neon", line_numbers=True)
 
     def define_input_section(self) -> None:
