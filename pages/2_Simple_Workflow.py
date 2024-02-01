@@ -1,7 +1,7 @@
 import streamlit as st
 
 from src.common import page_setup, save_params, show_table
-from src import workflow
+from src import simpleworkflow
 from src.captcha_ import captcha_control
 
 # Page name "workflow" will show mzML file selector in sidebar
@@ -40,7 +40,7 @@ st.number_input(
 # Get a dataframe with x and y dimensions via time consuming (sleep) cached function
 # If the input has been given before, the function does not run again
 # Input x from local variable, input y from session state via key
-df = workflow.generate_random_table(xdimension, st.session_state["example-y-dimension"])
+df = simpleworkflow.generate_random_table(xdimension, st.session_state["example-y-dimension"])
 
 # Display dataframe via custom show_table function, which will render a download button as well
 show_table(df, download_name="random-table")
