@@ -1,6 +1,7 @@
 import streamlit as st
 import pyopenms as poms
 from pathlib import Path
+import shutil
 import subprocess
 from .ParameterManager import ParameterManager
 from .Files import Files
@@ -12,6 +13,83 @@ class StreamlitUI:
     def __init__(self):
         self.ini_dir = Path(st.session_state["workflow-dir"], "ini")
         self.params = ParameterManager().load_parameters()
+
+    def upload(self, key: str, file_type: str, name: str = "") -> None:
+        # streamlit uploader can't handle file types with upper and lower case letters
+        files_dir = Path(st.session_state["workflow-dir"], "input-files", key)
+        
+        if not name:
+            name = key
+
+        c1, c2 = st.columns(2)
+        c1.markdown("**Upload file(s)**")
+        with c1.form("{name}-upload", clear_on_submit=True):
+            if any(c.isupper() for c in file_type) and (c.islower() for c in file_type):
+                file_type_for_uploader = None
+            else:
+                file_type_for_uploader = [file_type]
+            files = st.file_uploader(
+                f"{name}",
+                accept_multiple_files=(st.session_state.location == "local"),
+                type=file_type_for_uploader,
+                label_visibility="collapsed")
+            if st.form_submit_button(f"Add **{name}**", use_container_width=True, type="primary"):
+                if files:
+                    files_dir.mkdir(parents=True, exist_ok=True)
+                    for f in files:
+                        if f.name not in [f.name for f in files_dir.iterdir()] and f.name.endswith(
+                            "mzML"
+                        ):
+                            with open(Path(files_dir, f.name), "wb") as fh:
+                                fh.write(f.getbuffer())
+                    st.success("Successfully added uploaded files!")
+                else:
+                    st.error("Nothing to add, please upload file.")
+
+        # Local file upload option: via directory path
+        if st.session_state.location == "local":
+            c2.markdown("**OR copy files from local folder**")
+            with c2.form("local-file-upload"):
+                local_dir = st.text_input(f"path to folder with **{name}** files")
+                if st.form_submit_button(f"Copy **{name}** files from local folder", use_container_width=True):
+                    # raw string for file paths
+                    if not any(Path(local_dir).glob(f"*.{file_type}")):
+                        st.warning(f"No files with type **{file_type}** found in specified folder.")
+                    else:
+                        files_dir.mkdir(parents=True, exist_ok=True) 
+                        # Copy all mzML files to workspace mzML directory, add to selected files
+                        files = list(Path(local_dir).glob("*.mzML"))
+                        my_bar = st.progress(0)
+                        for i, f in enumerate(files):
+                            my_bar.progress((i+1)/len(files))
+                            shutil.copy(f, Path(files_dir, f.name))
+                        st.success("Successfully copied files!")
+
+        if files_dir.exists() and not any(files_dir.iterdir()):
+            shutil.rmtree(files_dir)
+        
+        c1, c2 = st.columns(2)
+        if files_dir.exists():
+            c1.info(f"Current **{name}** files:\n\n" + '\n\n'.join([f.name for f in files_dir.iterdir()]))
+            if c2.button(f"🗑️ Remove all files.", use_container_width=True):
+                shutil.rmtree(files_dir)
+                st.rerun()
+        else:
+            st.warning(f"No **{name}** files!")
+
+
+    def select_input_file(self, key, name: str = "", multiple=False, display_file_path: bool = False) -> None:
+        if not name:
+            name = f"**{key}**"
+        path = Path(st.session_state["workflow-dir"], "input-files", key)
+        if not path.exists():
+            st.warning(f"No **{name}** files in workspace!")
+            return
+        options = Files([f for f in path.iterdir()])
+        if key in self.params.keys():
+            self.params[key] = [f for f in self.params[key] if f in options]
+        widget_type = "multiselect" if multiple else "selectbox"
+        self.input(key, name=name, widget_type=widget_type, options=options, display_file_path=display_file_path)
 
     def input(self,
               key: str,
@@ -82,7 +160,7 @@ class StreamlitUI:
         elif widget_type == 'selectbox':
             if options is not None:
                 st.selectbox(name, options=options, index=options.index(
-                    value) if value in options else 0, key=key)
+                    value) if value in options else 0, key=key, format_func=format_files)
             else:
                 st.warning(
                     f"Select widget '{name}' requires options parameter")
@@ -129,6 +207,9 @@ class StreamlitUI:
 
         else:
             st.error(f"Unsupported widget type '{widget_type}'")
+        
+        if key not in self.params.keys():
+            ParameterManager().save_parameters()
 
     def input_TOPP(self,
                    topp_tool_name: str,

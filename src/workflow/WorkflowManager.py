@@ -10,6 +10,8 @@ import multiprocessing
 import shutil
 import time
 import streamlit as st
+from streamlit.source_util import get_pages, _on_pages_changed
+
 
 class WorkflowManager():
     # Core workflow logic using the above classes
@@ -18,6 +20,7 @@ class WorkflowManager():
         # workflow-dir should be accessible globally via st.session_state
         st.session_state["workflow-dir"] = Path(st.session_state["workspace"], self.name.replace(" ", "-").lower())
         self.result_dir = Path(st.session_state["workflow-dir"], "results")
+        self.input_dir = Path(st.session_state["workflow-dir"], "input-files")
         self.params = ParameterManager().load_parameters()
         self.logger = Logger()
         self.executor = CommandExecutor()
@@ -41,7 +44,14 @@ class WorkflowManager():
         self.logger.log("COMPLETE")
         # Delete pid dir path to indicate workflow is done
         shutil.rmtree(self.executor.pid_dir, ignore_errors=True)
-        
+    
+    def show_file_upload_section(self) -> None:
+        _, c = st.columns(2)
+        if c.button("⬇️ Download all", use_container_width=True):
+            DirectoryManager().zip_files(self.input_dir)
+        self.define_file_upload_section()
+
+
     def show_input_section(self) -> None:
         pm = ParameterManager()
         cols = st.columns(3)
@@ -50,16 +60,17 @@ class WorkflowManager():
         form = st.form(key=f"{st.session_state['workflow-dir'].stem}-input-form", clear_on_submit=True)
 
         with form:
-            cols = st.columns(3)
+            cols = st.columns(2)
 
-            cols[1].form_submit_button(label="Save parameters",
+            cols[0].form_submit_button(label="Save parameters",
                                        on_click=pm.save_parameters,
                                        type="primary",
                                        use_container_width=True)
 
-            if cols[2].form_submit_button(label="Load default parameters",
+            if cols[1].form_submit_button(label="Load default parameters",
                                           use_container_width=True):
                 pm.reset_to_default_parameters()
+
 
             # Load parameters
             self.define_input_section()
@@ -87,6 +98,13 @@ class WorkflowManager():
                     with open(self.logger.log_file, "r", encoding="utf-8") as f:
                         st.code(f.read(), language="neon", line_numbers=True)
 
+
+    def define_file_upload_section(self) -> None:
+        ###################################
+        # Add your file upload widgets here
+        ###################################
+        pass
+   
     def define_input_section(self) -> None:
         ###################################
         # Add your input widgets here

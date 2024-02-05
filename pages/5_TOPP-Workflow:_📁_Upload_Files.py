@@ -9,7 +9,6 @@ wf = TOPPWorkflow()
 
 
 # Everything else can be left unchanged
+st.title(f"📁 Upload Files")
 
-st.title(f"{wf.name}: Parameters")
-
-wf.show_input_section()
+wf.show_file_upload_section()

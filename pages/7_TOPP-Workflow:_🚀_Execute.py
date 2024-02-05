@@ -6,7 +6,7 @@ params = page_setup()
 
 wf = TOPPWorkflow()
 
-st.title(f"{wf.name}: Execute")
+st.title(f"🚀 Execute")
 
 wf.show_execution_section()
 

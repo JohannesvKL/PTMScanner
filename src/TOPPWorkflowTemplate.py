@@ -13,6 +13,9 @@ class TOPPWorkflowTemplate(WorkflowManager):
     def __init__(self):
         super().__init__("TOPP Workflow Template")
 
+    def define_file_upload_section(self) -> None:
+        pass
+
     def define_input_section(self) -> None:
         pass
 
