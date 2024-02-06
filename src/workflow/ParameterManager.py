@@ -7,6 +7,18 @@ from .DirectoryManager import DirectoryManager
 
 
 class ParameterManager:
+    """
+    Manages the parameters for a workflow, including saving parameters to a JSON file,
+    loading parameters from the file, and resetting parameters to defaults. This class
+    specifically handles parameters related to TOPP tools in a pyOpenMS context and
+    general parameters stored in Streamlit's session state.
+
+    Attributes:
+        ini_dir (Path): Directory path where .ini files for TOPP tools are stored.
+        params_file (Path): Path to the JSON file where parameters are saved.
+        param_prefix (str): Prefix for general parameter keys in Streamlit's session state.
+        topp_param_prefix (str): Prefix for TOPP tool parameter keys in Streamlit's session state.
+    """
     # Methods related to parameter handling
     def __init__(self):
         self.ini_dir = DirectoryManager().ensure_directory_exists(
@@ -17,6 +29,16 @@ class ParameterManager:
         self.topp_param_prefix = f"{Path(st.session_state['workflow-dir']).stem}-TOPP-"
 
     def save_parameters(self, to_default: bool = False) -> None:
+        """
+        Saves the current parameters from Streamlit's session state to a JSON file.
+        It handles both general parameters and parameters specific to TOPP tools,
+        ensuring that only non-default values are stored. Optionally, it can save
+        parameters to a default location.
+
+        Args:
+            to_default (bool): If True, saves parameters to a default JSON file.
+                            Currently not implemented but can be used for future extensions.
+        """
         # Everything in session state which begins with self.param_prefix is saved to a json file
         json_params = {
             k.replace(self.param_prefix, ""): v
@@ -65,6 +87,14 @@ class ParameterManager:
             json.dump(json_params, f, indent=4)
 
     def load_parameters(self) -> None:
+        """
+        Loads parameters from the JSON file if it exists and returns them as a dictionary.
+        If the file does not exist, it returns an empty dictionary.
+
+        Returns:
+            dict: A dictionary containing the loaded parameters. Keys are parameter names,
+                and values are parameter values.
+        """
         # Check if parameter file exists
         if not Path(self.params_file).exists():
             return {}
@@ -74,6 +104,11 @@ class ParameterManager:
                 return json.load(f)
 
     def reset_to_default_parameters(self) -> None:
+        """
+        Resets the parameters to their default values by deleting the custom parameters
+        JSON file and the directory containing .ini files for TOPP tools. This method
+        also triggers a Streamlit rerun to refresh the application state.
+        """
         # Delete custom params json file
         self.params_file.unlink(missing_ok=True)
         shutil.rmtree(self.ini_dir)

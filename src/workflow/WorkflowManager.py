@@ -51,7 +51,7 @@ class WorkflowManager:
         c1.title(f"📁 Upload Files")
         c2.markdown("#")
         if c2.button("⬇️ Download all", use_container_width=True):
-            DirectoryManager().zip_files(self.input_dir)
+            DirectoryManager().zip_and_download_files(self.input_dir)
         self.define_file_upload_section()
 
     def show_input_section(self) -> None:

@@ -10,6 +10,16 @@ import json
 
 
 class StreamlitUI:
+    """
+    Provides an interface for Streamlit applications to handle file uploads, 
+    input selection, and parameter management for analysis workflows. It includes 
+    methods for uploading files, selecting input files from available ones, and 
+    generating various input widgets dynamically based on the specified parameters.
+
+    The class is designed to work with pyOpenMS for mass spectrometry data analysis, 
+    leveraging the ParameterManager for parameter persistence and the Files class 
+    for file management.
+    """
     # Methods for Streamlit UI components
     def __init__(self):
         self.ini_dir = Path(st.session_state["workflow-dir"], "ini")
@@ -22,6 +32,17 @@ class StreamlitUI:
         name: str = "",
         fallback_files: Union[List, str] = None,
     ) -> None:
+        """
+        Handles file uploads through the Streamlit interface, supporting both direct
+        uploads and local directory copying for specified file types. It allows for
+        specifying fallback files to ensure essential files are available.
+
+        Args:
+            key (str): A unique identifier for the upload component.
+            file_type (str): Expected file type for the uploaded files.
+            name (str, optional): Display name for the upload component. Defaults to the key if not provided.
+            fallback_files (Union[List, str], optional): Default files to use if no files are uploaded.
+        """
         # streamlit uploader can't handle file types with upper and lower case letters
         files_dir = Path(st.session_state["workflow-dir"], "input-files", key)
 
@@ -113,11 +134,21 @@ class StreamlitUI:
 
     def select_input_file(
         self,
-        key,
+        key: str,
         name: str = "",
         multiple: bool = False,
         display_file_path: bool = False,
     ) -> None:
+        """
+        Presents a widget for selecting input files from those that have been uploaded. 
+        Allows for single or multiple selections.
+
+        Args:
+            key (str): A unique identifier related to the specific input files.
+            name (str, optional): The display name for the selection widget. Defaults to the key if not provided.
+            multiple (bool, optional): If True, allows multiple files to be selected.
+            display_file_path (bool, optional): If True, displays the full file path in the selection widget.
+        """
         if not name:
             name = f"**{key}**"
         path = Path(st.session_state["workflow-dir"], "input-files", key)
@@ -151,20 +182,26 @@ class StreamlitUI:
         help: str = None,
     ) -> None:
         """
-        Generates a Streamlit input widget based on the specified parameters.
+        Creates and displays a Streamlit widget for user input based on specified 
+        parameters. Supports a variety of widget types including text input, number 
+        input, select boxes, and more. Default values will be read in from parameters
+        if they exist. The key is modified to be recognized by the ParameterManager class
+        as a custom parameter (distinct from TOPP tool parameters).
 
-        :param key: Unique identifier for the widget.
-        :param default: Default value of the widget.
-        :param name: Display name of the widget.
-        :param widget_type: Type of widget ('text', 'textarea', 'number', 'selectbox', 'multiselect', 'slider', 'checkbox' 'password' or 'auto').
-        :param options: List of options for select widget.
-        :param min_value: Minimum value for number or slider widget.
-        :param max_value: Maximum value for number or slider widget.
-        :param step_size: Step size for number or slider widget.
-        :param display_file_path: Display full path or just the name of 'default' and 'option' parameters if they are passed as 'Files' object.
-        :param help: Help text for the widget.
+        Args:
+            key (str): Unique identifier for the widget.
+            default (Any, optional): Default value for the widget.
+            name (str, optional): Display name of the widget.
+            widget_type (str, optional): Type of widget to create ('text', 'textarea', 
+                                         'number', 'selectbox', 'slider', 'checkbox', 
+                                         'multiselect', 'password', or 'auto').
+            options (Union[List[str], "Files"], optional): Options for select/multiselect widgets.
+            min_value (Union[int, float], optional): Minimum value for number/slider widgets.
+            max_value (Union[int, float], optional): Maximum value for number/slider widgets.
+            step_size (Union[int, float], optional): Step size for number/slider widgets.
+            display_file_path (bool, optional): Whether to display the full file path for file options.
+            help (str, optional): Help text to display alongside the widget.
         """
-
         def convert_files_to_str(input: Any) -> List[str]:
             if isinstance(input, Files):
                 return input.files
@@ -326,7 +363,16 @@ class StreamlitUI:
         exclude_parameters: [str] = [],
         exclude_input_out: bool = True,
     ) -> None:
+        """
+        Generates input widgets for TOPP tool parameters dynamically based on the tool's
+        .ini file. Supports excluding specific parameters and adjusting the layout.
 
+        Args:
+            topp_tool_name (str): The name of the TOPP tool for which to generate inputs.
+            num_cols (int, optional): Number of columns to use for the layout. Defaults to 3.
+            exclude_parameters (List[str], optional): List of parameter names to exclude from the widget.
+            exclude_input_out (bool, optional): If True, excludes input and output file parameters.
+        """
         # write defaults ini files
         ini_file_path = Path(self.ini_dir, f"{topp_tool_name}.ini")
         if not ini_file_path.exists():
