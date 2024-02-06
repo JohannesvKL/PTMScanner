@@ -8,9 +8,12 @@ from .Logger import Logger
 
 
 class Files:
-    def __init__(self, files: Union[List[Union[str, Path]], Path, "Files"],
-                 file_type: str = None,
-                 results_dir: str = None):
+    def __init__(
+        self,
+        files: Union[List[Union[str, Path]], Path, "Files"],
+        file_type: str = None,
+        results_dir: str = None,
+    ):
         if isinstance(files, str):
             files = [files]
         if isinstance(files, Files):
@@ -35,21 +38,27 @@ class Files:
         if isinstance(item, Path):
             return str(item)
         elif isinstance(item, list):
-            return [str(file) if isinstance(file, Path) else file for file in item if isinstance(file, (str, Path))]
+            return [
+                str(file) if isinstance(file, Path) else file
+                for file in item
+                if isinstance(file, (str, Path))
+            ]
         elif isinstance(item, str):
             return item
         else:
             raise ValueError(
-                "All items must be strings, lists of strings, or Path objects")
+                "All items must be strings, lists of strings, or Path objects"
+            )
 
     def set_type(self, file_type: str) -> None:
         def change_extension(file_path, new_ext):
-            return Path(file_path).with_suffix('.' + new_ext)
+            return Path(file_path).with_suffix("." + new_ext)
 
         for i in range(len(self.files)):
             if isinstance(self.files[i], list):  # If the item is a list
-                self.files[i] = [str(change_extension(file, file_type))
-                                 for file in self.files[i]]
+                self.files[i] = [
+                    str(change_extension(file, file_type)) for file in self.files[i]
+                ]
             elif isinstance(self.files[i], str):  # If the item is a string
                 self.files[i] = str(change_extension(self.files[i], file_type))
 
@@ -59,19 +68,20 @@ class Files:
         else:
             if Path(st.session_state["workflow-dir"], "results", subdir_name).exists():
                 Logger().log(
-                    f"WARNING: Subdirectory already exists, will overwrite content: {subdir_name}")
+                    f"WARNING: Subdirectory already exists, will overwrite content: {subdir_name}"
+                )
             subdir_name = self.create_results_sub_dir(subdir_name)
 
         def change_subdir(file_path, subdir):
             return Path(subdir, Path(file_path).name)
-        
+
         for i in range(len(self.files)):
             if isinstance(self.files[i], list):  # If the item is a list
-                self.files[i] = [str(change_subdir(file, subdir_name))
-                                 for file in self.files[i]]
+                self.files[i] = [
+                    str(change_subdir(file, subdir_name)) for file in self.files[i]
+                ]
             elif isinstance(self.files[i], str):  # If the item is a string
                 self.files[i] = str(change_subdir(self.files[i], subdir_name))
-
 
     def _generate_random_code(self, length):
         # Define the characters that can be used in the code
@@ -79,7 +89,7 @@ class Files:
         characters = string.ascii_letters + string.digits
 
         # Generate a random code of the specified length
-        random_code = ''.join(random.choice(characters) for _ in range(length))
+        random_code = "".join(random.choice(characters) for _ in range(length))
 
         return random_code
 
@@ -96,7 +106,9 @@ class Files:
         path.mkdir()
         return str(path)
 
-    def channel(self, input_channel: list, out_file_type: str, subdir_name: str = "") -> list:
+    def channel(
+        self, input_channel: list, out_file_type: str, subdir_name: str = ""
+    ) -> list:
         # modify file name to include the file type and different subdir within results directory
         # if subdir_name is empty string, auto generate a name
         if not subdir_name:
@@ -104,7 +116,8 @@ class Files:
         else:
             if Path(st.session_state["workflow-dir"], "results", subdir_name).exists():
                 Logger().log(
-                    f"WARNING: Subdirectory already exists, will overwrite content: {subdir_name}")
+                    f"WARNING: Subdirectory already exists, will overwrite content: {subdir_name}"
+                )
             subdir_name = self.create_results_sub_dir(subdir_name)
         # create a list of files to return
         output_channel = []
@@ -112,10 +125,15 @@ class Files:
         for entry in input_channel:
             if isinstance(entry, list):
                 output_channel.append(
-                    [str(Path(subdir_name, f"{Path(f).stem}.{out_file_type}")) for f in entry])
+                    [
+                        str(Path(subdir_name, f"{Path(f).stem}.{out_file_type}"))
+                        for f in entry
+                    ]
+                )
             elif isinstance(entry, str):
                 output_channel.append(
-                    str(Path(subdir_name, f"{Path(entry).stem}.{out_file_type}")))
+                    str(Path(subdir_name, f"{Path(entry).stem}.{out_file_type}"))
+                )
             else:
                 raise TypeError(f"Input type {type(entry)} not supported.")
 
@@ -129,7 +147,7 @@ class Files:
             else:
                 flattened_files.append(file)
         self.files = flattened_files
-        
+
     def combine(self):
         combined_files = [[]]
         for file in self.files:
@@ -137,7 +155,7 @@ class Files:
                 combined_files[0].extend(file)
             else:
                 combined_files[0].append(file)
-        self.files = combined_files     
+        self.files = combined_files
 
     def __repr__(self):
         return self.files

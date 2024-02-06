@@ -19,7 +19,7 @@ class DirectoryManager:
 
     def zip_files(self, directory):
         directory = Path(directory)  # Ensure directory is a Path object
-        
+
         if not any(directory.iterdir()):
             st.error("No files to compress.")
             return
@@ -36,9 +36,11 @@ class DirectoryManager:
 
         my_bar = st.progress(0, text=f"Compressing files...")
 
-        with zipfile.ZipFile(bytes_io, 'w') as zip_file:
+        with zipfile.ZipFile(bytes_io, "w") as zip_file:
             for i, file_path in enumerate(files):
-                zip_file.write(file_path, Path(file_path.parents[0].name, file_path.name))
+                zip_file.write(
+                    file_path, Path(file_path.parents[0].name, file_path.name)
+                )
                 my_bar.progress(i / n_files)
 
         my_bar.empty()
@@ -49,5 +51,5 @@ class DirectoryManager:
             file_name=f"input-files.zip",
             mime="application/zip",
             type="primary",
-            use_container_width=True
+            use_container_width=True,
         )

@@ -1,15 +1,10 @@
-import streamlit as st
-from pathlib import Path
 from src.TOPPWorkflow import TOPPWorkflow
 from src.common import page_setup
+
+# This page does not need to be changed
 
 params = page_setup()
 
 wf = TOPPWorkflow()
-
-
-# Everything else can be left unchanged
-
-st.title(f"⚙️ Parameters")
 
 wf.show_input_section()

@@ -10,25 +10,35 @@ class ParameterManager:
     # Methods related to parameter handling
     def __init__(self):
         self.ini_dir = DirectoryManager().ensure_directory_exists(
-            Path(st.session_state["workflow-dir"], "ini"))
+            Path(st.session_state["workflow-dir"], "ini")
+        )
         self.params_file = Path(st.session_state["workflow-dir"], "params.json")
         self.param_prefix = f"{Path(st.session_state['workflow-dir']).stem}-param-"
         self.topp_param_prefix = f"{Path(st.session_state['workflow-dir']).stem}-TOPP-"
 
     def save_parameters(self, to_default: bool = False) -> None:
         # Everything in session state which begins with self.param_prefix is saved to a json file
-        json_params = {k.replace(self.param_prefix, ""): v for k,
-                       v in st.session_state.items() if k.startswith(self.param_prefix)}
+        json_params = {
+            k.replace(self.param_prefix, ""): v
+            for k, v in st.session_state.items()
+            if k.startswith(self.param_prefix)
+        }
         # get a list of TOPP tools which are in session state
-        current_topp_tools = list(set([k.replace(self.topp_param_prefix, "").split(
-            ":1:")[0] for k in st.session_state.keys() if k.startswith(f"{self.topp_param_prefix}")]))
+        current_topp_tools = list(
+            set(
+                [
+                    k.replace(self.topp_param_prefix, "").split(":1:")[0]
+                    for k in st.session_state.keys()
+                    if k.startswith(f"{self.topp_param_prefix}")
+                ]
+            )
+        )
         # for each TOPP tool, open the ini file
         for tool in current_topp_tools:
             json_params[tool] = {}
             # load the param object
             param = poms.Param()
-            poms.ParamXMLFile().load(
-                str(Path(self.ini_dir, f"{tool}.ini")), param)
+            poms.ParamXMLFile().load(str(Path(self.ini_dir, f"{tool}.ini")), param)
             # get all session state param keys and values for this tool
             for key, value in st.session_state.items():
                 if key.startswith(f"{self.topp_param_prefix}{tool}:1:"):
@@ -57,7 +67,7 @@ class ParameterManager:
     def load_parameters(self) -> None:
         # Check if parameter file exists
         if not Path(self.params_file).exists():
-            return  {}
+            return {}
         else:
             # Load parameters from json file
             with open(self.params_file, "r", encoding="utf-8") as f:
