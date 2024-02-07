@@ -5,7 +5,7 @@ import shutil
 import subprocess
 from .ParameterManager import ParameterManager
 from .Files import Files
-from typing import Any, Union, List
+from typing import Any, Union, Dict, List
 import json
 
 
@@ -114,7 +114,10 @@ class StreamlitUI:
                 if f.name not in [Path(f).name for f in fallback_files]
             ]
         else:
-            current_files = [f.name for f in files_dir.iterdir()]
+            if files_dir.exists():
+                current_files = [f.name for f in files_dir.iterdir()]
+            else:
+                current_files = []
 
         if files_dir.exists() and not any(files_dir.iterdir()):
             shutil.rmtree(files_dir)
@@ -154,6 +157,7 @@ class StreamlitUI:
         path = Path(st.session_state["workflow-dir"], "input-files", key)
         if not path.exists():
             st.warning(f"No **{name}** files!")
+            return
         options = Files([f for f in path.iterdir()])
         if key in self.params.keys():
             self.params[key] = [f for f in self.params[key] if f in options]
@@ -172,14 +176,13 @@ class StreamlitUI:
         key: str,
         default: Any = None,
         name: str = "input widget",
-        # text, textarea, number, selectbox, slider, checkbox, multiselect
-        widget_type: str = "auto",
+        help: str = None,
+        widget_type: str = "auto", # text, textarea, number, selectbox, slider, checkbox, multiselect
         options: Union[List[str], "Files"] = None,
         min_value: Union[int, float] = None,
         max_value: Union[int, float] = None,
         step_size: Union[int, float] = 1,
         display_file_path: bool = False,
-        help: str = None,
     ) -> None:
         """
         Creates and displays a Streamlit widget for user input based on specified 
@@ -192,6 +195,7 @@ class StreamlitUI:
             key (str): Unique identifier for the widget.
             default (Any, optional): Default value for the widget.
             name (str, optional): Display name of the widget.
+            help (str, optional): Help text to display alongside the widget.
             widget_type (str, optional): Type of widget to create ('text', 'textarea', 
                                          'number', 'selectbox', 'slider', 'checkbox', 
                                          'multiselect', 'password', or 'auto').
@@ -200,7 +204,6 @@ class StreamlitUI:
             max_value (Union[int, float], optional): Maximum value for number/slider widgets.
             step_size (Union[int, float], optional): Step size for number/slider widgets.
             display_file_path (bool, optional): Whether to display the full file path for file options.
-            help (str, optional): Help text to display alongside the widget.
         """
         def convert_files_to_str(input: Any) -> List[str]:
             if isinstance(input, Files):
@@ -361,7 +364,7 @@ class StreamlitUI:
         topp_tool_name: str,
         num_cols: int = 3,
         exclude_parameters: [str] = [],
-        exclude_input_out: bool = True,
+        exclude_input_out: bool = True
     ) -> None:
         """
         Generates input widgets for TOPP tool parameters dynamically based on the tool's

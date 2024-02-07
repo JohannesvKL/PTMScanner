@@ -55,6 +55,8 @@ class Files:
             if results_dir == "auto":
                 results_dir = ""
             self.set_results_dir(results_dir)
+        if not self.files:
+            raise ValueError(f"No files found with type {file_type}")
 
     def _validate_and_convert(self, item):
         """

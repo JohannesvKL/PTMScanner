@@ -39,7 +39,7 @@ class WorkflowManager:
         try:
             self.logger.log("Starting workflow...")
             DirectoryManager().ensure_directory_exists(self.result_dir, reset=True)
-            self.define_workflow_steps()
+            self.workflow()
             self.logger.log("COMPLETE")
         except Exception as e:
             self.logger.log(f"ERROR: {e}")
@@ -52,7 +52,7 @@ class WorkflowManager:
         c2.markdown("#")
         if c2.button("⬇️ Download all", use_container_width=True):
             DirectoryManager().zip_and_download_files(self.input_dir)
-        self.define_file_upload_section()
+        self.upload()
 
     def show_input_section(self) -> None:
         c1, c2 = st.columns(2)
@@ -82,7 +82,7 @@ class WorkflowManager:
                 pm.reset_to_default_parameters()
 
             # Load parameters
-            self.define_input_section()
+            self.input()
 
     def show_execution_section(self) -> None:
         c1, c2 = st.columns(2)
@@ -113,19 +113,19 @@ class WorkflowManager:
                     with open(self.logger.log_file, "r", encoding="utf-8") as f:
                         st.code(f.read(), language="neon", line_numbers=True)
 
-    def define_file_upload_section(self) -> None:
+    def upload(self) -> None:
         ###################################
         # Add your file upload widgets here
         ###################################
         pass
 
-    def define_input_section(self) -> None:
+    def input(self) -> None:
         ###################################
         # Add your input widgets here
         ###################################
         pass
 
-    def define_workflow_steps(self) -> None:
+    def workflow(self) -> None:
         ###################################
         # Add your workflow steps here
         ###################################

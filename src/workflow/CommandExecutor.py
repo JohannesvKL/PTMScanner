@@ -77,7 +77,7 @@ class CommandExecutor:
         command = [str(c) for c in command]
         
         # Log the execution start
-        self.logger.log(f"Running command:\n"+'\n'.join(command)+"\nWaiting for command to finish...")
+        self.logger.log(f"Running command:\n"+' '.join(command)+"\nWaiting for command to finish...")
         
         start_time = time.time()
         
@@ -99,16 +99,16 @@ class CommandExecutor:
         execution_time = end_time - start_time
         
         # Format the logging prefix
-        prefix = f"Command finished:\n"+'\n'.join(command)+ "\nTotal time to run command: {execution_time:.2f} seconds\n"
+        self.logger.log(f"Total time to run command: {execution_time:.2f} seconds")
         
         # Log stdout if present
         if stdout and write_log:
-            self.logger.log(f"{prefix}Console log:\n\n{stdout.decode()}")
+            self.logger.log(f"Console log:\n\n{stdout.decode()}")
         
         # Log stderr and raise an exception if errors occurred
         if stderr or process.returncode != 0:
             error_message = stderr.decode().strip()
-            self.logger.log(f"{prefix}ERRORS OCCURRED:\n{error_message}")
+            self.logger.log(f"ERRORS OCCURRED:\n{error_message}")
             raise Exception(f"Errors occurred while running command: {' '.join(command)}\n{error_message}")
 
     def run_topp(self, tool: str, input_output: dict, show_log: bool = True) -> None:
