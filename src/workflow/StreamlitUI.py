@@ -126,11 +126,14 @@ class StreamlitUI:
         if current_files:
             c1.info(f"Current **{name}** files:\n\n" + "\n\n".join(current_files))
             if c2.button(
-                f"🗑️ Remove all files.",
+                f"🗑️ Remove all **{name}** files.",
                 use_container_width=True,
                 key=f"remove-files-{key}",
             ):
                 shutil.rmtree(files_dir)
+                del self.params[key]
+                with open(ParameterManager().params_file, "w", encoding="utf-8") as f:
+                    json.dump(self.params, f, indent=4)
                 st.rerun()
         elif not fallback:
             st.warning(f"No **{name}** files!")
