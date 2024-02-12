@@ -39,7 +39,7 @@ class WorkflowManager:
         try:
             self.logger.log("Starting workflow...")
             DirectoryManager().ensure_directory_exists(self.result_dir, reset=True)
-            self.workflow()
+            self.execution()
             self.logger.log("COMPLETE")
         except Exception as e:
             self.logger.log(f"ERROR: {e}")
@@ -47,18 +47,13 @@ class WorkflowManager:
         shutil.rmtree(self.executor.pid_dir, ignore_errors=True)
 
     def show_file_upload_section(self) -> None:
-        c1, c2 = st.columns(2)
-        c1.title(f"📁 Upload Files")
-        c2.markdown("#")
-        if c2.button("⬇️ Download all", use_container_width=True):
-            DirectoryManager().zip_and_download_files(self.input_dir)
         self.upload()
+        if st.button("⬇️ Download all uploaded files", use_container_width=True):
+            DirectoryManager().zip_and_download_files(self.input_dir)
 
-    def show_input_section(self) -> None:
-        c1, c2 = st.columns(2)
-        c1.title(f"⚙️ Parameters")
-        c2.markdown("#")
-        c2.toggle("Show advanced parameters", value=False, key="advanced")
+    def show_parameter_section(self) -> None:
+        # c1.title(f"⚙️ Parameters")
+        st.toggle("Show advanced parameters", value=False, key="advanced")
 
         pm = ParameterManager()
         form = st.form(
@@ -82,19 +77,15 @@ class WorkflowManager:
                 pm.reset_to_default_parameters()
 
             # Load parameters
-            self.input()
+            self.parameter()
 
     def show_execution_section(self) -> None:
-        c1, c2 = st.columns(2)
-        c1.title(f"🚀 Execute")
-
-        c2.markdown("#")
         if self.executor.pid_dir.exists():
-            if c2.button("Stop Workflow", type="primary", use_container_width=True):
+            if st.button("Stop Workflow", type="primary", use_container_width=True):
                 self.executor.stop()
                 st.rerun()
         else:
-            c2.button(
+            st.button(
                 "Start Workflow",
                 type="primary",
                 use_container_width=True,
@@ -109,9 +100,12 @@ class WorkflowManager:
                     time.sleep(2)
                 st.rerun()
             else:
-                with st.expander("**Log file content of last run**", expanded=True):
-                    with open(self.logger.log_file, "r", encoding="utf-8") as f:
-                        st.code(f.read(), language="neon", line_numbers=True)
+                st.markdown("**Workflow log file**")
+                with open(self.logger.log_file, "r", encoding="utf-8") as f:
+                    st.code(f.read(), language="neon", line_numbers=True)
+
+    def show_results_section(self) -> None:
+        self.results()
 
     def upload(self) -> None:
         ###################################
@@ -119,14 +113,20 @@ class WorkflowManager:
         ###################################
         pass
 
-    def input(self) -> None:
+    def parameter(self) -> None:
         ###################################
         # Add your input widgets here
         ###################################
         pass
 
-    def workflow(self) -> None:
+    def execution(self) -> None:
         ###################################
         # Add your workflow steps here
+        ###################################
+        pass
+
+    def results(self) -> None:
+        ###################################
+        # Display results here
         ###################################
         pass

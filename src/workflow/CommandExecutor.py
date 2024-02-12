@@ -111,7 +111,7 @@ class CommandExecutor:
             self.logger.log(f"ERRORS OCCURRED:\n{error_message}")
             raise Exception(f"Errors occurred while running command: {' '.join(command)}\n{error_message}")
 
-    def run_topp(self, tool: str, input_output: dict, show_log: bool = True) -> None:
+    def run_topp(self, tool: str, input_output: dict, write_log: bool = True) -> None:
         """
         Constructs and executes commands for the specified tool OpenMS TOPP tool based on the given
         input and output configurations. Ensures that all input/output file lists
@@ -125,7 +125,7 @@ class CommandExecutor:
                                  parameters and their corresponding files. The files
                                  can be specified as single paths (strings) or lists
                                  of paths for batch processing.
-            show_log (bool): If True, enables logging of command execution details.
+            write_log (bool): If True, enables logging of command execution details.
         
         Raises:
             ValueError: If the lengths of input/output file lists are inconsistent,
@@ -170,9 +170,9 @@ class CommandExecutor:
 
         # Run command(s)
         if len(commands) == 1:
-            self.run_command(commands[0], show_log)
+            self.run_command(commands[0], write_log)
         elif len(commands) > 1:
-            self.run_multiple_commands(commands, show_log)
+            self.run_multiple_commands(commands, write_log)
         else:
             raise Exception("No commands to execute.")
 

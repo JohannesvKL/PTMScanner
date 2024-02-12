@@ -30,7 +30,7 @@ class StreamlitUI:
         key: str,
         file_type: str,
         name: str = "",
-        fallback_files: Union[List, str] = None,
+        fallback: Union[List, str] = None,
     ) -> None:
         """
         Handles file uploads through the Streamlit interface, supporting both direct
@@ -41,7 +41,7 @@ class StreamlitUI:
             key (str): A unique identifier for the upload component.
             file_type (str): Expected file type for the uploaded files.
             name (str, optional): Display name for the upload component. Defaults to the key if not provided.
-            fallback_files (Union[List, str], optional): Default files to use if no files are uploaded.
+            fallback (Union[List, str], optional): Default files to use if no files are uploaded.
         """
         # streamlit uploader can't handle file types with upper and lower case letters
         files_dir = Path(st.session_state["workflow-dir"], "input-files", key)
@@ -100,18 +100,18 @@ class StreamlitUI:
                             shutil.copy(f, Path(files_dir, f.name))
                         st.success("Successfully copied files!")
 
-        if fallback_files:
+        if fallback:
             files_dir.mkdir(parents=True, exist_ok=True)
-            if isinstance(fallback_files, str):
-                fallback_files = [fallback_files]
-            for f in fallback_files:
+            if isinstance(fallback, str):
+                fallback = [fallback]
+            for f in fallback:
                 if not Path(files_dir, f).exists():
                     shutil.copy(f, Path(files_dir, Path(f).name))
                     st.info(f"Adding default file: **{f}**")
             current_files = [
                 f.name
                 for f in files_dir.iterdir()
-                if f.name not in [Path(f).name for f in fallback_files]
+                if f.name not in [Path(f).name for f in fallback]
             ]
         else:
             if files_dir.exists():
@@ -132,7 +132,7 @@ class StreamlitUI:
             ):
                 shutil.rmtree(files_dir)
                 st.rerun()
-        elif not fallback_files:
+        elif not fallback:
             st.warning(f"No **{name}** files!")
 
     def select_input_file(
