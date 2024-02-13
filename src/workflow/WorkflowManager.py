@@ -78,6 +78,8 @@ class WorkflowManager:
 
             # Load parameters
             self.parameter()
+        # Save parameters
+        pm.save_parameters()
 
     def show_execution_section(self) -> None:
         if self.executor.pid_dir.exists():

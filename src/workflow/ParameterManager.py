@@ -32,12 +32,7 @@ class ParameterManager:
         """
         Saves the current parameters from Streamlit's session state to a JSON file.
         It handles both general parameters and parameters specific to TOPP tools,
-        ensuring that only non-default values are stored. Optionally, it can save
-        parameters to a default location.
-
-        Args:
-            to_default (bool): If True, saves parameters to a default JSON file.
-                            Currently not implemented but can be used for future extensions.
+        ensuring that only non-default values are stored.
         """
         # Everything in session state which begins with self.param_prefix is saved to a json file
         json_params = {

@@ -24,15 +24,23 @@ class Workflow(WorkflowManager):
 
         # Create tabs for different analysis steps.
         t = st.tabs(
-            ["**Feature Detection**", "**Adduct Detection**", "**SIRIUS Export**"]
+            ["**Feature Detection**", "**Adduct Detection**", "**SIRIUS Export**", "**Python Custom Tool**"]
         )
         with t[0]:
+            # Parameters for FeatureFinderMetabo TOPP tool.
             self.ui.input_TOPP("FeatureFinderMetabo")
         with t[1]:
+            # A single checkbox widget for workflow logic.
             self.ui.input("run-adduct-detection", False, "Adduct Detection")
+            # Paramters for MetaboliteAdductDecharger TOPP tool.
             self.ui.input_TOPP("MetaboliteAdductDecharger")
         with t[2]:
+            # Paramters for SiriusExport TOPP tool
             self.ui.input_TOPP("SiriusExport")
+        with t[3]:
+            # Generate input widgets for a custom Python tool, located at src/python-tools.
+            # Parameters are specified within the file in the DEFAULTS dictionary.
+            self.ui.input_python("example")
 
     def execution(self) -> None:
         # Wrap mzML files into a Files object for processing.
@@ -57,6 +65,9 @@ class Workflow(WorkflowManager):
             self.executor.run_topp(
                 "MetaboliteAdductDecharger", {"in": out_ffm, "out_fm": out_ffm}, write_log=False
             )
+
+        # Example for a custom Python tool, which is located in src/python-tools.
+        self.executor.run_python("example", {"in": in_mzML})
 
         # Combine input files for SiriusExport (can process multiple files at once).
         in_mzML.combine()

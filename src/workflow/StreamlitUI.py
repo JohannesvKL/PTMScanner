@@ -5,21 +5,24 @@ import shutil
 import subprocess
 from .ParameterManager import ParameterManager
 from .Files import Files
-from typing import Any, Union, Dict, List
+from typing import Any, Union, List
 import json
+import sys
+import importlib.util
 
 
 class StreamlitUI:
     """
-    Provides an interface for Streamlit applications to handle file uploads, 
-    input selection, and parameter management for analysis workflows. It includes 
-    methods for uploading files, selecting input files from available ones, and 
+    Provides an interface for Streamlit applications to handle file uploads,
+    input selection, and parameter management for analysis workflows. It includes
+    methods for uploading files, selecting input files from available ones, and
     generating various input widgets dynamically based on the specified parameters.
 
-    The class is designed to work with pyOpenMS for mass spectrometry data analysis, 
-    leveraging the ParameterManager for parameter persistence and the Files class 
+    The class is designed to work with pyOpenMS for mass spectrometry data analysis,
+    leveraging the ParameterManager for parameter persistence and the Files class
     for file management.
     """
+
     # Methods for Streamlit UI components
     def __init__(self):
         self.ini_dir = Path(st.session_state["workflow-dir"], "ini")
@@ -146,7 +149,7 @@ class StreamlitUI:
         display_file_path: bool = False,
     ) -> None:
         """
-        Presents a widget for selecting input files from those that have been uploaded. 
+        Presents a widget for selecting input files from those that have been uploaded.
         Allows for single or multiple selections.
 
         Args:
@@ -180,7 +183,7 @@ class StreamlitUI:
         default: Any = None,
         name: str = "input widget",
         help: str = None,
-        widget_type: str = "auto", # text, textarea, number, selectbox, slider, checkbox, multiselect
+        widget_type: str = "auto",  # text, textarea, number, selectbox, slider, checkbox, multiselect
         options: Union[List[str], "Files"] = None,
         min_value: Union[int, float] = None,
         max_value: Union[int, float] = None,
@@ -188,8 +191,8 @@ class StreamlitUI:
         display_file_path: bool = False,
     ) -> None:
         """
-        Creates and displays a Streamlit widget for user input based on specified 
-        parameters. Supports a variety of widget types including text input, number 
+        Creates and displays a Streamlit widget for user input based on specified
+        parameters. Supports a variety of widget types including text input, number
         input, select boxes, and more. Default values will be read in from parameters
         if they exist. The key is modified to be recognized by the ParameterManager class
         as a custom parameter (distinct from TOPP tool parameters).
@@ -199,8 +202,8 @@ class StreamlitUI:
             default (Any, optional): Default value for the widget.
             name (str, optional): Display name of the widget.
             help (str, optional): Help text to display alongside the widget.
-            widget_type (str, optional): Type of widget to create ('text', 'textarea', 
-                                         'number', 'selectbox', 'slider', 'checkbox', 
+            widget_type (str, optional): Type of widget to create ('text', 'textarea',
+                                         'number', 'selectbox', 'slider', 'checkbox',
                                          'multiselect', 'password', or 'auto').
             options (Union[List[str], "Files"], optional): Options for select/multiselect widgets.
             min_value (Union[int, float], optional): Minimum value for number/slider widgets.
@@ -208,6 +211,7 @@ class StreamlitUI:
             step_size (Union[int, float], optional): Step size for number/slider widgets.
             display_file_path (bool, optional): Whether to display the full file path for file options.
         """
+
         def convert_files_to_str(input: Any) -> List[str]:
             if isinstance(input, Files):
                 return input.files
@@ -233,11 +237,6 @@ class StreamlitUI:
                     value = []
                 elif widget_type == "selectbox":
                     value = options[0]
-
-        if key not in self.params.keys():
-            self.params[key] = value
-            with open(ParameterManager().params_file, "w", encoding="utf-8") as f:
-                json.dump(self.params, f, indent=4)
 
         key = f"{ParameterManager().param_prefix}{key}"
 
@@ -366,18 +365,17 @@ class StreamlitUI:
         self,
         topp_tool_name: str,
         num_cols: int = 3,
-        exclude_parameters: [str] = [],
-        exclude_input_out: bool = True
+        exclude_parameters: List[str] = [],
     ) -> None:
         """
         Generates input widgets for TOPP tool parameters dynamically based on the tool's
         .ini file. Supports excluding specific parameters and adjusting the layout.
+        File input and output parameters are excluded.
 
         Args:
             topp_tool_name (str): The name of the TOPP tool for which to generate inputs.
             num_cols (int, optional): Number of columns to use for the layout. Defaults to 3.
             exclude_parameters (List[str], optional): List of parameter names to exclude from the widget.
-            exclude_input_out (bool, optional): If True, excludes input and output file parameters.
         """
         # write defaults ini files
         ini_file_path = Path(self.ini_dir, f"{topp_tool_name}.ini")
@@ -401,11 +399,8 @@ class StreamlitUI:
         for key in param.keys():
             # Determine if the parameter should be included based on the conditions
             if (
-                exclude_input_out
-                and (
-                    b"input file" in param.getTags(key)
-                    or b"output file" in param.getTags(key)
-                )
+                b"input file" in param.getTags(key)
+                or b"output file" in param.getTags(key)
             ) or (key.decode().split(":")[-1] in excluded_keys):
                 continue
             entry = param.getEntry(key)
@@ -502,3 +497,94 @@ class StreamlitUI:
                     cols = st.columns(num_cols)
             except:
                 cols[i].error(f"Error in parameter **{p['name']}**.")
+
+    def input_python(
+        self,
+        script_file: str,
+        num_cols: int = 3,
+    ) -> None:
+        """
+    Dynamically generates and displays input widgets based on the DEFAULTS 
+    dictionary defined in a specified Python script file.
+
+    For each entry in the DEFAULTS dictionary, an input widget is displayed, 
+    allowing the user to specify values for the parameters defined in the 
+    script. The widgets are arranged in a grid with a specified number of 
+    columns. Parameters can be marked as hidden or advanced within the DEFAULTS 
+    dictionary; hidden parameters are not displayed, and advanced parameters 
+    are displayed only if the user has selected to view advanced options.
+
+    Args:
+    script_file (str): The file name or path to the Python script containing 
+                       the DEFAULTS dictionary. If the path is omitted, the method searches in 
+                       src/python-tools/'.
+    num_cols (int, optional): The number of columns to use for displaying input widgets. Defaults to 3.
+    """
+
+        # Check if script file exists (can be specified without path and extension)
+        # default location: src/python-tools/script_file
+        if not script_file.endswith(".py"):
+            script_file += ".py"
+        path = Path(script_file)
+        if not path.exists():
+            path = Path("src", "python-tools", script_file)
+            if not path.exists():
+                st.error("Script file not found.")
+        # load DEFAULTS from file
+        if path.parent not in sys.path:
+            sys.path.append(str(path.parent))
+        spec = importlib.util.spec_from_file_location(path.stem, path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        defaults = getattr(module, "DEFAULTS", None)
+        if defaults is None:
+            st.error("No DEFAULTS found in script file.")
+            return
+        # display input widget for every entry in defaults
+        # input widgets in n number of columns
+        cols = st.columns(num_cols)
+        i = 0
+        for entry in defaults:
+            key = f"{path.name}:{entry['key']}" if "key" in entry else None
+            if key is None:
+                st.error("Key not specified for parameter.")
+                continue
+            value = entry["value"] if "value" in entry else None
+            if value is None:
+                st.error("Value not specified for parameter.")
+                continue
+            hide = entry["hide"] if "hide" in entry else False
+            # no need to display input and output files widget or hidden parameters
+            if hide:
+                continue
+            advanced = entry["advanced"] if "advanced" in entry else False
+            # skip avdanced parameters if not selected
+            if not st.session_state["advanced"] and advanced:
+                continue
+            name = entry["name"] if "name" in entry else key
+            help = entry["help"] if "help" in entry else ""
+            min_value = entry["min"] if "min" in entry else None
+            max_value = entry["max"] if "max" in entry else None
+            step_size = entry["step_size"] if "step_size" in entry else 1
+            widget_type = entry["widget_type"] if "widget_type" in entry else "auto"
+            options = entry["options"] if "options" in entry else None
+
+            with cols[i]:
+                if isinstance(value, bool):
+                    st.markdown("#")
+                self.input(
+                    key=key,
+                    default=value,
+                    name=name,
+                    help=help,
+                    widget_type=widget_type,
+                    options=options,
+                    min_value=min_value,
+                    max_value=max_value,
+                    step_size=step_size,
+                )
+            # increment number of columns, create new cols object if end of line is reached
+            i += 1
+            if i == num_cols:
+                i = 0
+                cols = st.columns(num_cols)

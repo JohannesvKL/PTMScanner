@@ -27,7 +27,7 @@ st.markdown(
 )
 
 with st.expander("**Example User Interface**", True):
-    t =  st.tabs(["📁 **File Upload**", "⚙️ **Parameter Settings**", "🚀 **Execution**", "📊 **Results**"])
+    t =  st.tabs(["📁 **File Upload**", "⚙️ **Configure**", "🚀 **Run**", "📊 **Results**"])
     with t[0]:
         wf.show_file_upload_section()
 
@@ -187,37 +187,64 @@ The paramter section is already pre-defined as a form with buttons to **save par
 
 Generating parameter input widgets is done with the `self.ui.input` method for any parameter and the `self.ui.input_TOPP` method for TOPP tools.
 
-**Choose `self.ui.input` for any paramter not-related to a TOPP tool or `self.ui.select_input_file` for any input file:**
+**1. Choose `self.ui.input` for any paramter not-related to a TOPP tool or `self.ui.select_input_file` for any input file:**
 
 It takes the obligatory **key** parameter. The key is used to access the parameter value in the workflow parameters dictionary `self.params`. Default values do not need to be specified in a separate file. Instead they are determined from the widgets default value automatically. Widget types can be specified or automatically determined from **default** and **options** parameters. It's suggested to add a **help** text and other parameters for numerical input.
 
 Make sure to match the **key** of the upload widget when calling `self.ui.input_TOPP`.
 
-**Choose `self.ui.input_TOPP` to automatically generate complete input sections for a TOPP tool:**
+**2. Choose `self.ui.input_TOPP` to automatically generate complete input sections for a TOPP tool:**
 
 It takes the obligatory **topp_tool_name** parameter and generates input widgets for each parameter present in the **ini** file (automatically created) except for input and output file parameters. For all input file parameters a widget needs to be created with `self.ui.input` with an appropriate **key**. For TOPP tool parameters only non-default values are stored.
+
+**3. Choose `self.ui.input_python` to automatically generate complete input sections for a custom Python tool:**
+
+Takes the obligatory **script_file** argument. The default location for the Python script files is in `src/python-tools` (in this case the `.py` file extension is optional in the **script_file** argument), however, any other path can be specified as well. Parameters need to be specified in the Python script in the **DEFAULTS** variable with the mandatory **key** and **value** parameters.
+
+Here are the options to use as dictionary keys for parameter definitions (see `src/python-tools/example.py` for an example):
+
+Mandatory keys for each parameter
+- **key:** a unique identifier
+- **value:** the default value
+
+Optional keys for each parameter
+- **name:** the name of the parameter
+- **hide:** don't show the parameter in the parameter section (e.g. for **input/output files**)
+- **options:** a list of valid options for the parameter
+- **min:** the minimum value for the parameter (int and float)
+- **max:** the maximum value for the parameter (int and float)
+- **step_size:** the step size for the parameter (int and float)
+- **help:** a description of the parameter
+- **widget_type:** the type of widget to use for the parameter (default: auto)
+- **advanced:** whether or not the parameter is advanced (default: False)
+
 """)
 
 st.code(
 """
-# Overwrite the paramter method in your workflow class.
 def parameter(self) -> None:
-    # Pick any of the uploaded mzML files by the key "mzML-files".
+    # Allow users to select mzML files for the analysis.
     self.ui.select_input_file("mzML-files", multiple=True)
 
-    # Use tabs for different analysis steps (optional).
+    # Create tabs for different analysis steps.
     t = st.tabs(
-        ["**Feature Detection**", "**Adduct Detection**", "**SIRIUS Export**"]
+        ["**Feature Detection**", "**Adduct Detection**", "**SIRIUS Export**", "**Python Custom Tool**"]
     )
     with t[0]:
-        # Define the number of rows for TOPP tool parameters (optional, defaults to 3).
-        self.ui.input_TOPP("FeatureFinderMetabo", num_cols=4)
+        # Parameters for FeatureFinderMetabo TOPP tool.
+        self.ui.input_TOPP("FeatureFinderMetabo")
     with t[1]:
-        # Standard input widget for any logic outside of TOPP tools.
+        # A single checkbox widget for workflow logic.
         self.ui.input("run-adduct-detection", False, "Adduct Detection")
+        # Paramters for MetaboliteAdductDecharger TOPP tool.
         self.ui.input_TOPP("MetaboliteAdductDecharger")
     with t[2]:
+        # Paramters for SiriusExport TOPP tool
         self.ui.input_TOPP("SiriusExport")
+    with t[3]:
+        # Generate input widgets for a custom Python tool, located at src/python-tools.
+        # Parameters are specified within the file in the DEFAULTS dictionary.
+        self.ui.input_python("example")
 """
 )
 st.info("💡 Access parameter widget values by their **key** in the `self.params` object, e.g. `self.params['mzML-files']` will give all selected mzML files.")
@@ -226,6 +253,7 @@ with st.expander("**Code documentation**", expanded=True):
     st.help(StreamlitUI.input)
     st.help(StreamlitUI.select_input_file)
     st.help(StreamlitUI.input_TOPP)
+    st.help(StreamlitUI.input_python)
 st.markdown(
     """
 ## Building the Workflow
@@ -327,11 +355,24 @@ out = Files(["sirius.ms"], "ms")
 # SiriusExport -in sample1.mzML sample2.mzML -out sirius.ms
         """)
 
+st.markdown("""
+**4. Run custom Python scripts**
+
+Sometimes it is useful to run custom Python scripts, for example for extra functionality which is not included in a TOPP tool.
+
+`self.executor.run_python` works similar to `self.executor.run_topp`, but takes a single Python script as input instead of a TOPP tool name. The default location for the Python script files is in `src/python-tools` (in this case the `.py` file extension is optional in the **script_file** argument), however, any other path can be specified as well. Input and output file parameters need to be specified in the **input_output** dictionary.
+""")
+
+st.code("""
+# e.g. example Python tool which modifies mzML files in place based on experimental design
+self.ui.input_python(script_file="example", input_output={"in": in_mzML, "in_experimantal_design": Files(["path/to/experimantal-design.tsv"])})       
+        """)
+
 st.markdown("**Example for a complete workflow section:**")
 
 st.code(
     """
-def workflow(self) -> None:
+def execution(self) -> None:
     # Wrap mzML files into a Files object for processing.
     in_mzML = Files(self.params["mzML-files"], "mzML")
     
@@ -354,6 +395,9 @@ def workflow(self) -> None:
         self.executor.run_topp(
             "MetaboliteAdductDecharger", {"in": out_ffm, "out_fm": out_ffm}, write_log=False
         )
+
+    # Example for a custom Python tool, which is located in src/python-tools.
+    self.executor.run_python("example", {"in": in_mzML})
 
     # Combine input files for SiriusExport (can process multiple files at once).
     in_mzML.combine()
@@ -430,5 +474,6 @@ with st.expander("**Code documentation**", expanded=True):
     st.help(CommandExecutor.run_command)
     st.help(CommandExecutor.run_multiple_commands)
     st.help(CommandExecutor.run_topp)
+    st.help(CommandExecutor.run_python)
     
     

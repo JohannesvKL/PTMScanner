@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
     st.title(wf.name)
 
-    t = st.tabs(["📁 **File Upload**", "⚙️ **Parameters**", "🚀 **Execution**", "📊 **Results**"])
+    t = st.tabs(["📁 **File Upload**", "⚙️ **Configure**", "🚀 **Run**", "📊 **Results**"])
     with t[0]:
         wf.show_file_upload_section()
 
