@@ -263,49 +263,34 @@ Building the workflow involves **calling all (TOPP) tools** using **`self.execut
 ### Files
 
 The `Files` class serves as an interface for unified input and output files with useful functionality specific to building workflows, such as **setting a (new) file type** and **subdirectory in the workflows result directory**.
+
+The `Files` object contains all file paths in the collection as strings. It can be initialized with a list of file paths or with a single file path. The file path can be either of type `str` or `pathlib.Path`.
+
+All file paths in a `Files` object can be collected in a list to be passed to a (TOPP) tool which can handle multiple input files (see **Running commands/Run TOPP tools** section for examples).
 """)
 
 st.code(
     """
 # Creating a File object for input mzML files.
-mzML_files = Files(self.params["mzML-files], file_type="mzML")
+mzML_files = Files(self.params["mzML-files])
 # mzML_files = ['../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML', '../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML']
 
 # Creating output files for a TOPP tool, setting a new file type and result subdirectory name.
-feature_detection_out = Files(mzML_files, file_type="featureXML", results_dir="feature-detection")
+feature_detection_out = Files(mzML_files, set_file_type="featureXML", set_results_dir="feature-detection")
 # feature_detection_out = ['../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML', '../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML']
 
 # Setting a name for the output directory automatically (useful if you never plan to access these files in the results section).
-feature_detection_out = Files(mzML_files, file_type="featureXML", results_dir="auto")
+feature_detection_out = Files(mzML_files, set_file_type="featureXML", set_results_dir="auto")
 # feature_detection_out = ['../workspaces-streamlit-template/default/topp-workflow/results/6DUd/Control.featureXML', '../workspaces-streamlit-template/default/topp-workflow/results/6DUd/Treatment.featureXML']
-    """
-)
 
-st.markdown("""
-The `Files` object files are always a list, either containing `str` or a `list` of `str`. This can be useful since some TOPP tools can take multiple input files (`list` of `str`), or they accept only single files (`str`) as input.
-
-`Files` objects can be converted from one state into the other using the `combine` and `flatten` methods to adopt to different kinds of TOPP tools.
-""")
-
-st.info("💡 This functionality can be very useful to optimize the workflow. Files with multiple entries will trigger parallel execution of TOPP tools. Files which should be the same in all processes (such as database files) can contain only one file and will be reused. Check the code example in the next section for details.")
-st.code(
-    """
-# mzML_files = ['../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML', '../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML']
-
-# Combining all mzML files to be passed to a TOPP tool in a single run.
-mzML_files.combine()
-# mzML_files = [['../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML', '../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML']]
-
-# And revert back to a list of multiple entries.
-mzML_files.flatten()
-# mzML_files = ['../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML', '../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML']
+# Combining all mzML files to be passed to a TOPP tool in a single run. Does not change the Files object.
+# mzML_files.collect() = [['../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML', '../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML']]
     """
 )
 
 with st.expander("**Code documentation**", expanded=True):
     st.help(Files.__init__)
-    st.help(Files.combine)
-    st.help(Files.flatten)
+    st.help(Files.collect)
 st.markdown(
     """
 ### Running commands
@@ -331,28 +316,23 @@ The `self.executor.run_multiple_commands` method takes a list of commands as inp
 
 The `self.executor.run_topp` method takes a TOPP tool name as input and a dictionary of input and output files as input. The **keys** need to match the actual input and output parameter names of the TOPP tool. The **values** should be of type `Files`. All other **non-default parameters (from input widgets)** will be passed to the TOPP tool automatically.
 
-Depending on the number of input files, the TOPP tool will be run either in parallel or in a single run.
+Depending on the number of input files, the TOPP tool will be run either in parallel or in a single run (using **`Files.collect`**).
 """)
 
 st.code("""
 # e.g. FeatureFinderMetabo takes single input files
-in_files = Files(["sample1.mzML", "sample2.mzML"], "mzML")
-out_files = Files(in_files, "featureXML", "feature-detection")
+in_files = Files(["sample1.mzML", "sample2.mzML"])
+out_files = Files(in_files, set_file_type="featureXML", set_results_dir="feature-detection")
 
-# Run FeatureFinderMetabo tool with input and output files.
+# Run FeatureFinderMetabo tool with input and output files in parallel for each pair of input/output files.
 self.executor.run_topp("FeatureFinderMetabo", input_output={"in": in_files, "out": out_files})
-
-# will run FeatureFinderMetabo in parallel for each mzML file
 # FeaturFinderMetabo -in sample1.mzML -out workspace-dir/results/feature-detection/sample1.featureXML
 # FeaturFinderMetabo -in sample2.mzML -out workspace-dir/results/feature-detection/sample2.featureXML
 
-# e.g. SiriusExport takes multiple input files
-in_files.combine()
-# in_files = [[sample1.mzML, sample2.mzML]]
-out = Files(["sirius.ms"], "ms")
-
-# Run SiriusExport tool with input and output files.
-# SiriusExport -in sample1.mzML sample2.mzML -out sirius.ms
+# Run SiriusExport tool with mutliple input and output files.
+out = Files("sirius.ms")
+self.executor.run_topp("SiriusExport", {"in": in_files.collect(), "in_featureinfo": out_files.collect(), "out": out_se})
+# SiriusExport -in sample1.mzML sample2.mzML -in_featureinfo sample1.featureXML sample2.featureXML -out sirius.ms
         """)
 
 st.markdown("""
@@ -371,7 +351,7 @@ self.ui.input_python(script_file="example", input_output={"in": in_mzML, "in_exp
 st.markdown("**Example for a complete workflow section:**")
 
 st.code(
-    """
+"""
 def execution(self) -> None:
     # Wrap mzML files into a Files object for processing.
     in_mzML = Files(self.params["mzML-files"], "mzML")
@@ -379,8 +359,10 @@ def execution(self) -> None:
     # Log any messages.
     self.logger.log(f"Number of input mzML files: {len(in_mzML)}")
 
+    self.logger.log(in_mzML)
     # Prepare output files for feature detection.
     out_ffm = Files(in_mzML, "featureXML", "feature-detection")
+    self.logger.log(in_mzML)
 
     # Run FeatureFinderMetabo tool with input and output files.
     self.executor.run_topp(
@@ -399,15 +381,11 @@ def execution(self) -> None:
     # Example for a custom Python tool, which is located in src/python-tools.
     self.executor.run_python("example", {"in": in_mzML})
 
-    # Combine input files for SiriusExport (can process multiple files at once).
-    in_mzML.combine()
-    out_ffm.combine()
-
     # Prepare output file for SiriusExport.
     out_se = Files(["sirius-export.ms"], "ms", "sirius-export")
 
-    # Run SiriusExport tool with the combined files.
-    self.executor.run_topp("SiriusExport", {"in": in_mzML, "in_featureinfo": out_ffm, "out": out_se})
+    # Run SiriusExport tool with the collected files.
+    self.executor.run_topp("SiriusExport", {"in": in_mzML.collect(), "in_featureinfo": out_ffm.collect(), "out": out_se})
     """
 )
 

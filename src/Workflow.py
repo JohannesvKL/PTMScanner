@@ -49,8 +49,10 @@ class Workflow(WorkflowManager):
         # Log any messages.
         self.logger.log(f"Number of input mzML files: {len(in_mzML)}")
 
+        self.logger.log(in_mzML)
         # Prepare output files for feature detection.
         out_ffm = Files(in_mzML, "featureXML", "feature-detection")
+        self.logger.log(in_mzML)
 
         # Run FeatureFinderMetabo tool with input and output files.
         self.executor.run_topp(
@@ -69,15 +71,11 @@ class Workflow(WorkflowManager):
         # Example for a custom Python tool, which is located in src/python-tools.
         self.executor.run_python("example", {"in": in_mzML})
 
-        # Combine input files for SiriusExport (can process multiple files at once).
-        in_mzML.combine()
-        out_ffm.combine()
-
         # Prepare output file for SiriusExport.
         out_se = Files(["sirius-export.ms"], "ms", "sirius-export")
 
-        # Run SiriusExport tool with the combined files.
-        self.executor.run_topp("SiriusExport", {"in": in_mzML, "in_featureinfo": out_ffm, "out": out_se})
+        # Run SiriusExport tool with the collected files.
+        self.executor.run_topp("SiriusExport", {"in": in_mzML.collect(), "in_featureinfo": out_ffm.collect(), "out": out_se})
 
     def results(self) -> None:
         st.warning("Not implemented yet.")

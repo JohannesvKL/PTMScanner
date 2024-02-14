@@ -16,14 +16,15 @@ class Files:
 
     Attributes:
         files (List[str]): A list of file paths, initialized from various input formats.
-        file_type (str, optional): The default file type/extension for the files.
-        results_dir (str, optional): The directory to store processed results.
+        
+    Methods:
+        collect: Collects all files in a single list (e.g. to pass to tools which can handle multiple input files at once).
     """
     def __init__(
         self,
         files: Union[List[Union[str, Path]], Path, "Files"],
-        file_type: str = None,
-        results_dir: str = None,
+        set_file_type: str = None,
+        set_results_dir: str = None,
     ):
         """
         Initializes the Files object with a collection of file paths, optional file type,
@@ -31,71 +32,38 @@ class Files:
         Files object) into a unified list of file paths.
 
         Args:
-            files (Union[List[Union[str, Path]], Path, "Files"]): The initial collection
+            files (Union[List[Union[Union[str, Path]], Path, "Files"]): The initial collection
                 of file paths or a Files object.
-            file_type (str, optional): Default file type/extension to set for the files.
-            results_dir (str, optional): Directory name for storing results. If 'auto',
-                a directory name is automatically generated.
+            set_file_type (str, optional): Set the file type/extension for the files.
+            _set_dir (str, optional): Set the directory to store processed results (creates a sub-directory of workflow results directory). If set to "auto", a name will be auto-generated.
         """
         if isinstance(files, str):
-            files = [files]
-        if isinstance(files, Files):
-            files = files.files
-        if isinstance(files, Path):
+            self.files = [files]
+        elif isinstance(files, Files):
+            self.files = files.files.copy()
+        elif isinstance(files, Path):
             if files.is_dir():
                 self.files = [str(f) for f in files.iterdir()]
             else:
                 self.files = [str(files)]
-        else:
-            # Validate and convert each item in the files list
-            self.files = [self._validate_and_convert(item) for item in files]
-        if file_type is not None:
-            self.set_type(file_type)
-        if results_dir is not None:
-            if results_dir == "auto":
-                results_dir = ""
-            self.set_results_dir(results_dir)
+        elif isinstance(files, list):
+            self.files = [str(f) for f in files if isinstance(f, Path) or isinstance(f, str)]
+        if set_file_type is not None:
+            self._set_type(set_file_type)
+        if set_results_dir is not None:
+            if set_results_dir == "auto":
+                set_results_dir = ""
+            self._set_dir(set_results_dir)
         if not self.files:
-            raise ValueError(f"No files found with type {file_type}")
+            raise ValueError(f"No files found with type {set_file_type}")
 
-    def _validate_and_convert(self, item):
-        """
-        Validates and converts input items to a consistent format (string representation
-        of paths). Handles conversion of Path objects to strings and ensures items are
-        either strings or lists of strings.
-
-        Args:
-            item: The item to validate and convert.
-
-        Returns:
-            The converted item as a string or list of strings.
-
-        Raises:
-            ValueError: If the item is neither a string, a Path object, nor a list of these.
-        """
-        # Convert Path objects to strings, and ensure all items are strings or lists of strings
-        if isinstance(item, Path):
-            return str(item)
-        elif isinstance(item, list):
-            return [
-                str(file) if isinstance(file, Path) else file
-                for file in item
-                if isinstance(file, (str, Path))
-            ]
-        elif isinstance(item, str):
-            return item
-        else:
-            raise ValueError(
-                "All items must be strings, lists of strings, or Path objects"
-            )
-
-    def set_type(self, file_type: str) -> None:
+    def _set_type(self, set_file_type: str) -> None:
         """
         Sets or changes the file extension for all files in the collection to the
         specified file type.
 
         Args:
-            file_type (str): The file extension to set for all files.
+            set_file_type (str): The file extension to set for all files.
         """
         def change_extension(file_path, new_ext):
             return Path(file_path).with_suffix("." + new_ext)
@@ -103,12 +71,12 @@ class Files:
         for i in range(len(self.files)):
             if isinstance(self.files[i], list):  # If the item is a list
                 self.files[i] = [
-                    str(change_extension(file, file_type)) for file in self.files[i]
+                    str(change_extension(file, set_file_type)) for file in self.files[i]
                 ]
             elif isinstance(self.files[i], str):  # If the item is a string
-                self.files[i] = str(change_extension(self.files[i], file_type))
+                self.files[i] = str(change_extension(self.files[i], set_file_type))
 
-    def set_results_dir(self, subdir_name: str) -> None:
+    def _set_dir(self, subdir_name: str) -> None:
         """
         Sets the subdirectory within the results directory to store files. If the
         subdirectory name is 'auto' or empty, generates a random subdirectory name.
@@ -118,13 +86,13 @@ class Files:
             subdir_name (str): The name of the subdirectory within the results directory.
         """
         if not subdir_name:
-            subdir_name = self.create_results_sub_dir(subdir_name)
+            subdir_name = self._create_results_sub_dir(subdir_name)
         else:
             if Path(st.session_state["workflow-dir"], "results", subdir_name).exists():
                 Logger().log(
                     f"WARNING: Subdirectory already exists, will overwrite content: {subdir_name}"
                 )
-            subdir_name = self.create_results_sub_dir(subdir_name)
+            subdir_name = self._create_results_sub_dir(subdir_name)
 
         def change_subdir(file_path, subdir):
             return Path(subdir, Path(file_path).name)
@@ -155,7 +123,7 @@ class Files:
 
         return random_code
 
-    def create_results_sub_dir(self, name: str = "") -> str:
+    def _create_results_sub_dir(self, name: str = "") -> str:
         """
         Creates a subdirectory within the results directory for storing files. If the
         name is not specified or empty, generates a random name for the subdirectory.
@@ -178,29 +146,16 @@ class Files:
         path.mkdir()
         return str(path)
 
-    def flatten(self):
+    def collect(self):
         """
-        Flattens the files list, removing any nested lists.
+        Combines all files in the files list into a single list (e.g. to pass to tools which can handle multiple input files at once).
+        
+        Does not change the file collection.
+        
+        Returns:
+            List[List[str]]: The combined files list.
         """
-        flattened_files = []
-        for file in self.files:
-            if isinstance(file, list):
-                flattened_files.extend(file)
-            else:
-                flattened_files.append(file)
-        self.files = flattened_files
-
-    def combine(self):
-        """
-        Combines all files in the files list into a single list.
-        """
-        combined_files = [[]]
-        for file in self.files:
-            if isinstance(file, list):
-                combined_files[0].extend(file)
-            else:
-                combined_files[0].append(file)
-        self.files = combined_files
+        return [self.files]
 
     def __repr__(self):
         return self.files
