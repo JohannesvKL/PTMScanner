@@ -29,7 +29,7 @@ class StreamlitUI:
     def __init__(self, workflow_manager):
         self.workflow_manager = workflow_manager
         self.workflow_dir = workflow_manager.workflow_dir
-        self.params = self.workflow_manager.parameter_manager.load_parameters()
+        self.params = self.workflow_manager.parameter_manager.get_parameters_from_json()
 
     def upload(
         self,
@@ -104,6 +104,7 @@ class StreamlitUI:
                         for i, f in enumerate(files):
                             my_bar.progress((i + 1) / len(files))
                             shutil.copy(f, Path(files_dir, f.name))
+                        my_bar.empty()
                         st.success("Successfully copied files!")
 
         if fallback:
@@ -172,7 +173,7 @@ class StreamlitUI:
             self.params[key] = [f for f in self.params[key] if f in options]
 
         widget_type = "multiselect" if multiple else "selectbox"
-        self.input(
+        self.input_widget(
             key,
             name=name,
             widget_type=widget_type,
@@ -180,7 +181,7 @@ class StreamlitUI:
             display_file_path=display_file_path,
         )
 
-    def input(
+    def input_widget(
         self,
         key: str,
         default: Any = None,
@@ -328,7 +329,7 @@ class StreamlitUI:
             if isinstance(value, bool):
                 st.checkbox(name, value=value, key=key, help=help)
             elif isinstance(value, (int, float)):
-                self.input(
+                self.input_widget(
                     key,
                     value,
                     widget_type="number",
@@ -339,7 +340,7 @@ class StreamlitUI:
                     help=help,
                 )
             elif (isinstance(value, str) or value == None) and options is not None:
-                self.input(
+                self.input_widget(
                     key,
                     value,
                     widget_type="selectbox",
@@ -348,7 +349,7 @@ class StreamlitUI:
                     help=help,
                 )
             elif isinstance(value, list) and options is not None:
-                self.input(
+                self.input_widget(
                     key,
                     value,
                     widget_type="multiselect",
@@ -357,9 +358,9 @@ class StreamlitUI:
                     help=help,
                 )
             elif isinstance(value, bool):
-                self.input(key, value, widget_type="checkbox", name=name, help=help)
+                self.input_widget(key, value, widget_type="checkbox", name=name, help=help)
             else:
-                self.input(key, value, widget_type="text", name=name, help=help)
+                self.input_widget(key, value, widget_type="text", name=name, help=help)
 
         else:
             st.error(f"Unsupported widget type '{widget_type}'")
@@ -575,7 +576,7 @@ class StreamlitUI:
             with cols[i]:
                 if isinstance(value, bool):
                     st.markdown("#")
-                self.input(
+                self.input_widget(
                     key=key,
                     default=value,
                     name=name,

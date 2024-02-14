@@ -4,6 +4,7 @@ from src.workflow.StreamlitUI import StreamlitUI
 from src.workflow.Files import Files
 from src.workflow.CommandExecutor import CommandExecutor
 from src.common import page_setup
+from inspect import getsource
 
 page_setup()
 
@@ -70,76 +71,7 @@ Handling input and output files in the `Workflow.execution` method for processes
 
 with st.expander("**Complete example for custom Workflow class**", expanded=False):
     st.code(
-"""
-import streamlit as st
-from .workflow.WorkflowManager import WorkflowManager
-from .workflow.Files import Files
-
-
-class TOPPWorkflow(WorkflowManager):
-    # Setup pages for upload, parameter settings and define workflow steps.
-    # For layout use any streamlit components such as tabs (as shown in example), columns, or even expanders.
-    def __init__(self):
-        # Initialize the parent class with the workflow name.
-        super().__init__("TOPP Workflow")
-
-    def upload(self):
-        t = st.tabs(["MS data", "Example with fallback data"])
-        with t[0]:
-            # Use the upload method from StreamlitUI to handle mzML file uploads.
-            self.ui.upload(key="mzML-files", name="MS data", file_type="mzML")
-        with t[1]:
-            # Example with fallback data (not used in workflow)
-            self.ui.upload(key="image", file_type="png", fallback="assets/OpenMS.png")
-
-    def input(self) -> None:
-        # Allow users to select mzML files for the analysis.
-        self.ui.select_input_file("mzML-files", multiple=True)
-
-        # Create tabs for different analysis steps.
-        t = st.tabs(
-            ["**Feature Detection**", "**Adduct Detection**", "**SIRIUS Export**"]
-        )
-        with t[0]:
-            self.ui.input_TOPP("FeatureFinderMetabo")
-        with t[1]:
-            self.ui.input("run-adduct-detection", True, "Adduct Detection")
-            self.ui.input_TOPP("MetaboliteAdductDecharger")
-        with t[2]:
-            self.ui.input_TOPP("SiriusExport")
-
-    def workflow(self) -> None:
-        # Wrap mzML files into a Files object for processing.
-        in_mzML = Files(self.params["mzML-files"], "mzML")
-        self.logger.log(f"Number of input mzML files: {len(in_mzML)}")
-
-        # Prepare output files for feature detection.
-        out_ffm = Files(in_mzML, "featureXML", "feature-detection")
-        # Run FeatureFinderMetabo tool with input and output files.
-        self.executor.run_topp(
-            "FeatureFinderMetabo", {"in": in_mzML, "out": out_ffm}, False
-        )
-
-        # Check if adduct detection should be run.
-        if self.params["run-adduct-detection"]:
-            # Run MetaboliteAdductDecharger for adduct detection.
-            self.executor.run_topp(
-                "MetaboliteAdductDecharger", {"in": out_ffm, "out_fm": out_ffm}, False
-            )
-
-        # Combine input files for SiriusExport.
-        in_mzML.combine()
-        out_ffm.combine()
-        # Prepare output files for SiriusExport.
-        out_se = Files(["sirius-export.ms"], "ms", "sirius-export")
-        # Run SiriusExport tool with the combined files.
-        self.executor.run_topp(
-            "SiriusExport",
-            {"in": in_mzML, "in_featureinfo": out_ffm, "out": out_se},
-            False,
-        )
-
-"""
+getsource(Workflow)
     )
 
 
@@ -161,18 +93,7 @@ Fallback files(s) can be specified, which will be used if the user doesn't uploa
 """)
 
 st.code(
-"""
-# Overwrite the upload method in your workflow class.
-class YourWorkflow(WorkflowManager):
-    def upload(self) -> None:
-        t = st.tabs(["MS data", "Example with fallback data"])
-        with t[0]:
-            # Use the upload method from StreamlitUI to handle mzML file uploads.
-            self.ui.upload(key="mzML-files", name="MS data", file_type="mzML")
-        with t[1]:
-            # Example with fallback data (not used in workflow).
-            self.ui.upload(key="image", file_type="png", fallback="assets/OpenMS.png")
-"""
+getsource(Workflow.upload)
 )
 st.info("💡 Use the same **key** for parameter widgets, to select which of the uploaded files to use for analysis.")
 
@@ -187,7 +108,7 @@ The paramter section is already pre-defined as a form with buttons to **save par
 
 Generating parameter input widgets is done with the `self.ui.input` method for any parameter and the `self.ui.input_TOPP` method for TOPP tools.
 
-**1. Choose `self.ui.input` for any paramter not-related to a TOPP tool or `self.ui.select_input_file` for any input file:**
+**1. Choose `self.ui.input_widget` for any paramter not-related to a TOPP tool or `self.ui.select_input_file` for any input file:**
 
 It takes the obligatory **key** parameter. The key is used to access the parameter value in the workflow parameters dictionary `self.params`. Default values do not need to be specified in a separate file. Instead they are determined from the widgets default value automatically. Widget types can be specified or automatically determined from **default** and **options** parameters. It's suggested to add a **help** text and other parameters for numerical input.
 
@@ -195,7 +116,7 @@ Make sure to match the **key** of the upload widget when calling `self.ui.input_
 
 **2. Choose `self.ui.input_TOPP` to automatically generate complete input sections for a TOPP tool:**
 
-It takes the obligatory **topp_tool_name** parameter and generates input widgets for each parameter present in the **ini** file (automatically created) except for input and output file parameters. For all input file parameters a widget needs to be created with `self.ui.input` with an appropriate **key**. For TOPP tool parameters only non-default values are stored.
+It takes the obligatory **topp_tool_name** parameter and generates input widgets for each parameter present in the **ini** file (automatically created) except for input and output file parameters. For all input file parameters a widget needs to be created with `self.ui.select_input_file` with an appropriate **key**. For TOPP tool parameters only non-default values are stored.
 
 **3. Choose `self.ui.input_python` to automatically generate complete input sections for a custom Python tool:**
 
@@ -221,36 +142,12 @@ Optional keys for each parameter
 """)
 
 st.code(
-"""
-def parameter(self) -> None:
-    # Allow users to select mzML files for the analysis.
-    self.ui.select_input_file("mzML-files", multiple=True)
-
-    # Create tabs for different analysis steps.
-    t = st.tabs(
-        ["**Feature Detection**", "**Adduct Detection**", "**SIRIUS Export**", "**Python Custom Tool**"]
-    )
-    with t[0]:
-        # Parameters for FeatureFinderMetabo TOPP tool.
-        self.ui.input_TOPP("FeatureFinderMetabo")
-    with t[1]:
-        # A single checkbox widget for workflow logic.
-        self.ui.input("run-adduct-detection", False, "Adduct Detection")
-        # Paramters for MetaboliteAdductDecharger TOPP tool.
-        self.ui.input_TOPP("MetaboliteAdductDecharger")
-    with t[2]:
-        # Paramters for SiriusExport TOPP tool
-        self.ui.input_TOPP("SiriusExport")
-    with t[3]:
-        # Generate input widgets for a custom Python tool, located at src/python-tools.
-        # Parameters are specified within the file in the DEFAULTS dictionary.
-        self.ui.input_python("example")
-"""
+getsource(Workflow.configure)
 )
 st.info("💡 Access parameter widget values by their **key** in the `self.params` object, e.g. `self.params['mzML-files']` will give all selected mzML files.")
 
 with st.expander("**Code documentation**", expanded=True):
-    st.help(StreamlitUI.input)
+    st.help(StreamlitUI.input_widget)
     st.help(StreamlitUI.select_input_file)
     st.help(StreamlitUI.input_TOPP)
     st.help(StreamlitUI.input_python)
@@ -351,42 +248,7 @@ self.ui.input_python(script_file="example", input_output={"in": in_mzML, "in_exp
 st.markdown("**Example for a complete workflow section:**")
 
 st.code(
-"""
-def execution(self) -> None:
-    # Wrap mzML files into a Files object for processing.
-    in_mzML = Files(self.params["mzML-files"], "mzML")
-    
-    # Log any messages.
-    self.logger.log(f"Number of input mzML files: {len(in_mzML)}")
-
-    self.logger.log(in_mzML)
-    # Prepare output files for feature detection.
-    out_ffm = Files(in_mzML, "featureXML", "feature-detection")
-    self.logger.log(in_mzML)
-
-    # Run FeatureFinderMetabo tool with input and output files.
-    self.executor.run_topp(
-        "FeatureFinderMetabo", input_output={"in": in_mzML, "out": out_ffm}
-    )
-
-    # Check if adduct detection should be run.
-    if self.params["run-adduct-detection"]:
-    
-        # Run MetaboliteAdductDecharger for adduct detection, with disabled logs.
-        # Without a new Files object for output, the input files will be overwritten in this case.
-        self.executor.run_topp(
-            "MetaboliteAdductDecharger", {"in": out_ffm, "out_fm": out_ffm}, write_log=False
-        )
-
-    # Example for a custom Python tool, which is located in src/python-tools.
-    self.executor.run_python("example", {"in": in_mzML})
-
-    # Prepare output file for SiriusExport.
-    out_se = Files(["sirius-export.ms"], "ms", "sirius-export")
-
-    # Run SiriusExport tool with the collected files.
-    self.executor.run_topp("SiriusExport", {"in": in_mzML.collect(), "in_featureinfo": out_ffm.collect(), "out": out_se})
-    """
+getsource(Workflow.execution)
 )
 
 with st.expander("**Example output (truncated) of the workflow code above**"):

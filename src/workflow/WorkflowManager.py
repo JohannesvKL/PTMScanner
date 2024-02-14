@@ -17,9 +17,14 @@ class WorkflowManager:
         self.logger = Logger(self.workflow_dir)
         self.executor = CommandExecutor(self.workflow_dir, self.logger, self.parameter_manager)
         self.ui = StreamlitUI(self)
-        self.params = self.parameter_manager.load_parameters()
+        self.params = self.parameter_manager.get_parameters_from_json()
+
 
     def start_workflow(self) -> None:
+        """
+        Starts the workflow process and adds its process id to the pid directory.
+        The workflow itself needs to be a process, otherwise streamlit will wait for everything to finish before updating the UI again.
+        """
         # Delete the log file if it already exists
         self.logger.log_file.unlink(missing_ok=True)
         # Start workflow process
@@ -30,6 +35,9 @@ class WorkflowManager:
         Path(self.executor.pid_dir, str(workflow_process.pid)).touch()
 
     def workflow_process(self) -> None:
+        """
+        Workflow process. Logs start and end of the workflow and calls the execution method where all steps are defined.
+        """
         try:
             self.logger.log("Starting workflow...")
             results_dir = Path(self.workflow_dir, "results")
@@ -45,24 +53,36 @@ class WorkflowManager:
 
 
     def upload(self) -> None:
+        """
+        Add your file upload widgets here
+        """
         ###################################
         # Add your file upload widgets here
         ###################################
         pass
 
     def configure(self) -> None:
+        """
+        Add your input widgets here
+        """
         ###################################
         # Add your input widgets here
         ###################################
         pass
 
     def execution(self) -> None:
+        """
+        Add your workflow steps here
+        """
         ###################################
         # Add your workflow steps here
         ###################################
         pass
 
     def results(self) -> None:
+        """
+        Display results here
+        """
         ###################################
         # Display results here
         ###################################

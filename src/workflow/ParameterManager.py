@@ -62,10 +62,7 @@ class ParameterManager:
                     ini_value = param.getValue(ini_key)
                     # need to convert bool values to string values
                     if isinstance(value, bool):
-                        if value == True:
-                            value = "true"
-                        elif value == False:
-                            value = "false"
+                        value = "true" if value else "false"
                     # convert strings with newlines to list
                     if isinstance(value, str):
                         if "\n" in value:
@@ -78,7 +75,7 @@ class ParameterManager:
         with open(self.params_file, "w", encoding="utf-8") as f:
             json.dump(json_params, f, indent=4)
 
-    def load_parameters(self) -> None:
+    def get_parameters_from_json(self) -> None:
         """
         Loads parameters from the JSON file if it exists and returns them as a dictionary.
         If the file does not exist, it returns an empty dictionary.

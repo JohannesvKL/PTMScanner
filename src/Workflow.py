@@ -5,11 +5,11 @@ from .workflow.Files import Files
 class Workflow(WorkflowManager):
     # Setup pages for upload, parameter, execution and results.
     # For layout use any streamlit components such as tabs (as shown in example), columns, or even expanders.
-    def __init__(self):
+    def __init__(self) -> None:
         # Initialize the parent class with the workflow name.
         super().__init__("TOPP Workflow")
 
-    def upload(self):
+    def upload(self)-> None:
         t = st.tabs(["MS data", "Example with fallback data"])
         with t[0]:
             # Use the upload method from StreamlitUI to handle mzML file uploads.
@@ -31,7 +31,7 @@ class Workflow(WorkflowManager):
             self.ui.input_TOPP("FeatureFinderMetabo")
         with t[1]:
             # A single checkbox widget for workflow logic.
-            self.ui.input("run-adduct-detection", False, "Adduct Detection")
+            self.ui.input_widget("run-adduct-detection", False, "Adduct Detection")
             # Paramters for MetaboliteAdductDecharger TOPP tool.
             self.ui.input_TOPP("MetaboliteAdductDecharger")
         with t[2]:
