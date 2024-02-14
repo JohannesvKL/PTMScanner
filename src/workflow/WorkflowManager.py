@@ -12,6 +12,7 @@ class WorkflowManager:
     def __init__(self, name: str = "Workflow Base"):
         self.name = name
         self.workflow_dir = Path(st.session_state["workspace"], self.name.replace(" ", "-").lower())
+        st.session_state["workflow-dir"] = str(self.workflow_dir)
         self.parameter_manager = ParameterManager(self.workflow_dir)
         self.logger = Logger(self.workflow_dir)
         self.executor = CommandExecutor(self.workflow_dir, self.logger, self.parameter_manager)
