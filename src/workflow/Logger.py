@@ -1,6 +1,4 @@
 from pathlib import Path
-import streamlit as st
-
 
 class Logger:
     """
@@ -12,8 +10,9 @@ class Logger:
     Attributes:
         log_file (Path): The file path of the log file where messages will be written.
     """
-    def __init__(self):
-        self.log_file = Path(st.session_state["workflow-dir"], "log.txt")
+    def __init__(self, workflow_dir: Path) -> None:
+        self.workflow_dir = workflow_dir
+        self.log_file = Path(self.workflow_dir, "log.txt")
 
     def log(self, message: str) -> None:
         """

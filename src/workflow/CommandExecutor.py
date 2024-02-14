@@ -4,9 +4,8 @@ import shutil
 import subprocess
 import threading
 from pathlib import Path
-import streamlit as st
-from .Logger import Logger
 from .Files import Files
+from .Logger import Logger
 from .ParameterManager import ParameterManager
 import sys
 import importlib.util
@@ -22,9 +21,10 @@ class CommandExecutor:
     for execution.
     """
     # Methods for running commands and logging
-    def __init__(self):
-        self.pid_dir = Path(st.session_state["workflow-dir"], "pids")
-        self.logger = Logger()
+    def __init__(self, workflow_dir: Path, logger: Logger, parameter_manager: ParameterManager):
+        self.pid_dir = Path(workflow_dir, "pids")
+        self.logger = logger
+        self.parameter_manager = parameter_manager
 
     def run_multiple_commands(
         self, commands: list[str], write_log: bool = True
@@ -148,7 +148,7 @@ class CommandExecutor:
         commands = []
 
         # Load parameters for non-defaults
-        params = ParameterManager().load_parameters()
+        params = self.parameter_manager.load_parameters()
         # Construct commands for each process
         for i in range(n_processes):
             command = [tool]
@@ -235,14 +235,14 @@ class CommandExecutor:
         spec.loader.exec_module(module)
         defaults = {entry["key"]: entry["value"] for entry in getattr(module, "DEFAULTS", None)}
         # load paramters from JSON file
-        params = {k: v for k, v in ParameterManager().load_parameters().items() if path.name in k}
+        params = {k: v for k, v in self.parameter_manager.load_parameters().items() if path.name in k}
         # update defaults
         for k, v in params.items():
             defaults[k.replace(f"{path.name}:", "")] = v
         for k, v in input_output.items():
             defaults[k] = v.files if isinstance(v, Files) else v
         # save parameters to temporary JSON file
-        tmp_params_files = Path(st.session_state["workflow-dir"], f"{path.stem}.json")
+        tmp_params_files = Path(self.pid_dir.parent, f"{path.stem}.json")
         with open(tmp_params_files, "w", encoding="utf-8") as f:
             json.dump(defaults, f, indent=4)
         # run command

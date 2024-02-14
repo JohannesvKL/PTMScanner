@@ -3,12 +3,14 @@ import pyopenms as poms
 from pathlib import Path
 import shutil
 import subprocess
-from .ParameterManager import ParameterManager
 from .Files import Files
 from typing import Any, Union, List
 import json
 import sys
 import importlib.util
+import time
+from io import BytesIO
+import zipfile
 
 
 class StreamlitUI:
@@ -24,9 +26,10 @@ class StreamlitUI:
     """
 
     # Methods for Streamlit UI components
-    def __init__(self):
-        self.ini_dir = Path(st.session_state["workflow-dir"], "ini")
-        self.params = ParameterManager().load_parameters()
+    def __init__(self, workflow_manager):
+        self.workflow_manager = workflow_manager
+        self.workflow_dir = workflow_manager.workflow_dir
+        self.params = self.workflow_manager.parameter_manager.load_parameters()
 
     def upload(
         self,
@@ -47,7 +50,7 @@ class StreamlitUI:
             fallback (Union[List, str], optional): Default files to use if no files are uploaded.
         """
         # streamlit uploader can't handle file types with upper and lower case letters
-        files_dir = Path(st.session_state["workflow-dir"], "input-files", key)
+        files_dir = Path(self.workflow_dir, "input-files", key)
 
         if not name:
             name = key.replace("-", " ")
@@ -135,7 +138,7 @@ class StreamlitUI:
             ):
                 shutil.rmtree(files_dir)
                 del self.params[key]
-                with open(ParameterManager().params_file, "w", encoding="utf-8") as f:
+                with open(self.workflow_manager.parameter_manager.params_file, "w", encoding="utf-8") as f:
                     json.dump(self.params, f, indent=4)
                 st.rerun()
         elif not fallback:
@@ -160,7 +163,7 @@ class StreamlitUI:
         """
         if not name:
             name = f"**{key}**"
-        path = Path(st.session_state["workflow-dir"], "input-files", key)
+        path = Path(self.workflow_dir, "input-files", key)
         if not path.exists():
             st.warning(f"No **{name}** files!")
             return
@@ -238,7 +241,7 @@ class StreamlitUI:
                 elif widget_type == "selectbox":
                     value = options[0]
 
-        key = f"{ParameterManager().param_prefix}{key}"
+        key = f"{self.workflow_manager.parameter_manager.param_prefix}{key}"
 
         if widget_type == "text":
             st.text_input(name, value=value, key=key, help=help)
@@ -378,7 +381,7 @@ class StreamlitUI:
             exclude_parameters (List[str], optional): List of parameter names to exclude from the widget.
         """
         # write defaults ini files
-        ini_file_path = Path(self.ini_dir, f"{topp_tool_name}.ini")
+        ini_file_path = Path(self.workflow_manager.parameter_manager.ini_dir, f"{topp_tool_name}.ini")
         if not ini_file_path.exists():
             subprocess.call([topp_tool_name, "-write_ini", str(ini_file_path)])
         # read into Param object
@@ -433,7 +436,7 @@ class StreamlitUI:
             if not st.session_state["advanced"] and p["advanced"]:
                 continue
 
-            key = f"{ParameterManager().topp_param_prefix}{p['key'].decode()}"
+            key = f"{self.workflow_manager.parameter_manager.topp_param_prefix}{p['key'].decode()}"
 
             try:
                 # bools
@@ -588,3 +591,113 @@ class StreamlitUI:
             if i == num_cols:
                 i = 0
                 cols = st.columns(num_cols)
+
+    def zip_and_download_files(self, directory: str):
+        """
+        Creates a zip archive of all files within a specified directory,
+        including files in subdirectories, and offers it as a download
+        button in a Streamlit application.
+
+        Args:
+            directory (str): The directory whose files are to be zipped.
+        """
+       # Ensure directory is a Path object and check if directory is empty
+        directory = Path(directory)
+        if not any(directory.iterdir()):
+            st.error("No files to compress.")
+            return
+
+        bytes_io = BytesIO()
+        files = list(directory.rglob("*"))  # Use list comprehension to find all files
+
+        # Check if there are any files to zip
+        if not files:
+            st.error("Directory is empty or contains no files.")
+            return
+
+        n_files = len(files)
+
+        # Initialize Streamlit progress bar
+        my_bar = st.progress(0)
+
+        with zipfile.ZipFile(bytes_io, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for i, file_path in enumerate(files):
+                if file_path.is_file():  # Ensure we're only adding files, not directories
+                    # Preserve directory structure relative to the original directory
+                    zip_file.write(file_path, file_path.relative_to(directory.parent))
+                    my_bar.progress((i + 1) / n_files)  # Update progress bar
+
+        my_bar.empty()  # Clear progress bar after operation is complete
+        bytes_io.seek(0)  # Reset buffer pointer to the beginning
+
+        # Display a download button for the zip file in Streamlit
+        st.columns(2)[1].download_button(
+            label="⬇️ Download Now",
+            data=bytes_io,
+            file_name="input-files.zip",
+            mime="application/zip",
+            use_container_width=True
+        )
+        
+        
+    def show_file_upload_section(self) -> None:
+        self.workflow_manager.upload()
+        if st.button("⬇️ Download all uploaded files", use_container_width=True):
+            self.ui.zip_and_download_files(Path(self.workflow_dir, "input-files"))
+
+    def show_parameter_section(self) -> None:
+        # c1.title(f"⚙️ Parameters")
+        st.toggle("Show advanced parameters", value=False, key="advanced")
+
+        form = st.form(
+            key=f"{self.workflow_dir.stem}-input-form",
+            clear_on_submit=True,
+        )
+
+        with form:
+            cols = st.columns(2)
+
+            cols[0].form_submit_button(
+                label="Save parameters",
+                on_click=self.workflow_manager.parameter_manager.save_parameters,
+                type="primary",
+                use_container_width=True,
+            )
+
+            if cols[1].form_submit_button(
+                label="Load default parameters", use_container_width=True
+            ):
+                self.workflow_manager.parameter_manager.reset_to_default_parameters()
+
+            # Load parameters
+            self.workflow_manager.configure()
+        # Save parameters
+        self.workflow_manager.parameter_manager.save_parameters()
+
+    def show_execution_section(self) -> None:
+        if self.workflow_manager.executor.pid_dir.exists():
+            if st.button("Stop Workflow", type="primary", use_container_width=True):
+                self.workflow_manager.executor.stop()
+                st.rerun()
+        else:
+            st.button(
+                "Start Workflow",
+                type="primary",
+                use_container_width=True,
+                on_click=self.workflow_manager.start_workflow,
+            )
+
+        if self.workflow_manager.logger.log_file.exists():
+            if self.workflow_manager.executor.pid_dir.exists():
+                with st.spinner("**Workflow running...**"):
+                    with open(self.workflow_manager.logger.log_file, "r", encoding="utf-8") as f:
+                        st.code(f.read(), language="neon", line_numbers=True)
+                    time.sleep(2)
+                st.rerun()
+            else:
+                st.markdown("**Workflow log file**")
+                with open(self.workflow_manager.logger.log_file, "r", encoding="utf-8") as f:
+                    st.code(f.read(), language="neon", line_numbers=True)
+
+    def show_results_section(self) -> None:
+        self.workflow_manager.results()

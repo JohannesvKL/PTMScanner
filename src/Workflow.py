@@ -18,7 +18,7 @@ class Workflow(WorkflowManager):
             # Example with fallback data (not used in workflow)
             self.ui.upload(key="image", file_type="png", fallback="assets/OpenMS.png")
 
-    def parameter(self) -> None:
+    def configure(self) -> None:
         # Allow users to select mzML files for the analysis.
         self.ui.select_input_file("mzML-files", multiple=True)
 
@@ -49,10 +49,8 @@ class Workflow(WorkflowManager):
         # Log any messages.
         self.logger.log(f"Number of input mzML files: {len(in_mzML)}")
 
-        self.logger.log(in_mzML)
         # Prepare output files for feature detection.
         out_ffm = Files(in_mzML, "featureXML", "feature-detection")
-        self.logger.log(in_mzML)
 
         # Run FeatureFinderMetabo tool with input and output files.
         self.executor.run_topp(

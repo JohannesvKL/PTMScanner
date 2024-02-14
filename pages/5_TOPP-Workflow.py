@@ -13,14 +13,14 @@ if __name__ == "__main__":
 
     t = st.tabs(["📁 **File Upload**", "⚙️ **Configure**", "🚀 **Run**", "📊 **Results**"])
     with t[0]:
-        wf.show_file_upload_section()
+        wf.ui.show_file_upload_section()
 
     with t[1]:
-        wf.show_parameter_section()
+        wf.ui.show_parameter_section()
 
     with t[2]:
-        wf.show_execution_section()
+        wf.ui.show_execution_section()
         
     with t[3]:
-        wf.show_results_section()
+        wf.ui.show_results_section()
 

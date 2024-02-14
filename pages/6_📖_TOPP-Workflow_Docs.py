@@ -29,16 +29,16 @@ st.markdown(
 with st.expander("**Example User Interface**", True):
     t =  st.tabs(["📁 **File Upload**", "⚙️ **Configure**", "🚀 **Run**", "📊 **Results**"])
     with t[0]:
-        wf.show_file_upload_section()
+        wf.ui.show_file_upload_section()
 
     with t[1]:
-        wf.show_parameter_section()
+        wf.ui.show_parameter_section()
 
     with t[2]:
-        wf.show_execution_section()
+        wf.ui.show_execution_section()
         
     with t[3]:
-        wf.show_results_section()
+        wf.ui.show_results_section()
 
 st.markdown(
 """
@@ -50,7 +50,7 @@ The `WorkflowManager` class provides the core workflow logic. It uses the `Logge
 
 To build your own workflow edit the file `src/TOPPWorkflow.py`. Use any streamlit components such as tabs (as shown in example), columns, or even expanders to organize the helper functions for displaying file upload and parameter widgets.
 
-> 💡 Simply set a name for the workflow and overwrite the **`upload`**, **`parameter`**, **`execution`** and **`results`** methods in your **`Workflow`** class.
+> 💡 Simply set a name for the workflow and overwrite the **`upload`**, **`configure`**, **`execution`** and **`results`** methods in your **`Workflow`** class.
 
 The file `pages/6_TOPP-Workflow.py` displays the workflow content and can, but does not have to be modified.
 

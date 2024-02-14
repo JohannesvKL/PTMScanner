@@ -3,8 +3,6 @@ import json
 import shutil
 import streamlit as st
 from pathlib import Path
-from .DirectoryManager import DirectoryManager
-
 
 class ParameterManager:
     """
@@ -20,15 +18,14 @@ class ParameterManager:
         topp_param_prefix (str): Prefix for TOPP tool parameter keys in Streamlit's session state.
     """
     # Methods related to parameter handling
-    def __init__(self):
-        self.ini_dir = DirectoryManager().ensure_directory_exists(
-            Path(st.session_state["workflow-dir"], "ini")
-        )
-        self.params_file = Path(st.session_state["workflow-dir"], "params.json")
-        self.param_prefix = f"{Path(st.session_state['workflow-dir']).stem}-param-"
-        self.topp_param_prefix = f"{Path(st.session_state['workflow-dir']).stem}-TOPP-"
+    def __init__(self, workflow_dir: Path):
+        self.ini_dir = Path(workflow_dir, "ini")
+        self.ini_dir.mkdir(parents=True, exist_ok=True)
+        self.params_file = Path(workflow_dir, "params.json")
+        self.param_prefix = f"{workflow_dir.stem}-param-"
+        self.topp_param_prefix = f"{workflow_dir.stem}-TOPP-"
 
-    def save_parameters(self, to_default: bool = False) -> None:
+    def save_parameters(self) -> None:
         """
         Saves the current parameters from Streamlit's session state to a JSON file.
         It handles both general parameters and parameters specific to TOPP tools,
