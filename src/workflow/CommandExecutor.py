@@ -87,7 +87,8 @@ class CommandExecutor:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         child_pid = process.pid
         
-        # Record the PID for potential management
+        # Record the PID to keep track of running processes associated with this workspace/workflow
+        # User can close the Streamlit app and return to a running workflow later
         pid_file_path = self.pid_dir / str(child_pid)
         pid_file_path.touch()
         
