@@ -3,22 +3,21 @@ from .Logger import Logger
 from .ParameterManager import ParameterManager
 from .CommandExecutor import CommandExecutor
 from .StreamlitUI import StreamlitUI
+from .FileManager import FileManager
 import multiprocessing
 import shutil
-import streamlit as st
 
 class WorkflowManager:
     # Core workflow logic using the above classes
-    def __init__(self, name: str = "Workflow Base"):
+    def __init__(self, name: str, workspace: str):
         self.name = name
-        self.workflow_dir = Path(st.session_state["workspace"], self.name.replace(" ", "-").lower())
-        st.session_state["workflow-dir"] = str(self.workflow_dir)
-        self.parameter_manager = ParameterManager(self.workflow_dir)
+        self.workflow_dir = Path(workspace, name.replace(" ", "-").lower())
+        self.file_manager = FileManager(self.workflow_dir)
         self.logger = Logger(self.workflow_dir)
+        self.parameter_manager = ParameterManager(self.workflow_dir)
         self.executor = CommandExecutor(self.workflow_dir, self.logger, self.parameter_manager)
-        self.ui = StreamlitUI(self)
         self.params = self.parameter_manager.get_parameters_from_json()
-
+        self.ui = StreamlitUI(self.workflow_dir, self.logger, self.executor, self.parameter_manager)
 
     def start_workflow(self) -> None:
         """
@@ -39,18 +38,41 @@ class WorkflowManager:
         Workflow process. Logs start and end of the workflow and calls the execution method where all steps are defined.
         """
         try:
-            self.logger.log("Starting workflow...")
+            self.logger.log("STARTING WORKFLOW")
             results_dir = Path(self.workflow_dir, "results")
             if results_dir.exists():
                 shutil.rmtree(results_dir)
             results_dir.mkdir(parents=True)
             self.execution()
-            self.logger.log("COMPLETE")
+            self.logger.log("WORKFLOW FINISHED")
         except Exception as e:
             self.logger.log(f"ERROR: {e}")
         # Delete pid dir path to indicate workflow is done
         shutil.rmtree(self.executor.pid_dir, ignore_errors=True)
 
+    def show_file_upload_section(self) -> None:
+        """
+        Shows the file upload section of the UI with content defined in self.upload().
+        """
+        self.ui.file_upload_section(self.upload)
+        
+    def show_parameter_section(self) -> None:
+        """
+        Shows the parameter section of the UI with content defined in self.configure().
+        """
+        self.ui.parameter_section(self.configure)
+
+    def show_execution_section(self) -> None:
+        """
+        Shows the execution section of the UI with content defined in self.execution().
+        """
+        self.ui.execution_section(self.start_workflow)
+        
+    def show_results_section(self) -> None:
+        """
+        Shows the results section of the UI with content defined in self.results().
+        """
+        self.ui.results_section(self.results)
 
     def upload(self) -> None:
         """

@@ -4,7 +4,6 @@ import shutil
 import subprocess
 import threading
 from pathlib import Path
-from .Files import Files
 from .Logger import Logger
 from .ParameterManager import ParameterManager
 import sys
@@ -102,11 +101,11 @@ class CommandExecutor:
         execution_time = end_time - start_time
         
         # Format the logging prefix
-        self.logger.log(f"Total time to run command: {execution_time:.2f} seconds")
+        self.logger.log(f"Process finished:\n"+' '.join(command)+f"\nTotal time to run command: {execution_time:.2f} seconds")
         
         # Log stdout if present
         if stdout and write_log:
-            self.logger.log(f"Console log:\n\n{stdout.decode()}")
+            self.logger.log(stdout.decode())
         
         # Log stderr and raise an exception if errors occurred
         if stderr or process.returncode != 0:
@@ -119,7 +118,13 @@ class CommandExecutor:
         Constructs and executes commands for the specified tool OpenMS TOPP tool based on the given
         input and output configurations. Ensures that all input/output file lists
         are of the same length, or single strings, to maintain consistency in command
-        execution. Supports executing commands either as single or multiple processes
+        execution.
+        In many tools, a single input file is processed to produce a single output file.
+        When dealing with lists of input or output files, the convention is that
+        files are paired based on their order. For instance, the n-th input file is
+        assumed to correspond to the n-th output file, maintaining a structured
+        relationship between input and output data.
+        Supports executing commands either as single or multiple processes
         based on the input size.
 
         Args:
@@ -238,7 +243,7 @@ class CommandExecutor:
         for k, v in params.items():
             defaults[k.replace(f"{path.name}:", "")] = v
         for k, v in input_output.items():
-            defaults[k] = v.files if isinstance(v, Files) else v
+            defaults[k] = v
         # save parameters to temporary JSON file
         tmp_params_files = Path(self.pid_dir.parent, f"{path.stem}.json")
         with open(tmp_params_files, "w", encoding="utf-8") as f:

@@ -1,22 +1,21 @@
 import streamlit as st
 from .workflow.WorkflowManager import WorkflowManager
-from .workflow.Files import Files
 
 class Workflow(WorkflowManager):
     # Setup pages for upload, parameter, execution and results.
     # For layout use any streamlit components such as tabs (as shown in example), columns, or even expanders.
     def __init__(self) -> None:
         # Initialize the parent class with the workflow name.
-        super().__init__("TOPP Workflow")
+        super().__init__("TOPP Workflow", st.session_state["workspace"])
 
     def upload(self)-> None:
         t = st.tabs(["MS data", "Example with fallback data"])
         with t[0]:
             # Use the upload method from StreamlitUI to handle mzML file uploads.
-            self.ui.upload(key="mzML-files", name="MS data", file_type="mzML")
+            self.ui.upload_widget(key="mzML-files", name="MS data", file_type="mzML")
         with t[1]:
             # Example with fallback data (not used in workflow)
-            self.ui.upload(key="image", file_type="png", fallback="assets/OpenMS.png")
+            self.ui.upload_widget(key="image", file_type="png", fallback="assets/OpenMS.png")
 
     def configure(self) -> None:
         # Allow users to select mzML files for the analysis.
@@ -43,14 +42,15 @@ class Workflow(WorkflowManager):
             self.ui.input_python("example")
 
     def execution(self) -> None:
-        # Wrap mzML files into a Files object for processing.
-        in_mzML = Files(self.params["mzML-files"], "mzML")
+        # Get mzML input files from self.params.
+        # Can be done without file manager, however, it ensures everything is correct.
+        in_mzML = self.file_manager.get_files(self.params["mzML-files"])
         
         # Log any messages.
         self.logger.log(f"Number of input mzML files: {len(in_mzML)}")
 
         # Prepare output files for feature detection.
-        out_ffm = Files(in_mzML, "featureXML", "feature-detection")
+        out_ffm = self.file_manager.get_files(in_mzML, "featureXML", "feature-detection")
 
         # Run FeatureFinderMetabo tool with input and output files.
         self.executor.run_topp(
@@ -61,7 +61,7 @@ class Workflow(WorkflowManager):
         if self.params["run-adduct-detection"]:
         
             # Run MetaboliteAdductDecharger for adduct detection, with disabled logs.
-            # Without a new Files object for output, the input files will be overwritten in this case.
+            # Without a new file list for output, the input files will be overwritten in this case.
             self.executor.run_topp(
                 "MetaboliteAdductDecharger", {"in": out_ffm, "out_fm": out_ffm}, write_log=False
             )
@@ -70,10 +70,10 @@ class Workflow(WorkflowManager):
         self.executor.run_python("example", {"in": in_mzML})
 
         # Prepare output file for SiriusExport.
-        out_se = Files(["sirius-export.ms"], "ms", "sirius-export")
-
-        # Run SiriusExport tool with the collected files.
-        self.executor.run_topp("SiriusExport", {"in": in_mzML.collect(), "in_featureinfo": out_ffm.collect(), "out": out_se})
+        out_se = self.file_manager.get_files("sirius.ms", set_results_dir="sirius-export")
+        self.executor.run_topp("SiriusExport", {"in": self.file_manager.get_files(in_mzML, collect=True),
+                                                "in_featureinfo": self.file_manager.get_files(out_ffm, collect=True),
+                                                "out": out_se})
 
     def results(self) -> None:
         st.warning("Not implemented yet.")

@@ -1,7 +1,7 @@
 import streamlit as st
 from src.Workflow import Workflow
 from src.workflow.StreamlitUI import StreamlitUI
-from src.workflow.Files import Files
+from src.workflow.FileManager import FileManager
 from src.workflow.CommandExecutor import CommandExecutor
 from src.common import page_setup
 from inspect import getsource
@@ -30,16 +30,16 @@ st.markdown(
 with st.expander("**Example User Interface**", True):
     t =  st.tabs(["📁 **File Upload**", "⚙️ **Configure**", "🚀 **Run**", "📊 **Results**"])
     with t[0]:
-        wf.ui.show_file_upload_section()
+        wf.show_file_upload_section()
 
     with t[1]:
-        wf.ui.show_parameter_section()
+        wf.show_parameter_section()
 
     with t[2]:
-        wf.ui.show_execution_section()
+        wf.show_execution_section()
         
     with t[3]:
-        wf.ui.show_results_section()
+        wf.show_results_section()
 
 st.markdown(
 """
@@ -47,7 +47,7 @@ st.markdown(
 
 This repository contains a module in `src/workflow` that provides a framework for building and running analysis workflows.
 
-The `WorkflowManager` class provides the core workflow logic. It uses the `Logger`, `Files`, `DirectoryManager`, `ParameterManager`, and `CommandExecutor` classes to setup a complete workflow logic.
+The `WorkflowManager` class provides the core workflow logic. It uses the `Logger`, `FileManager`, `ParameterManager`, and `CommandExecutor` classes to setup a complete workflow logic.
 
 To build your own workflow edit the file `src/TOPPWorkflow.py`. Use any streamlit components such as tabs (as shown in example), columns, or even expanders to organize the helper functions for displaying file upload and parameter widgets.
 
@@ -65,15 +65,12 @@ The `Workflow` class contains four important members, which you can use to build
 
 > **`self.logger`:** object of type `Logger` to write any output to a log file during workflow execution.
 
-Handling input and output files in the `Workflow.execution` method for processes is done with the `Files` class, handling file types and creation of output directories.
+> **`self.file_manager`:** object of type `FileManager` to handle file types and creation of output directories.
 """
 )
 
 with st.expander("**Complete example for custom Workflow class**", expanded=False):
-    st.code(
-getsource(Workflow)
-    )
-
+    st.code(getsource(Workflow))
 
 st.markdown(
 """
@@ -81,7 +78,7 @@ st.markdown(
 
 All input files for the workflow will be stored within the workflow directory in the subdirectory `input-files` within it's own subdirectory for the file type.
 
-The subdirectory name will be determined by a **key** that is defined in the `self.ui.upload` method. The uploaded files are available by the specific key for parameter input widgets and accessible while building the workflow.
+The subdirectory name will be determined by a **key** that is defined in the `self.ui.upload_widget` method. The uploaded files are available by the specific key for parameter input widgets and accessible while building the workflow.
 
 Calling this method will create a complete file upload widget section with the following components:
 
@@ -92,13 +89,12 @@ Calling this method will create a complete file upload widget section with the f
 Fallback files(s) can be specified, which will be used if the user doesn't upload any files. This can be useful for example for database files where a default is provided.
 """)
 
-st.code(
-getsource(Workflow.upload)
-)
+st.code(getsource(Workflow.upload))
+
 st.info("💡 Use the same **key** for parameter widgets, to select which of the uploaded files to use for analysis.")
 
 with st.expander("**Code documentation:**", expanded=True):
-    st.help(StreamlitUI.upload)
+    st.help(StreamlitUI.upload_widget)
 
 st.markdown(
     """
@@ -155,39 +151,44 @@ st.markdown(
     """
 ## Building the Workflow
 
-Building the workflow involves **calling all (TOPP) tools** using **`self.executor`** with **input and output files** based on the **`Files`** class. For TOPP tools non-input-output parameters are handled automatically. Parameters for other processes and workflow logic can be accessed via widget keys (set in the parameter section) in the **`self.params`** dictionary.
+Building the workflow involves **calling all (TOPP) tools** using **`self.executor`** with **input and output files** based on the **`FileManager`** class. For TOPP tools non-input-output parameters are handled automatically. Parameters for other processes and workflow logic can be accessed via widget keys (set in the parameter section) in the **`self.params`** dictionary.
 
-### Files
+### FileManager
 
-The `Files` class serves as an interface for unified input and output files with useful functionality specific to building workflows, such as **setting a (new) file type** and **subdirectory in the workflows result directory**.
+The `FileManager` class serves as an interface for unified input and output files with useful functionality specific to building workflows, such as **setting a (new) file type** and **subdirectory in the workflows result directory**.
 
-The `Files` object contains all file paths in the collection as strings. It can be initialized with a list of file paths or with a single file path. The file path can be either of type `str` or `pathlib.Path`.
+Use the **`get_files`** method to get a list of all file paths as strings.
 
-All file paths in a `Files` object can be collected in a list to be passed to a (TOPP) tool which can handle multiple input files (see **Running commands/Run TOPP tools** section for examples).
+Optionally set the following parameters modify the files:
+
+- **set_file_type** (str): set new file types and result subdirectory. 
+- **set_results_dir** (str): set a new subdirectory in the workflows result directory.
+- **collect** (bool): collect all files into a single list. Will return a list with a single entry, which is a list of all files. Useful to pass to tools which can handle multiple input files at once.
 """)
 
 st.code(
     """
-# Creating a File object for input mzML files.
-mzML_files = Files(self.params["mzML-files])
+# Get all file paths as strings from self.param entry.
+mzML_files = self.file_manager.get_files(self.params["mzML-files])
 # mzML_files = ['../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML', '../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML']
 
 # Creating output files for a TOPP tool, setting a new file type and result subdirectory name.
-feature_detection_out = Files(mzML_files, set_file_type="featureXML", set_results_dir="feature-detection")
+feature_detection_out = self.file_manager.get_files(mzML_files, set_file_type="featureXML", set_results_dir="feature-detection")
 # feature_detection_out = ['../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML', '../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML']
 
 # Setting a name for the output directory automatically (useful if you never plan to access these files in the results section).
-feature_detection_out = Files(mzML_files, set_file_type="featureXML", set_results_dir="auto")
+feature_detection_out = self.file_manager.get_files(mzML_files, set_file_type="featureXML", set_results_dir="auto")
 # feature_detection_out = ['../workspaces-streamlit-template/default/topp-workflow/results/6DUd/Control.featureXML', '../workspaces-streamlit-template/default/topp-workflow/results/6DUd/Treatment.featureXML']
 
-# Combining all mzML files to be passed to a TOPP tool in a single run. Does not change the Files object.
-# mzML_files.collect() = [['../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML', '../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML']]
+# Combining all mzML files to be passed to a TOPP tool in a single run. Using "collected" files as argument for self.file_manager.get_files will "un-collect" them.
+mzML_files = self.file_manager.get_files(mzML_files, collect=True)
+# mzML_files = [['../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML', '../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML']]
     """
 )
 
 with st.expander("**Code documentation**", expanded=True):
-    st.help(Files.__init__)
-    st.help(Files.collect)
+    st.help(FileManager.get_files)
+
 st.markdown(
     """
 ### Running commands
@@ -211,15 +212,23 @@ The `self.executor.run_multiple_commands` method takes a list of commands as inp
 
 **3. Run TOPP tools**
 
-The `self.executor.run_topp` method takes a TOPP tool name as input and a dictionary of input and output files as input. The **keys** need to match the actual input and output parameter names of the TOPP tool. The **values** should be of type `Files`. All other **non-default parameters (from input widgets)** will be passed to the TOPP tool automatically.
+The `self.executor.run_topp` method takes a TOPP tool name as input and a dictionary of input and output files as input. The **keys** need to match the actual input and output parameter names of the TOPP tool. The **values** should be of type `FileManager`. All other **non-default parameters (from input widgets)** will be passed to the TOPP tool automatically.
 
-Depending on the number of input files, the TOPP tool will be run either in parallel or in a single run (using **`Files.collect`**).
+Depending on the number of input files, the TOPP tool will be run either in parallel or in a single run (using **`FileManager.collect`**).
 """)
 
+st.info("""💡 **Input and output file order**
+        
+In many tools, a single input file is processed to produce a single output file.
+When dealing with lists of input or output files, the convention is that
+files are paired based on their order. For instance, the n-th input file is
+assumed to correspond to the n-th output file, maintaining a structured
+relationship between input and output data.       
+""")
 st.code("""
 # e.g. FeatureFinderMetabo takes single input files
-in_files = Files(["sample1.mzML", "sample2.mzML"])
-out_files = Files(in_files, set_file_type="featureXML", set_results_dir="feature-detection")
+in_files = self.file_manager.get_files(["sample1.mzML", "sample2.mzML"])
+out_files = self.file_manager.get_files(in_files, set_file_type="featureXML", set_results_dir="feature-detection")
 
 # Run FeatureFinderMetabo tool with input and output files in parallel for each pair of input/output files.
 self.executor.run_topp("FeatureFinderMetabo", input_output={"in": in_files, "out": out_files})
@@ -227,8 +236,10 @@ self.executor.run_topp("FeatureFinderMetabo", input_output={"in": in_files, "out
 # FeaturFinderMetabo -in sample2.mzML -out workspace-dir/results/feature-detection/sample2.featureXML
 
 # Run SiriusExport tool with mutliple input and output files.
-out = Files("sirius.ms")
-self.executor.run_topp("SiriusExport", {"in": in_files.collect(), "in_featureinfo": out_files.collect(), "out": out_se})
+out = self.file_manager.get_files("sirius.ms", set_results_dir="sirius-export")
+self.executor.run_topp("SiriusExport", {"in": self.file_manager.get_files(in_files, collect=True),
+                                        "in_featureinfo": self.file_manager.get_files(out_files, collect=True),
+                                        "out": out_se})
 # SiriusExport -in sample1.mzML sample2.mzML -in_featureinfo sample1.featureXML sample2.featureXML -out sirius.ms
         """)
 
@@ -242,7 +253,7 @@ Sometimes it is useful to run custom Python scripts, for example for extra funct
 
 st.code("""
 # e.g. example Python tool which modifies mzML files in place based on experimental design
-self.ui.input_python(script_file="example", input_output={"in": in_mzML, "in_experimantal_design": Files(["path/to/experimantal-design.tsv"])})       
+self.ui.input_python(script_file="example", input_output={"in": in_mzML, "in_experimantal_design": FileManager(["path/to/experimantal-design.tsv"])})       
         """)
 
 st.markdown("**Example for a complete workflow section:**")
@@ -251,69 +262,138 @@ st.code(
 getsource(Workflow.execution)
 )
 
-with st.expander("**Example output (truncated) of the workflow code above**"):
+with st.expander("**Code documentation**", expanded=True):
+    st.help(CommandExecutor.run_command)
+    st.help(CommandExecutor.run_multiple_commands)
+    st.help(CommandExecutor.run_topp)
+    st.help(CommandExecutor.run_python)
+
+with st.expander("**Example output of the complete example workflow**"):
     st.code("""
-Starting workflow...
+STARTING WORKFLOW
 
 Number of input mzML files: 2
 
 Running 2 commands in parallel...
 
 Running command:
-FeatureFinderMetabo -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML -out ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML -algorithm:common:noise_threshold_int 1000.0
+FeatureFinderMetabo -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML -out ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML -algorithm:common:chrom_peak_snr 4.0 -algorithm:common:noise_threshold_int 1000.0
 Waiting for command to finish...
 
 Running command:
-FeatureFinderMetabo -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML -out ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML -algorithm:common:noise_threshold_int 1000.0
+FeatureFinderMetabo -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML -out ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML -algorithm:common:chrom_peak_snr 4.0 -algorithm:common:noise_threshold_int 1000.0
 Waiting for command to finish...
 
-Total time to run command: 0.56 seconds
+Process finished:
+FeatureFinderMetabo -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML -out ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML -algorithm:common:chrom_peak_snr 4.0 -algorithm:common:noise_threshold_int 1000.0
+Total time to run command: 0.55 seconds
 
-Console log:
+Progress of 'loading mzML':
+  Progress of 'loading spectra list':
 
-# FeatureFinderMetabo output (removed for this docs example)
+    89.06 %               
+  -- done [took 0.17 s (CPU), 0.17 s (Wall)] -- 
+  Progress of 'loading chromatogram list':
 
-Total time to run command: 0.59 seconds
+  -- done [took 0.00 s (CPU), 0.00 s (Wall)] -- 
 
-Console log:
+-- done [took 0.18 s (CPU), 0.18 s (Wall) @ 40.66 MiB/s] -- 
+Progress of 'mass trace detection':
 
-# FeatureFinderMetabo output (removed for this docs example)
+-- done [took 0.01 s (CPU), 0.01 s (Wall)] -- 
+Progress of 'elution peak detection':
 
-Total time to run 2 commands: 0.59 seconds
+-- done [took 0.07 s (CPU), 0.07 s (Wall)] -- 
+Progress of 'assembling mass traces to features':
+Loading metabolite isotope model with 5% RMS error
 
-Running 2 commands in parallel...
+-- done [took 0.04 s (CPU), 0.04 s (Wall)] -- 
+-- FF-Metabo stats --
+Input traces:    1382
+Output features: 1095 (total trace count: 1382)
+FeatureFinderMetabo took 0.47 s (wall), 0.90 s (CPU), 0.43 s (system), 0.47 s (user); Peak Memory Usage: 88 MB.
+
+
+Process finished:
+FeatureFinderMetabo -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML -out ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML -algorithm:common:chrom_peak_snr 4.0 -algorithm:common:noise_threshold_int 1000.0
+Total time to run command: 0.60 seconds
+
+Progress of 'loading mzML':
+  Progress of 'loading spectra list':
+
+    77.09 %               
+  -- done [took 0.16 s (CPU), 0.16 s (Wall)] -- 
+  Progress of 'loading chromatogram list':
+
+  -- done [took 0.00 s (CPU), 0.00 s (Wall)] -- 
+
+-- done [took 0.17 s (CPU), 0.17 s (Wall) @ 43.38 MiB/s] -- 
+Progress of 'mass trace detection':
+
+-- done [took 0.02 s (CPU), 0.02 s (Wall)] -- 
+Progress of 'elution peak detection':
+
+-- done [took 0.07 s (CPU), 0.07 s (Wall)] -- 
+Progress of 'assembling mass traces to features':
+Loading metabolite isotope model with 5% RMS error
+
+-- done [took 0.05 s (CPU), 0.05 s (Wall)] -- 
+-- FF-Metabo stats --
+Input traces:    1521
+Output features: 1203 (total trace count: 1521)
+FeatureFinderMetabo took 0.51 s (wall), 0.90 s (CPU), 0.45 s (system), 0.45 s (user); Peak Memory Usage: 88 MB.
+
+
+Total time to run 2 commands: 0.60 seconds
 
 Running command:
-MetaboliteAdductDecharger -in ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML -out_fm ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML
+python src/python-tools/example.py ../workspaces-streamlit-template/default/topp-workflow/example.json
 Waiting for command to finish...
+
+Process finished:
+python src/python-tools/example.py ../workspaces-streamlit-template/default/topp-workflow/example.json
+Total time to run command: 0.04 seconds
+
+Writing stdout which will get logged...
+Parameters for this example Python tool:
+{
+    "in": [
+        "../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML",
+        "../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML"
+    ],
+    "out": [],
+    "number-slider": 6,
+    "selectbox-example": "c",
+    "adavanced-input": 5,
+    "checkbox": true
+}
+
 
 Running command:
-MetaboliteAdductDecharger -in ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML -out_fm ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML
+SiriusExport -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML -in_featureinfo ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML -out ../workspaces-streamlit-template/default/topp-workflow/results/sirius-export/sirius.ms
 Waiting for command to finish...
 
-Total time to run command: 12.22 seconds
+Process finished:
+SiriusExport -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML -in_featureinfo ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML -out ../workspaces-streamlit-template/default/topp-workflow/results/sirius-export/sirius.ms
+Total time to run command: 0.65 seconds
 
-Total time to run command: 15.80 seconds
+Number of features to be processed: 0
+Number of additional MS2 spectra to be processed: 0
+No MS1 spectrum for this precursor. Occurred 0 times.
+0 spectra were skipped due to precursor charge below -1 and above +1.
+Mono charge assumed and set to charge 1 with respect to current polarity 0 times.
+0 features were skipped due to feature charge below -1 and above +1.
+No MS1 spectrum for this precursor. Occurred 0 times.
+0 spectra were skipped due to precursor charge below -1 and above +1.
+Mono charge assumed and set to charge 1 with respect to current polarity 0 times.
+0 features were skipped due to feature charge below -1 and above +1.
+<Number of features to be processed: 0> occurred 2 times
+SiriusExport took 0.61 s (wall), 1.71 s (CPU), 1.06 s (system), 0.65 s (user); Peak Memory Usage: 88 MB.
+<Number of additional MS2 spectra to be processed: 0> occurred 2 times
 
-Total time to run 2 commands: 15.80 seconds
 
-Running command:
-SiriusExport -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML -in_featureinfo ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML -out ../workspaces-streamlit-template/default/topp-workflow/results/sirius-export/sirius-export.ms
-Waiting for command to finish...
-
-Total time to run command: 0.67 seconds
-
-Console log:
-
-# SiriusExport output (removed for this docs example)
-
-COMPLETE
+WORKFLOW FINISHED
     """, language="neon")
 
-with st.expander("**Code documentation**", expanded=True):
-    st.help(CommandExecutor.run_command)
-    st.help(CommandExecutor.run_multiple_commands)
-    st.help(CommandExecutor.run_topp)
-    st.help(CommandExecutor.run_python)
     
     

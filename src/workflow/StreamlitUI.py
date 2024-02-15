@@ -3,7 +3,6 @@ import pyopenms as poms
 from pathlib import Path
 import shutil
 import subprocess
-from .Files import Files
 from typing import Any, Union, List
 import json
 import sys
@@ -12,26 +11,23 @@ import time
 from io import BytesIO
 import zipfile
 
-
 class StreamlitUI:
     """
     Provides an interface for Streamlit applications to handle file uploads,
     input selection, and parameter management for analysis workflows. It includes
     methods for uploading files, selecting input files from available ones, and
     generating various input widgets dynamically based on the specified parameters.
-
-    The class is designed to work with pyOpenMS for mass spectrometry data analysis,
-    leveraging the ParameterManager for parameter persistence and the Files class
-    for file management.
     """
 
     # Methods for Streamlit UI components
-    def __init__(self, workflow_manager):
-        self.workflow_manager = workflow_manager
-        self.workflow_dir = workflow_manager.workflow_dir
-        self.params = self.workflow_manager.parameter_manager.get_parameters_from_json()
+    def __init__(self, workflow_dir, logger, executor, paramter_manager):
+        self.workflow_dir = workflow_dir
+        self.logger = logger
+        self.executor = executor
+        self.parameter_manager = paramter_manager
+        self.params = self.parameter_manager.get_parameters_from_json()
 
-    def upload(
+    def upload_widget(
         self,
         key: str,
         file_type: str,
@@ -139,7 +135,7 @@ class StreamlitUI:
             ):
                 shutil.rmtree(files_dir)
                 del self.params[key]
-                with open(self.workflow_manager.parameter_manager.params_file, "w", encoding="utf-8") as f:
+                with open(self.parameter_manager.params_file, "w", encoding="utf-8") as f:
                     json.dump(self.params, f, indent=4)
                 st.rerun()
         elif not fallback:
@@ -168,7 +164,7 @@ class StreamlitUI:
         if not path.exists():
             st.warning(f"No **{name}** files!")
             return
-        options = Files([f for f in path.iterdir()])
+        options = [str(f) for f in path.iterdir()]
         if key in self.params.keys():
             self.params[key] = [f for f in self.params[key] if f in options]
 
@@ -188,7 +184,7 @@ class StreamlitUI:
         name: str = "input widget",
         help: str = None,
         widget_type: str = "auto",  # text, textarea, number, selectbox, slider, checkbox, multiselect
-        options: Union[List[str], "Files"] = None,
+        options: List[str] = None,
         min_value: Union[int, float] = None,
         max_value: Union[int, float] = None,
         step_size: Union[int, float] = 1,
@@ -209,27 +205,18 @@ class StreamlitUI:
             widget_type (str, optional): Type of widget to create ('text', 'textarea',
                                          'number', 'selectbox', 'slider', 'checkbox',
                                          'multiselect', 'password', or 'auto').
-            options (Union[List[str], "Files"], optional): Options for select/multiselect widgets.
+            options (List[str], optional): Options for select/multiselect widgets.
             min_value (Union[int, float], optional): Minimum value for number/slider widgets.
             max_value (Union[int, float], optional): Maximum value for number/slider widgets.
             step_size (Union[int, float], optional): Step size for number/slider widgets.
             display_file_path (bool, optional): Whether to display the full file path for file options.
         """
 
-        def convert_files_to_str(input: Any) -> List[str]:
-            if isinstance(input, Files):
-                return input.files
-            else:
-                return input
-
         def format_files(input: Any) -> List[str]:
             if not display_file_path and Path(input).exists():
                 return Path(input).name
             else:
                 return input
-
-        default = convert_files_to_str(default)
-        options = convert_files_to_str(options)
 
         if key in self.params.keys():
             value = self.params[key]
@@ -242,7 +229,7 @@ class StreamlitUI:
                 elif widget_type == "selectbox":
                     value = options[0]
 
-        key = f"{self.workflow_manager.parameter_manager.param_prefix}{key}"
+        key = f"{self.parameter_manager.param_prefix}{key}"
 
         if widget_type == "text":
             st.text_input(name, value=value, key=key, help=help)
@@ -382,7 +369,7 @@ class StreamlitUI:
             exclude_parameters (List[str], optional): List of parameter names to exclude from the widget.
         """
         # write defaults ini files
-        ini_file_path = Path(self.workflow_manager.parameter_manager.ini_dir, f"{topp_tool_name}.ini")
+        ini_file_path = Path(self.parameter_manager.ini_dir, f"{topp_tool_name}.ini")
         if not ini_file_path.exists():
             subprocess.call([topp_tool_name, "-write_ini", str(ini_file_path)])
         # read into Param object
@@ -437,7 +424,7 @@ class StreamlitUI:
             if not st.session_state["advanced"] and p["advanced"]:
                 continue
 
-            key = f"{self.workflow_manager.parameter_manager.topp_param_prefix}{p['key'].decode()}"
+            key = f"{self.parameter_manager.topp_param_prefix}{p['key'].decode()}"
 
             try:
                 # bools
@@ -641,13 +628,12 @@ class StreamlitUI:
         )
         
         
-    def show_file_upload_section(self) -> None:
-        self.workflow_manager.upload()
+    def file_upload_section(self, custom_upload_function) -> None:
+        custom_upload_function()
         if st.button("⬇️ Download all uploaded files", use_container_width=True):
             self.ui.zip_and_download_files(Path(self.workflow_dir, "input-files"))
 
-    def show_parameter_section(self) -> None:
-        # c1.title(f"⚙️ Parameters")
+    def parameter_section(self, custom_paramter_function) -> None:
         st.toggle("Show advanced parameters", value=False, key="advanced")
 
         form = st.form(
@@ -660,7 +646,7 @@ class StreamlitUI:
 
             cols[0].form_submit_button(
                 label="Save parameters",
-                on_click=self.workflow_manager.parameter_manager.save_parameters,
+                on_click=self.parameter_manager.save_parameters,
                 type="primary",
                 use_container_width=True,
             )
@@ -668,37 +654,36 @@ class StreamlitUI:
             if cols[1].form_submit_button(
                 label="Load default parameters", use_container_width=True
             ):
-                self.workflow_manager.parameter_manager.reset_to_default_parameters()
+                self.parameter_manager.reset_to_default_parameters()
 
-            # Load parameters
-            self.workflow_manager.configure()
+            custom_paramter_function()
         # Save parameters
-        self.workflow_manager.parameter_manager.save_parameters()
+        self.parameter_manager.save_parameters()
 
-    def show_execution_section(self) -> None:
-        if self.workflow_manager.executor.pid_dir.exists():
+    def execution_section(self, start_workflow_function) -> None:
+        if self.executor.pid_dir.exists():
             if st.button("Stop Workflow", type="primary", use_container_width=True):
-                self.workflow_manager.executor.stop()
+                self.executor.stop()
                 st.rerun()
         else:
             st.button(
                 "Start Workflow",
                 type="primary",
                 use_container_width=True,
-                on_click=self.workflow_manager.start_workflow,
+                on_click=start_workflow_function,
             )
 
-        if self.workflow_manager.logger.log_file.exists():
-            if self.workflow_manager.executor.pid_dir.exists():
+        if self.logger.log_file.exists():
+            if self.executor.pid_dir.exists():
                 with st.spinner("**Workflow running...**"):
-                    with open(self.workflow_manager.logger.log_file, "r", encoding="utf-8") as f:
+                    with open(self.logger.log_file, "r", encoding="utf-8") as f:
                         st.code(f.read(), language="neon", line_numbers=True)
                     time.sleep(2)
                 st.rerun()
             else:
                 st.markdown("**Workflow log file**")
-                with open(self.workflow_manager.logger.log_file, "r", encoding="utf-8") as f:
+                with open(self.logger.log_file, "r", encoding="utf-8") as f:
                     st.code(f.read(), language="neon", line_numbers=True)
 
-    def show_results_section(self) -> None:
-        self.workflow_manager.results()
+    def results_section(self, custom_results_function) -> None:
+        custom_results_function()
