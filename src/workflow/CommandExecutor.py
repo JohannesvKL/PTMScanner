@@ -236,19 +236,25 @@ class CommandExecutor:
         spec = importlib.util.spec_from_file_location(path.stem, path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        defaults = {entry["key"]: entry["value"] for entry in getattr(module, "DEFAULTS", None)}
-        # load paramters from JSON file
-        params = {k: v for k, v in self.parameter_manager.get_parameters_from_json().items() if path.name in k}
-        # update defaults
-        for k, v in params.items():
-            defaults[k.replace(f"{path.name}:", "")] = v
-        for k, v in input_output.items():
-            defaults[k] = v
-        # save parameters to temporary JSON file
-        tmp_params_files = Path(self.pid_dir.parent, f"{path.stem}.json")
-        with open(tmp_params_files, "w", encoding="utf-8") as f:
-            json.dump(defaults, f, indent=4)
-        # run command
-        self.run_command(["python", str(path), str(tmp_params_files)], write_log)
-        # remove tmp params file
-        tmp_params_files.unlink()
+        defaults = getattr(module, "DEFAULTS", None)
+        if defaults is None:
+            self.logger.log(f"WARNING: No DEFAULTS found in {path.name}")
+            # run command without params
+            self.run_command(["python", str(path)], write_log)
+        elif isinstance(defaults, list):
+            defaults = {entry["key"]: entry["value"] for entry in defaults}
+            # load paramters from JSON file
+            params = {k: v for k, v in self.parameter_manager.get_parameters_from_json().items() if path.name in k}
+            # update defaults
+            for k, v in params.items():
+                defaults[k.replace(f"{path.name}:", "")] = v
+            for k, v in input_output.items():
+                defaults[k] = v
+            # save parameters to temporary JSON file
+            tmp_params_file = Path(self.pid_dir.parent, f"{path.stem}.json")
+            with open(tmp_params_file, "w", encoding="utf-8") as f:
+                json.dump(defaults, f, indent=4)
+            # run command
+            self.run_command(["python", str(path), str(tmp_params_file)], write_log)
+            # remove tmp params file
+            tmp_params_file.unlink()

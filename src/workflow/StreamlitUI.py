@@ -531,54 +531,55 @@ class StreamlitUI:
         if defaults is None:
             st.error("No DEFAULTS found in script file.")
             return
-        # display input widget for every entry in defaults
-        # input widgets in n number of columns
-        cols = st.columns(num_cols)
-        i = 0
-        for entry in defaults:
-            key = f"{path.name}:{entry['key']}" if "key" in entry else None
-            if key is None:
-                st.error("Key not specified for parameter.")
-                continue
-            value = entry["value"] if "value" in entry else None
-            if value is None:
-                st.error("Value not specified for parameter.")
-                continue
-            hide = entry["hide"] if "hide" in entry else False
-            # no need to display input and output files widget or hidden parameters
-            if hide:
-                continue
-            advanced = entry["advanced"] if "advanced" in entry else False
-            # skip avdanced parameters if not selected
-            if not st.session_state["advanced"] and advanced:
-                continue
-            name = entry["name"] if "name" in entry else key
-            help = entry["help"] if "help" in entry else ""
-            min_value = entry["min"] if "min" in entry else None
-            max_value = entry["max"] if "max" in entry else None
-            step_size = entry["step_size"] if "step_size" in entry else 1
-            widget_type = entry["widget_type"] if "widget_type" in entry else "auto"
-            options = entry["options"] if "options" in entry else None
+        elif isinstance(defaults, list):
+            # display input widget for every entry in defaults
+            # input widgets in n number of columns
+            cols = st.columns(num_cols)
+            i = 0
+            for entry in defaults:
+                key = f"{path.name}:{entry['key']}" if "key" in entry else None
+                if key is None:
+                    st.error("Key not specified for parameter.")
+                    continue
+                value = entry["value"] if "value" in entry else None
+                if value is None:
+                    st.error("Value not specified for parameter.")
+                    continue
+                hide = entry["hide"] if "hide" in entry else False
+                # no need to display input and output files widget or hidden parameters
+                if hide:
+                    continue
+                advanced = entry["advanced"] if "advanced" in entry else False
+                # skip avdanced parameters if not selected
+                if not st.session_state["advanced"] and advanced:
+                    continue
+                name = entry["name"] if "name" in entry else key
+                help = entry["help"] if "help" in entry else ""
+                min_value = entry["min"] if "min" in entry else None
+                max_value = entry["max"] if "max" in entry else None
+                step_size = entry["step_size"] if "step_size" in entry else 1
+                widget_type = entry["widget_type"] if "widget_type" in entry else "auto"
+                options = entry["options"] if "options" in entry else None
 
-            with cols[i]:
-                if isinstance(value, bool):
-                    st.markdown("#")
-                self.input_widget(
-                    key=key,
-                    default=value,
-                    name=name,
-                    help=help,
-                    widget_type=widget_type,
-                    options=options,
-                    min_value=min_value,
-                    max_value=max_value,
-                    step_size=step_size,
-                )
-            # increment number of columns, create new cols object if end of line is reached
-            i += 1
-            if i == num_cols:
-                i = 0
-                cols = st.columns(num_cols)
+                with cols[i]:
+                    if isinstance(value, bool):
+                        st.markdown("#")
+                    self.input_widget(
+                        key=key,
+                        default=value,
+                        name=name,
+                        help=help,
+                        widget_type=widget_type,
+                        options=options,
+                        min_value=min_value,
+                        max_value=max_value,
+                        step_size=step_size,
+                    )
+                # increment number of columns, create new cols object if end of line is reached
+                i += 1
+                if i == num_cols:
+                    i = 0
+                    cols = st.columns(num_cols)
 
     def zip_and_download_files(self, directory: str):
         """

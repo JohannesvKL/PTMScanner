@@ -50,10 +50,15 @@ DEFAULTS = [
     }
 ]
 
+def get_params():
+    if len(sys.argv) > 1:
+        with open(sys.argv[1], "r") as f:
+            return json.load(f)
+    else:
+        return {}
+
 if __name__ == "__main__":
-    with open(sys.argv[1], "r") as f:
-        params = json.load(f)
-    
+    params = get_params()
     # Add code here:
     print("Writing stdout which will get logged...")
     print("Parameters for this example Python tool:")

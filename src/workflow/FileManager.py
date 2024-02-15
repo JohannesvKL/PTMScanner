@@ -3,8 +3,6 @@ import string
 import random
 import shutil
 from typing import Union, List
-from .Logger import Logger
-
 
 class FileManager:
     """
@@ -63,12 +61,17 @@ class FileManager:
             else:
                 files = [str(files)]
         # Handle input list
-        elif isinstance(files, list):
+        elif isinstance(files, list) and files:
             # Can have one entry of strings (e.g. if has been collected before by FileManager)
             if isinstance(files[0], list):
                 files = files[0]
             # Make sure ever file path is a string
             files = [str(f) for f in files if isinstance(f, Path) or isinstance(f, str)]
+        # Raise error if no files have been detected
+        if not files:
+            raise ValueError(
+                f"No files found, can not set file type **{set_file_type}**, results_dir **{set_results_dir}** and collect **{collect}**."
+            )
         # Set new file type if required
         if set_file_type is not None:
             files = self._set_type(files, set_file_type)
@@ -80,11 +83,6 @@ class FileManager:
         # Collect files into a single list if required
         if collect:
             files = [files]
-        # Raise error if no files have been detected
-        if not files:
-            raise ValueError(
-                f"No files found, can not set file type **{set_file_type}**, results_dir **{set_results_dir}** and collect **{collect}**."
-            )
         return files
 
     def _set_type(self, files: List[str], set_file_type: str) -> List[str]:
@@ -128,10 +126,6 @@ class FileManager:
         if not subdir_name:
             subdir_name = self._create_results_sub_dir(subdir_name)
         else:
-            if Path(self.workflow_dir, "results", subdir_name).exists():
-                Logger().log(
-                    f"WARNING: Subdirectory already exists, will overwrite content: {subdir_name}"
-                )
             subdir_name = self._create_results_sub_dir(subdir_name)
 
         def change_subdir(file_path, subdir):
