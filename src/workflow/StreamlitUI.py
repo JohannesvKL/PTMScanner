@@ -70,6 +70,9 @@ class StreamlitUI:
                 if files:
                     files_dir.mkdir(parents=True, exist_ok=True)
                     for f in files:
+                        # in case of online mode a single file is returned -> put in list
+                        if not isinstance(files, list):
+                            files = [files]
                         if f.name not in [
                             f.name for f in files_dir.iterdir()
                         ] and f.name.endswith(file_type):
