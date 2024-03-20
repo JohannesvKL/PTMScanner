@@ -669,13 +669,10 @@ class StreamlitUI:
             if st.button("Stop Workflow", type="primary", use_container_width=True):
                 self.executor.stop()
                 st.rerun()
-        else:
-            st.button(
-                "Start Workflow",
-                type="primary",
-                use_container_width=True,
-                on_click=start_workflow_function,
-            )
+        elif st.button("Start Workflow", type="primary", use_container_width=True):
+            start_workflow_function()
+            time.sleep(2)
+            st.rerun()
 
         if self.logger.log_file.exists():
             if self.executor.pid_dir.exists():
