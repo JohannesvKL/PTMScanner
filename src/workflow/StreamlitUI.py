@@ -168,7 +168,7 @@ class StreamlitUI:
             st.warning(f"No **{name}** files!")
             return
         options = [str(f) for f in path.iterdir()]
-        if key in self.params.keys():
+        if (key in self.params.keys()) and isinstance(self.params[key], list):
             self.params[key] = [f for f in self.params[key] if f in options]
 
         widget_type = "multiselect" if multiple else "selectbox"
