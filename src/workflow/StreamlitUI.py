@@ -635,7 +635,7 @@ class StreamlitUI:
     def file_upload_section(self, custom_upload_function) -> None:
         custom_upload_function()
         if st.button("⬇️ Download all uploaded files", use_container_width=True):
-            self.ui.zip_and_download_files(Path(self.workflow_dir, "input-files"))
+            self.zip_and_download_files(Path(self.workflow_dir, "input-files"))
 
     def parameter_section(self, custom_paramter_function) -> None:
         st.toggle("Show advanced parameters", value=False, key="advanced")
