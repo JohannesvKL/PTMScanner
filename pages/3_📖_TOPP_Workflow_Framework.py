@@ -10,7 +10,7 @@ page_setup()
 
 wf = Workflow()
 
-st.title("📖 Workflow Framework Docs")
+st.title("📖 TOPP Workflow Framework Documentation")
 
 st.markdown(
 """

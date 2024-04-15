@@ -33,10 +33,12 @@ def main():
     """
     Display main page content.
     """
-    st.title("Template App")
-    st.markdown("## A template for an OpenMS streamlit app.")
+    st.title("OpenMS Streamlit Template App")
+    st.subheader("Quick Start")
     if Path("OpenMS-App.zip").exists():
-        st.markdown("## Installation")
+        st.markdow("""
+Download the latest version for Windows here by clicking the button below.
+""")
         with open("OpenMS-App.zip", "rb") as file:
             st.download_button(
                 label="Download for Windows",
@@ -45,6 +47,10 @@ def main():
                 mime="archive/zip",
                 type="primary",
             )
+        st.markdown("""
+Extract the zip file and run the executable (.exe) file to launch the app. Since every dependency is compressed and packacked the app will take a while to launch (up to one minute).
+""")
+    
     save_params(params)
 
 
