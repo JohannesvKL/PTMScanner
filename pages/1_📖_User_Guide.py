@@ -11,7 +11,7 @@ Welcome to the OpenMS Streamlit Web Application! This guide will help you unders
 ## Advantages of OpenMS Web Apps
 
 OpenMS web applications provide a user-friendly interface for accessing the powerful features of OpenMS. Here are a few advantages:
-- **Accessibility**: Access OpenMS features from any device with a web browser.
+- **Accessibility**: Access powerful OpenMS algorithms and TOPP tools from any device with a web browser.
 - **Ease of Use**: Simplified user interface makes it easy for both beginners and experts to perform complex analyses.
 - **No Installation Required**: Use the tools without the need to install OpenMS locally, saving time and system resources.
 
