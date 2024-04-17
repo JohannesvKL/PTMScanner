@@ -18,7 +18,7 @@ OpenMS web applications provide a user-friendly interface for accessing the powe
 ## Workspaces
 
 In the OpenMS web application, workspaces are designed to keep your analysis organized:
-- **Workspace Specific Parameters**: Each workspace allows you to set and save parameters specific to the analysis you are conducting in that workspace.
+- **Workspace Specific Parameters and Files**: Each workspace stores parameters and files (uploaded input files and results from workflows).
 - **Persistence**: Your workspaces and parameters are saved, so you can return to your analysis anytime and pick up where you left off.
 
 ## Online and Local Mode Differences
