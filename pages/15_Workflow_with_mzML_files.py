@@ -48,7 +48,7 @@ result_dir = Path(st.session_state["workspace"], "mzML-workflow-results")
 if run_workflow_button:
     params = save_params(params)
     if params["example-workflow-selected-mzML-files"]:
-        complexworkflow.run_workflow(params, result_dir)
+        mzmlfileworkflow.run_workflow(params, result_dir)
     else:
         st.warning("Select some mzML files.")
 
