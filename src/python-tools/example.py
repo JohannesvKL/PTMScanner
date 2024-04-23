@@ -35,18 +35,20 @@ DEFAULTS = [
     },
     {
         "key": "selectbox-example",
+        "name": "select something",
         "value": "a",
         "options": ["a", "b", "c"],
     },
     {
         "key": "adavanced-input",
+        "name": "advanced parameter",
         "value": 5,
         "step_size": 5,
         "help": "An advanced example parameter.",
         "advanced": True,
     },
     {
-        "key": "checkbox", "value": True
+        "key": "checkbox", "value": True, "name": "boolean"
     }
 ]
 

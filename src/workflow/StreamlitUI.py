@@ -10,6 +10,7 @@ import importlib.util
 import time
 from io import BytesIO
 import zipfile
+from datetime import datetime
 
 class StreamlitUI:
     """
@@ -358,8 +359,11 @@ class StreamlitUI:
     def input_TOPP(
         self,
         topp_tool_name: str,
-        num_cols: int = 3,
+        num_cols: int = 4,
         exclude_parameters: List[str] = [],
+        include_parameters: List[str] = [],
+        display_full_parameter_names: bool = False,
+        custom_defaults: dict = {},
     ) -> None:
         """
         Generates input widgets for TOPP tool parameters dynamically based on the tool's
@@ -369,36 +373,48 @@ class StreamlitUI:
         Args:
             topp_tool_name (str): The name of the TOPP tool for which to generate inputs.
             num_cols (int, optional): Number of columns to use for the layout. Defaults to 3.
-            exclude_parameters (List[str], optional): List of parameter names to exclude from the widget.
+            exclude_parameters (List[str], optional): List of parameter names to exclude from the widget. Defaults to an empty list.
+            include_parameters (List[str], optional): List of parameter names to include in the widget. Defaults to an empty list.
+            display_full_parameter_names (bool, optional): Whether to display the full parameter names. Defaults to True.
+            custom_defaults (dict, optional): Dictionary of custom defaults to use. Defaults to an empty dict.
         """
         # write defaults ini files
         ini_file_path = Path(self.parameter_manager.ini_dir, f"{topp_tool_name}.ini")
         if not ini_file_path.exists():
             subprocess.call([topp_tool_name, "-write_ini", str(ini_file_path)])
+            # update custom defaults if necessary
+            if custom_defaults:
+                param = poms.Param()
+                poms.ParamXMLFile().load(str(ini_file_path), param)
+                for key, value in custom_defaults.items():
+                    encoded_key = f"{topp_tool_name}:1:{key}".encode()
+                    if encoded_key in param.keys():
+                        param.setValue(encoded_key, value)
+                poms.ParamXMLFile().store(str(ini_file_path), param)
+
         # read into Param object
         param = poms.Param()
         poms.ParamXMLFile().load(str(ini_file_path), param)
-
-        excluded_keys = [
-            "log",
-            "debug",
-            "threads",
-            "no_progress",
-            "force",
-            "version",
-            "test",
-        ] + exclude_parameters
-
-        param_dicts = []
-        for key in param.keys():
-            # Determine if the parameter should be included based on the conditions
-            if (
-                b"input file" in param.getTags(key)
-                or b"output file" in param.getTags(key)
-            ) or (key.decode().split(":")[-1] in excluded_keys):
-                continue
+        if include_parameters:
+            valid_keys = [key for key in param.keys() if any([k.encode() in key for k in include_parameters])]
+        else:
+            excluded_keys = [
+                "log",
+                "debug",
+                "threads",
+                "no_progress",
+                "force",
+                "version",
+                "test",
+            ] + exclude_parameters
+            valid_keys = [key for key in param.keys() if not (b"input file" in param.getTags(key)
+                                                            or b"output file" in param.getTags(key)
+                                                            or any([k.encode() in key for k in excluded_keys]))]
+        
+        params_decoded = []
+        for key in valid_keys:
             entry = param.getEntry(key)
-            param_dict = {
+            tmp = {
                 "name": entry.name.decode(),
                 "key": key,
                 "value": entry.value,
@@ -406,66 +422,75 @@ class StreamlitUI:
                 "description": entry.description.decode(),
                 "advanced": (b"advanced" in param.getTags(key)),
             }
-            param_dicts.append(param_dict)
-
-        # Update parameter values from the JSON parameters file
-        json_params = self.params
-        if topp_tool_name in json_params:
-            for p in param_dicts:
-                name = p["key"].decode().split(":1:")[1]
-                if name in json_params[topp_tool_name]:
-                    p["value"] = json_params[topp_tool_name][name]
-
-        # input widgets in n number of columns
-        cols = st.columns(num_cols)
-        i = 0
+            params_decoded.append(tmp)
+                    
+        # for each parameter in params_decoded
+        # if a parameter with custom default value exists, use that value
+        # else check if the parameter is already in self.params, if yes take the value from self.params
+        for p in params_decoded:
+            name = p["key"].decode().split(":1:")[1]
+            if topp_tool_name in self.params:
+                if name in self.params[topp_tool_name]:
+                    p["value"] = self.params[topp_tool_name][name]
+                elif name in custom_defaults:
+                    p["value"] = custom_defaults[name]
+            elif name in custom_defaults:
+                p["value"] = custom_defaults[name]
 
         # show input widgets
-        for p in param_dicts:
-
+        cols = st.columns(num_cols)
+        i = 0
+        
+        for p in params_decoded:
             # skip avdanced parameters if not selected
             if not st.session_state["advanced"] and p["advanced"]:
                 continue
 
             key = f"{self.parameter_manager.topp_param_prefix}{p['key'].decode()}"
-
+            if display_full_parameter_names:
+                name = key.split(":1:")[1].replace("algorithm:", "").replace(":", " : ")
+            else:
+                name = p["name"]
             try:
+                # # sometimes strings with newline, handle as list
+                if isinstance(p["value"], str) and "\n" in p["value"]:
+                    p["value"] = p["value"].split("\n")
                 # bools
-                if p["value"] == "true" or p["value"] == "false":
+                if isinstance(p["value"], bool):
                     cols[i].markdown("##")
                     cols[i].checkbox(
-                        p["name"],
-                        value=(p["value"] == "true"),
-                        help=p["description"],
-                        key=key,
-                    )
-
-                # string options
-                elif isinstance(p["value"], str) and p["valid_strings"]:
-                    cols[i].selectbox(
-                        p["name"],
-                        options=p["valid_strings"],
-                        index=p["valid_strings"].index(p["value"]),
+                        name,
+                        value=(p["value"] == "true") if type(p["value"]) == str else p["value"],
                         help=p["description"],
                         key=key,
                     )
 
                 # strings
                 elif isinstance(p["value"], str):
-                    cols[i].text_input(
-                        p["name"], value=p["value"], help=p["description"], key=key
-                    )
+                    # string options
+                    if p["valid_strings"]:
+                        cols[i].selectbox(
+                            name,
+                            options=p["valid_strings"],
+                            index=p["valid_strings"].index(p["value"]),
+                            help=p["description"],
+                            key=key,
+                        )
+                    else:
+                        cols[i].text_input(
+                            name, value=p["value"], help=p["description"], key=key
+                        )
 
                 # ints
                 elif isinstance(p["value"], int):
                     cols[i].number_input(
-                        p["name"], value=int(p["value"]), help=p["description"], key=key
+                        name, value=int(p["value"]), help=p["description"], key=key
                     )
 
                 # floats
                 elif isinstance(p["value"], float):
                     cols[i].number_input(
-                        p["name"],
+                        name,
                         value=float(p["value"]),
                         step=1.0,
                         help=p["description"],
@@ -478,7 +503,7 @@ class StreamlitUI:
                         v.decode() if isinstance(v, bytes) else v for v in p["value"]
                     ]
                     cols[i].text_area(
-                        p["name"],
+                        name,
                         value="\n".join(p["value"]),
                         help=p["description"],
                         key=key,
@@ -646,16 +671,16 @@ class StreamlitUI:
         )
 
         with form:
-            cols = st.columns(2)
+            cols = st.columns(4)
 
-            cols[0].form_submit_button(
+            cols[2].form_submit_button(
                 label="Save parameters",
                 on_click=self.parameter_manager.save_parameters,
                 type="primary",
                 use_container_width=True,
             )
 
-            if cols[1].form_submit_button(
+            if cols[3].form_submit_button(
                 label="Load default parameters", use_container_width=True
             ):
                 self.parameter_manager.reset_to_default_parameters()
@@ -665,29 +690,58 @@ class StreamlitUI:
         self.parameter_manager.save_parameters()
 
     def execution_section(self, start_workflow_function) -> None:
+        # Display a summary of non-default TOPP paramters and all others (custom and python scripts)
+        summary_text = ""
+        for key, value in self.params.items():
+            if not isinstance(value, dict):
+                summary_text += f"""
+
+{key}: **{value}**                
+""" 
+            elif value:
+                summary_text += f"""
+**{key}**:
+
+"""                 
+                for k, v in value.items():
+                    summary_text += f"""
+{key}: **{v}**
+
+"""     
+        with st.expander("**Parameter Summary**"):
+            st.markdown(summary_text)
+
+        c1, c2 = st.columns(2)
+        # Select log level, this can be changed at run time or later without re-running the workflow
+        log_level = c1.selectbox("log details", ["minimal", "commands and run times", "all"], key="log_level")
+        c2.markdown("##")
         if self.executor.pid_dir.exists():
-            if st.button("Stop Workflow", type="primary", use_container_width=True):
+            if c2.button("Stop Workflow", type="primary", use_container_width=True):
                 self.executor.stop()
                 st.rerun()
         else:
-            st.button(
+            c2.button(
                 "Start Workflow",
                 type="primary",
                 use_container_width=True,
                 on_click=start_workflow_function,
             )
-
-        if self.logger.log_file.exists():
+        log_path = Path(self.workflow_dir, "logs", log_level.replace(" ", "-") + ".log")
+        if log_path.exists():
             if self.executor.pid_dir.exists():
                 with st.spinner("**Workflow running...**"):
-                    with open(self.logger.log_file, "r", encoding="utf-8") as f:
+                    with open(log_path, "r", encoding="utf-8") as f:
                         st.code(f.read(), language="neon", line_numbers=True)
                     time.sleep(2)
                 st.rerun()
             else:
-                st.markdown("**Workflow log file**")
-                with open(self.logger.log_file, "r", encoding="utf-8") as f:
-                    st.code(f.read(), language="neon", line_numbers=True)
+                st.markdown(f"**Workflow log file: {datetime.fromtimestamp(log_path.stat().st_ctime).strftime('%Y-%m-%d %H:%M')} CET**")
+                with open(log_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    # Check if workflow finished successfully
+                    if not "WORKFLOW FINISHED" in content:
+                        st.error("**Errors occured, check log file.**")
+                    st.code(content, language="neon", line_numbers=True)
 
     def results_section(self, custom_results_function) -> None:
         custom_results_function()

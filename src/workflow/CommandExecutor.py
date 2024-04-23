@@ -26,7 +26,7 @@ class CommandExecutor:
         self.parameter_manager = parameter_manager
 
     def run_multiple_commands(
-        self, commands: list[str], write_log: bool = True
+        self, commands: list[str]
     ) -> None:
         """
         Executes multiple shell commands concurrently in separate threads.
@@ -38,10 +38,9 @@ class CommandExecutor:
         Args:
             commands (list[str]): A list where each element is a list representing
                                         a command and its arguments.
-            write_log (bool): If True, logs the execution details and outcomes of the commands.
         """
         # Log the start of command execution
-        self.logger.log(f"Running {len(commands)} commands in parallel...")
+        self.logger.log(f"Running {len(commands)} commands in parallel...", 1)
         start_time = time.time()
 
         # Initialize a list to keep track of threads
@@ -49,7 +48,7 @@ class CommandExecutor:
 
         # Start a new thread for each command
         for cmd in commands:
-            thread = threading.Thread(target=self.run_command, args=(cmd, write_log))
+            thread = threading.Thread(target=self.run_command, args=(cmd,))
             thread.start()
             threads.append(thread)
 
@@ -59,27 +58,23 @@ class CommandExecutor:
 
         # Calculate and log the total execution time
         end_time = time.time()
-        self.logger.log(
-            f"Total time to run {len(commands)} commands: {end_time - start_time:.2f} seconds"
-        )
+        self.logger.log(f"Total time to run {len(commands)} commands: {end_time - start_time:.2f} seconds", 1)
 
-    def run_command(self, command: list[str], write_log: bool = True) -> None:
+    def run_command(self, command: list[str]) -> None:
         """
         Executes a specified shell command and logs its execution details.
 
         Args:
             command (list[str]): The shell command to execute, provided as a list of strings.
-            write_log (bool): If True, logs the command's output and errors.
 
         Raises:
             Exception: If the command execution results in any errors.
         """
         # Ensure all command parts are strings
         command = [str(c) for c in command]
-        
+
         # Log the execution start
-        self.logger.log(f"Running command:\n"+' '.join(command)+"\nWaiting for command to finish...")
-        
+        self.logger.log(f"Running command:\n"+' '.join(command)+"\nWaiting for command to finish...", 1)   
         start_time = time.time()
         
         # Execute the command
@@ -96,24 +91,22 @@ class CommandExecutor:
         
         # Cleanup PID file
         pid_file_path.unlink()
-        
+
         end_time = time.time()
         execution_time = end_time - start_time
-        
         # Format the logging prefix
-        self.logger.log(f"Process finished:\n"+' '.join(command)+f"\nTotal time to run command: {execution_time:.2f} seconds")
+        self.logger.log(f"Process finished:\n"+' '.join(command)+f"\nTotal time to run command: {execution_time:.2f} seconds", 1)
         
         # Log stdout if present
-        if stdout and write_log:
-            self.logger.log(stdout.decode())
+        if stdout:
+            self.logger.log(stdout.decode(), 2)
         
         # Log stderr and raise an exception if errors occurred
         if stderr or process.returncode != 0:
             error_message = stderr.decode().strip()
-            self.logger.log(f"ERRORS OCCURRED:\n{error_message}")
-            raise Exception(f"Errors occurred while running command: {' '.join(command)}\n{error_message}")
+            self.logger.log(f"ERRORS OCCURRED:\n{error_message}", 2)
 
-    def run_topp(self, tool: str, input_output: dict, write_log: bool = True) -> None:
+    def run_topp(self, tool: str, input_output: dict, custom_params: dict = {}) -> None:
         """
         Constructs and executes commands for the specified tool OpenMS TOPP tool based on the given
         input and output configurations. Ensures that all input/output file lists
@@ -130,8 +123,8 @@ class CommandExecutor:
         Args:
             tool (str): The executable name or path of the tool.
             input_output (dict): A dictionary specifying the input/output parameter names (as key) and their corresponding file paths (as value).
-            write_log (bool): If True, enables logging of command execution details.
-        
+            custom_params (dict): A dictionary of custom parameters to pass to the tool.
+
         Raises:
             ValueError: If the lengths of input/output file lists are inconsistent,
                         except for single string inputs.
@@ -173,14 +166,31 @@ class CommandExecutor:
             # Add non-default TOPP tool parameters
             if tool in params.keys():
                 for k, v in params[tool].items():
-                    command += [f"-{k}", str(v)]
+                    command += [f"-{k}"]
+                    if isinstance(v, str) and "\n" in v:
+                        command += v.split("\n")
+                    else:
+                        command += [str(v)]
+            # Add custom parameters
+            for k, v in custom_params.items():
+                command += [f"-{k}"]
+                if v:
+                    if isinstance(v, list):
+                        command += [str(x) for x in v]
+                    else:
+                        command += [str(v)]
             commands.append(command)
+
+            # check if a ini file has been written, if yes use it (contains custom defaults)
+            ini_path = Path(self.parameter_manager.ini_dir, tool + ".ini")
+            if ini_path.exists():
+                command += ["-ini", str(ini_path)]
 
         # Run command(s)
         if len(commands) == 1:
-            self.run_command(commands[0], write_log)
+            self.run_command(commands[0])
         elif len(commands) > 1:
-            self.run_multiple_commands(commands, write_log)
+            self.run_multiple_commands(commands)
         else:
             raise Exception("No commands to execute.")
 
@@ -200,7 +210,7 @@ class CommandExecutor:
         shutil.rmtree(self.pid_dir, ignore_errors=True)
         self.logger.log("Workflow stopped.")
 
-    def run_python(self, script_file: str, input_output: dict = {}, write_log: bool = True) -> None:
+    def run_python(self, script_file: str, input_output: dict = {}) -> None:
         """
         Executes a specified Python script with dynamic input and output parameters,
         optionally logging the execution process. The method identifies and loads
@@ -217,8 +227,6 @@ class CommandExecutor:
                                 If the path is omitted, the method looks for the script in 'src/python-tools/'.
                                 The '.py' extension is appended if not present.
             input_output (dict, optional): A dictionary specifying the input/output parameter names (as key) and their corresponding file paths (as value). Defaults to {}.
-            write_log (bool, optional): If True, the execution process is logged. This
-                                        includes any output generated by the script as well as any errors. Defaults to True.
         """
         # Check if script file exists (can be specified without path and extension)
         # default location: src/python-tools/script_file
@@ -240,7 +248,7 @@ class CommandExecutor:
         if defaults is None:
             self.logger.log(f"WARNING: No DEFAULTS found in {path.name}")
             # run command without params
-            self.run_command(["python", str(path)], write_log)
+            self.run_command(["python", str(path)])
         elif isinstance(defaults, list):
             defaults = {entry["key"]: entry["value"] for entry in defaults}
             # load paramters from JSON file
@@ -255,6 +263,6 @@ class CommandExecutor:
             with open(tmp_params_file, "w", encoding="utf-8") as f:
                 json.dump(defaults, f, indent=4)
             # run command
-            self.run_command(["python", str(path), str(tmp_params_file)], write_log)
+            self.run_command(["python", str(path), str(tmp_params_file)])
             # remove tmp params file
             tmp_params_file.unlink()
