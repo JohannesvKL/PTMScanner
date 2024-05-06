@@ -169,7 +169,7 @@ class StreamlitUI:
             st.warning(f"No **{name}** files!")
             return
         options = [str(f) for f in path.iterdir()]
-        if key in self.params.keys():
+        if (key in self.params.keys()) and isinstance(self.params[key], list):
             self.params[key] = [f for f in self.params[key] if f in options]
 
         widget_type = "multiselect" if multiple else "selectbox"
@@ -660,7 +660,7 @@ class StreamlitUI:
     def file_upload_section(self, custom_upload_function) -> None:
         custom_upload_function()
         if st.button("⬇️ Download all uploaded files", use_container_width=True):
-            self.ui.zip_and_download_files(Path(self.workflow_dir, "input-files"))
+            self.zip_and_download_files(Path(self.workflow_dir, "input-files"))
 
     def parameter_section(self, custom_paramter_function) -> None:
         st.toggle("Show advanced parameters", value=False, key="advanced")
@@ -719,13 +719,9 @@ class StreamlitUI:
             if c2.button("Stop Workflow", type="primary", use_container_width=True):
                 self.executor.stop()
                 st.rerun()
-        else:
-            c2.button(
-                "Start Workflow",
-                type="primary",
-                use_container_width=True,
-                on_click=start_workflow_function,
-            )
+        elif st.button("Start Workflow", type="primary", use_container_width=True):
+            start_workflow_function()
+            st.rerun()
         log_path = Path(self.workflow_dir, "logs", log_level.replace(" ", "-") + ".log")
         if log_path.exists():
             if self.executor.pid_dir.exists():
