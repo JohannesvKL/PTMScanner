@@ -5,7 +5,7 @@ import plotly.express as px
 from pathlib import Path
 
 from src.common import page_setup, save_params, show_fig, show_table
-from src import complexworkflow
+from src import mzmlfileworkflow
 from src.captcha_ import captcha_control
 
 
@@ -48,7 +48,7 @@ result_dir = Path(st.session_state["workspace"], "mzML-workflow-results")
 if run_workflow_button:
     params = save_params(params)
     if params["example-workflow-selected-mzML-files"]:
-        complexworkflow.run_workflow(params, result_dir)
+        mzmlfileworkflow.run_workflow(params, result_dir)
     else:
         st.warning("Select some mzML files.")
 

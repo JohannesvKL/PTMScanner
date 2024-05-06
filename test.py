@@ -3,7 +3,7 @@ import unittest
 from urllib.request import urlretrieve
 
 from src.simpleworkflow import generate_random_table
-from src.complexworkflow import mzML_file_get_num_spectra
+from src.mzmlfileworkflow import mzML_file_get_num_spectra
 
 from pathlib import Path
 

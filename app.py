@@ -33,10 +33,24 @@ def main():
     """
     Display main page content.
     """
-    st.title("Template App")
-    st.markdown("## A template for an OpenMS streamlit app.")
+    st.title("OpenMS Streamlit Template App")
+    st.info("""
+This repository contains a template app for OpenMS workflows in a web application using the **streamlit** framework. It serves as a foundation for apps ranging from simple workflows with **pyOpenMS** to complex workflows utilizing **OpenMS TOPP tools** with parallel execution. It includes solutions for handling user data and parameters in workspaces as well as deployment with docker-compose.
+""")
+    st.subheader("Features")
+    st.markdown("""
+- Workspaces for user data with unique shareable IDs
+- Persistent parameters and input files within a workspace
+- Captcha control
+- Packaged executables for Windows
+- framework for workflows with OpenMS TOPP tools
+- Deployment [with docker-compose](https://github.com/OpenMS/streamlit-deployment)
+""")
+    st.subheader("Quick Start")
     if Path("OpenMS-App.zip").exists():
-        st.markdown("## Installation")
+        st.markdow("""
+Download the latest version for Windows here by clicking the button below.
+""")
         with open("OpenMS-App.zip", "rb") as file:
             st.download_button(
                 label="Download for Windows",
@@ -45,6 +59,14 @@ def main():
                 mime="archive/zip",
                 type="primary",
             )
+        st.markdown("""
+Extract the zip file and run the executable (.exe) file to launch the app. Since every dependency is compressed and packacked the app will take a while to launch (up to one minute).
+""")
+    st.markdown("""
+Check out the documentation for **users** and **developers** is included as pages indicated by the 📖 icon
+
+Try the example pages **📁 mzML file upload**, **👀 visualization** and **example workflows**.
+""")
     save_params(params)
 
 

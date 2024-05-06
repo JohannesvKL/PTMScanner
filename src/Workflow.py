@@ -27,7 +27,7 @@ class Workflow(WorkflowManager):
         )
         with t[0]:
             # Parameters for FeatureFinderMetabo TOPP tool.
-            self.ui.input_TOPP("FeatureFinderMetabo")
+            self.ui.input_TOPP("FeatureFinderMetabo", custom_defaults={"algorithm:common:noise_threshold_int": 1000.0})
         with t[1]:
             # A single checkbox widget for workflow logic.
             self.ui.input_widget("run-adduct-detection", False, "Adduct Detection")
@@ -42,8 +42,12 @@ class Workflow(WorkflowManager):
             self.ui.input_python("example")
 
     def execution(self) -> None:
-        # Get mzML input files from self.params.
-        # Can be done without file manager, however, it ensures everything is correct.
+        # Any parameter checks, here simply checking if mzML files are selected
+        if not self.params["mzML-files"]:
+            self.logger.log("ERROR: No mzML files selected.")
+            return
+
+        # Get mzML files with FileManager
         in_mzML = self.file_manager.get_files(self.params["mzML-files"])
         
         # Log any messages.
@@ -63,7 +67,7 @@ class Workflow(WorkflowManager):
             # Run MetaboliteAdductDecharger for adduct detection, with disabled logs.
             # Without a new file list for output, the input files will be overwritten in this case.
             self.executor.run_topp(
-                "MetaboliteAdductDecharger", {"in": out_ffm, "out_fm": out_ffm}, write_log=False
+                "MetaboliteAdductDecharger", {"in": out_ffm, "out_fm": out_ffm}
             )
 
         # Example for a custom Python tool, which is located in src/python-tools.
