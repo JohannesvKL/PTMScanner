@@ -63,12 +63,16 @@ jobs:
         key: ${{ runner.os }}-contrib3
 
     - name: Load contrib build
-      if: steps.cache-contrib-win.outputs.cache-hit != 'true'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-          cd OpenMS/contrib
-          curl -o contribbld.tar.gz https://abibuilder.cs.uni-tuebingen.de/archive/openms/contrib/windows/x64/msvc-14.2/contrib_build.tar.gz
-          tar -xzf contribbld.tar.gz
-          rm contribbld.tar.gz
+        cd OpenMS/contrib
+        # Download the file using the URL fetched from GitHub
+        gh release download -R OpenMS/contrib --pattern 'contrib_build-Windows.tar.gz'
+        # Extract the archive
+        7z x -so contrib_build-Windows.tar.gz | 7z x -si -ttar
+        rm contrib_build-Windows.tar.gz
+        ls
 
     - name: Setup ccache cache
       uses: actions/cache@v3
