@@ -1,4 +1,4 @@
-## create .exe of streamlit app
+## create windows executable of streamlit app with pyinstaller
 :heavy_check_mark: 
 Tested with streamlit v1.29, python v3.11.4</br>
 
