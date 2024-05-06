@@ -1,51 +1,83 @@
-## create windows executable of streamlit app with embeddable python
+# Creating a Windows Executable of a Streamlit App with Embeddable Python
 
-### Download suitable python Embeddable Version e-g 3.11.9
+To create an executable for Streamlit app on Windows, we'll use an embeddable version of Python.</br>
+Here's a step-by-step guide:
 
-```
-wget https://www.python.org/ftp/python/3.11.9/python-3.11.9-embed-amd64.zip
+### Download and Extract Python Embeddable Version
 
-# Unzip the folder
-unzip python-3.11.9-embed-amd64.zip
-```
+1. Download a suitable Python embeddable version. For example, let's download Python 3.11.9:
 
-### Download get-pip.py and install pip
-```
-wget https://bootstrap.pypa.io/get-pip.py
+    ```bash
+    wget https://www.python.org/ftp/python/3.11.9/python-3.11.9-embed-amd64.zip
+    ```
 
-# Install pip
-./python-3.11.9-embed-amd64/python <path_to_get-pip.py> --no-warn-script-location
-```
+2. Extract the downloaded zip file:
 
-### Uncomment 'import site' in the python-3.11.9-embed-amd64/python311._pth
-```
-# Uncomment to run site.main() automatically
-# Remove hash
-import site 
-# Or use command
-sed -i 's/^# import site/import site/' python-3.11.9-embed-amd64/python311._pth
-```
+    ```bash
+    unzip python-3.11.9-embed-amd64.zip
+    ```
 
-### Install all packages from requirements.txt
-```
+### Install pip
+
+1. Download `get-pip.py`:
+
+    ```bash
+    wget https://bootstrap.pypa.io/get-pip.py
+    ```
+
+2. Install pip:
+
+    ```bash
+    ./python-3.11.9-embed-amd64/python <path_to_get-pip.py> --no-warn-script-location
+    ```
+
+### Configure Python Environment
+
+1. Uncomment 'import site' in the `python311._pth` file:
+
+    ```bash
+    # Uncomment to run site.main() automatically
+    # Remove hash from python-3.11.9-embed-amd64/python311._pth file
+    import site 
+
+    # Or use command
+    sed -i 's/^# import site/import site/' python-3.11.9-embed-amd64/python311._pth
+    ```
+
+### Install Required Packages
+
+Install all required packages from `requirements.txt`:
+
+```bash
 ./python-3.11.9-embed-amd64/python -m pip install -r requirements.txt --no-warn-script-location
 ```
 
-### Run streamlit app
-```
-./python-3.11.9-embed-amd64/python -m streamlit run app.py
-```
+### Copy App Files
 
-### Wrap a command in .bat file to achieve clickable event
-```
-# create run_app.bat file
+1. Create a folder for your Streamlit app:
 
+    ```bash
+    mkdir ../streamlit_exe
+    ```
+
+2. Copy Python environment and app files:
+
+    ```bash
+    # Copy Python environment and app files
+    cp -r python-3.11.9-embed-amd64 streamlit_exe \
+    && cp -r src ../streamlit_exe \
+    && cp -r pages ../streamlit_exe \
+    && cp -r .streamlit ../streamlit_exe \
+    && cp -r example_data ../streamlit_exe \
+    && cp app.py ../streamlit_exe
+    ```
+
+### Create a Clickable Shortcut
+
+Create a `run_app.bat` file to make running the app easier:
+
+```batch
 @echo off
 .\python-3.11.9-embed-amd64\python -m streamlit run app.py local
 ```
-
-#### <code> After successfully completing all these steps, the streamlit app will be available by running run_app.bat file.</code>
-
-> [!NOTE]
-you can still change the configuration of streamlit app with .streamlit/config.toml file e-g provide different port, change upload size etc
 
