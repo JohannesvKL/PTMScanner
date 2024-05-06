@@ -25,7 +25,7 @@ class WorkflowManager:
         The workflow itself needs to be a process, otherwise streamlit will wait for everything to finish before updating the UI again.
         """
         # Delete the log file if it already exists
-        self.logger.log_file.unlink(missing_ok=True)
+        shutil.rmtree(Path(self.workflow_dir, "logs"), ignore_errors=True)
         # Start workflow process
         workflow_process = multiprocessing.Process(target=self.workflow_process)
         workflow_process.start()

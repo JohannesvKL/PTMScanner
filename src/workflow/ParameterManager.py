@@ -60,13 +60,6 @@ class ParameterManager:
                     ini_key = key.replace(self.topp_param_prefix, "").encode()
                     # get ini (default) value by ini_key
                     ini_value = param.getValue(ini_key)
-                    # need to convert bool values to string values
-                    if isinstance(value, bool):
-                        value = "true" if value else "false"
-                    # convert strings with newlines to list
-                    if isinstance(value, str):
-                        if "\n" in value:
-                            value = [v.encode() for v in value.split("\n")]
                     # check if value is different from default
                     if ini_value != value:
                         # store non-default value

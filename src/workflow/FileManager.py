@@ -175,6 +175,5 @@ class FileManager:
             while Path(self.workflow_dir, "results", name).exists():
                 name = self._generate_random_code(4)
         path = Path(self.workflow_dir, "results", name)
-        shutil.rmtree(path, ignore_errors=True)
-        path.mkdir()
+        path.mkdir(exist_ok=True)
         return str(path)

@@ -23,23 +23,8 @@ st.markdown(
 - workflow output updates automatically in short intervalls
 - user can leave the app and return to the running workflow at any time
 - quickly build a workflow with multiple steps channelling files between steps
-#
 """
 )
-
-with st.expander("**Example User Interface**", True):
-    t =  st.tabs(["📁 **File Upload**", "⚙️ **Configure**", "🚀 **Run**", "📊 **Results**"])
-    with t[0]:
-        wf.show_file_upload_section()
-
-    with t[1]:
-        wf.show_parameter_section()
-
-    with t[2]:
-        wf.show_execution_section()
-        
-    with t[3]:
-        wf.show_results_section()
 
 st.markdown(
 """
@@ -117,26 +102,26 @@ It takes the obligatory **topp_tool_name** parameter and generates input widgets
 **3. Choose `self.ui.input_python` to automatically generate complete input sections for a custom Python tool:**
 
 Takes the obligatory **script_file** argument. The default location for the Python script files is in `src/python-tools` (in this case the `.py` file extension is optional in the **script_file** argument), however, any other path can be specified as well. Parameters need to be specified in the Python script in the **DEFAULTS** variable with the mandatory **key** and **value** parameters.
-
-Here are the options to use as dictionary keys for parameter definitions (see `src/python-tools/example.py` for an example):
-
-Mandatory keys for each parameter
-- **key:** a unique identifier
-- **value:** the default value
-
-Optional keys for each parameter
-- **name:** the name of the parameter
-- **hide:** don't show the parameter in the parameter section (e.g. for **input/output files**)
-- **options:** a list of valid options for the parameter
-- **min:** the minimum value for the parameter (int and float)
-- **max:** the maximum value for the parameter (int and float)
-- **step_size:** the step size for the parameter (int and float)
-- **help:** a description of the parameter
-- **widget_type:** the type of widget to use for the parameter (default: auto)
-- **advanced:** whether or not the parameter is advanced (default: False)
-
 """)
 
+with st.expander("Options to use as dictionary keys for parameter definitions (see `src/python-tools/example.py` for an example)"):
+    st.markdown("""
+**Mandatory** keys for each parameter
+- *key:* a unique identifier
+- *value:* the default value
+
+**Optional** keys for each parameter
+- *name:* the name of the parameter
+- *hide:* don't show the parameter in the parameter section (e.g. for **input/output files**)
+- *options:* a list of valid options for the parameter
+- *min:* the minimum value for the parameter (int and float)
+- *max:* the maximum value for the parameter (int and float)
+- *step_size:* the step size for the parameter (int and float)
+- *help:* a description of the parameter
+- *widget_type:* the type of widget to use for the parameter (default: auto)
+- *advanced:* whether or not the parameter is advanced (default: False)
+""")
+    
 st.code(
 getsource(Workflow.configure)
 )
@@ -201,7 +186,7 @@ The `self.executor.run_command` method takes a single command as input and optio
 """)
 
 st.code("""
-self.executor.run_command(["command", "arg1", "arg2", ...], write_log=True)
+self.executor.run_command(["command", "arg1", "arg2", ...])
 """)
 
 st.markdown(
@@ -267,133 +252,3 @@ with st.expander("**Code documentation**", expanded=True):
     st.help(CommandExecutor.run_multiple_commands)
     st.help(CommandExecutor.run_topp)
     st.help(CommandExecutor.run_python)
-
-with st.expander("**Example output of the complete example workflow**"):
-    st.code("""
-STARTING WORKFLOW
-
-Number of input mzML files: 2
-
-Running 2 commands in parallel...
-
-Running command:
-FeatureFinderMetabo -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML -out ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML -algorithm:common:chrom_peak_snr 4.0 -algorithm:common:noise_threshold_int 1000.0
-Waiting for command to finish...
-
-Running command:
-FeatureFinderMetabo -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML -out ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML -algorithm:common:chrom_peak_snr 4.0 -algorithm:common:noise_threshold_int 1000.0
-Waiting for command to finish...
-
-Process finished:
-FeatureFinderMetabo -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML -out ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML -algorithm:common:chrom_peak_snr 4.0 -algorithm:common:noise_threshold_int 1000.0
-Total time to run command: 0.55 seconds
-
-Progress of 'loading mzML':
-  Progress of 'loading spectra list':
-
-    89.06 %               
-  -- done [took 0.17 s (CPU), 0.17 s (Wall)] -- 
-  Progress of 'loading chromatogram list':
-
-  -- done [took 0.00 s (CPU), 0.00 s (Wall)] -- 
-
--- done [took 0.18 s (CPU), 0.18 s (Wall) @ 40.66 MiB/s] -- 
-Progress of 'mass trace detection':
-
--- done [took 0.01 s (CPU), 0.01 s (Wall)] -- 
-Progress of 'elution peak detection':
-
--- done [took 0.07 s (CPU), 0.07 s (Wall)] -- 
-Progress of 'assembling mass traces to features':
-Loading metabolite isotope model with 5% RMS error
-
--- done [took 0.04 s (CPU), 0.04 s (Wall)] -- 
--- FF-Metabo stats --
-Input traces:    1382
-Output features: 1095 (total trace count: 1382)
-FeatureFinderMetabo took 0.47 s (wall), 0.90 s (CPU), 0.43 s (system), 0.47 s (user); Peak Memory Usage: 88 MB.
-
-
-Process finished:
-FeatureFinderMetabo -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML -out ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML -algorithm:common:chrom_peak_snr 4.0 -algorithm:common:noise_threshold_int 1000.0
-Total time to run command: 0.60 seconds
-
-Progress of 'loading mzML':
-  Progress of 'loading spectra list':
-
-    77.09 %               
-  -- done [took 0.16 s (CPU), 0.16 s (Wall)] -- 
-  Progress of 'loading chromatogram list':
-
-  -- done [took 0.00 s (CPU), 0.00 s (Wall)] -- 
-
--- done [took 0.17 s (CPU), 0.17 s (Wall) @ 43.38 MiB/s] -- 
-Progress of 'mass trace detection':
-
--- done [took 0.02 s (CPU), 0.02 s (Wall)] -- 
-Progress of 'elution peak detection':
-
--- done [took 0.07 s (CPU), 0.07 s (Wall)] -- 
-Progress of 'assembling mass traces to features':
-Loading metabolite isotope model with 5% RMS error
-
--- done [took 0.05 s (CPU), 0.05 s (Wall)] -- 
--- FF-Metabo stats --
-Input traces:    1521
-Output features: 1203 (total trace count: 1521)
-FeatureFinderMetabo took 0.51 s (wall), 0.90 s (CPU), 0.45 s (system), 0.45 s (user); Peak Memory Usage: 88 MB.
-
-
-Total time to run 2 commands: 0.60 seconds
-
-Running command:
-python src/python-tools/example.py ../workspaces-streamlit-template/default/topp-workflow/example.json
-Waiting for command to finish...
-
-Process finished:
-python src/python-tools/example.py ../workspaces-streamlit-template/default/topp-workflow/example.json
-Total time to run command: 0.04 seconds
-
-Writing stdout which will get logged...
-Parameters for this example Python tool:
-{
-    "in": [
-        "../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML",
-        "../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML"
-    ],
-    "out": [],
-    "number-slider": 6,
-    "selectbox-example": "c",
-    "adavanced-input": 5,
-    "checkbox": true
-}
-
-
-Running command:
-SiriusExport -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML -in_featureinfo ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML -out ../workspaces-streamlit-template/default/topp-workflow/results/sirius-export/sirius.ms
-Waiting for command to finish...
-
-Process finished:
-SiriusExport -in ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Control.mzML ../workspaces-streamlit-template/default/topp-workflow/input-files/mzML-files/Treatment.mzML -in_featureinfo ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML ../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML -out ../workspaces-streamlit-template/default/topp-workflow/results/sirius-export/sirius.ms
-Total time to run command: 0.65 seconds
-
-Number of features to be processed: 0
-Number of additional MS2 spectra to be processed: 0
-No MS1 spectrum for this precursor. Occurred 0 times.
-0 spectra were skipped due to precursor charge below -1 and above +1.
-Mono charge assumed and set to charge 1 with respect to current polarity 0 times.
-0 features were skipped due to feature charge below -1 and above +1.
-No MS1 spectrum for this precursor. Occurred 0 times.
-0 spectra were skipped due to precursor charge below -1 and above +1.
-Mono charge assumed and set to charge 1 with respect to current polarity 0 times.
-0 features were skipped due to feature charge below -1 and above +1.
-<Number of features to be processed: 0> occurred 2 times
-SiriusExport took 0.61 s (wall), 1.71 s (CPU), 1.06 s (system), 0.65 s (user); Peak Memory Usage: 88 MB.
-<Number of additional MS2 spectra to be processed: 0> occurred 2 times
-
-
-WORKFLOW FINISHED
-    """, language="neon")
-
-    
-    
