@@ -1,4 +1,4 @@
-name: Test streamlit executable for Windows
+name: Test streamlit executable for Windows with pyinstaller
 on: 
   workflow_dispatch:
 

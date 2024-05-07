@@ -133,5 +133,5 @@ you can still change the configuration of streamlit app with .streamlit/config.t
 > if problem with altair, Try version altair==4.0.1, and again compile
 
 ## Build executable in github action automatically
-Automate the process of building executables for your project with the GitHub action example [Test streamlit executable for Windows](https://github.com/Arslan-Siraj/streamlit-template/blob/main/.github/workflows/test_streamlit_app.yaml)
+Automate the process of building executables for your project with the GitHub action example [Test streamlit executable for Windows](https://github.com/Arslan-Siraj/streamlit-template/blob/main/.github/workflows/test-win-exe-w-pyinstaller.yaml)
 </br>
