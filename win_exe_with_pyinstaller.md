@@ -1,11 +1,14 @@
-## create windows executable of streamlit app with pyinstaller
+## 💻 Create a window executable of streamlit app with pyinstaller
 :heavy_check_mark: 
-Tested with streamlit v1.29, python v3.11.4</br>
+Tested with streamlit v1.29.0, python v3.11.4</br>
 
 > [!WARNING]
-Support until streamlit version `1.29.0`
+Support until streamlit version `1.29.0` </br>
+:point_right: For higher version, try streamlit app with embeddable python #TODO add link 
 
-For creating executable with pyinstaller these steps need to be done.
+To create an executable for Streamlit app on Windows, we'll use an pyinstaller.</br>
+Here's a step-by-step guide:
+
 ### virtual environment 
 
 ``` 
@@ -121,7 +124,7 @@ All the modifications in datas should be loaded with <br />
 ```
 pyinstaller run_app.spec --clean
 ```
-#### <code> After successfully completing all these steps, the Windows executable will be available in the dist folder.</code>
+#### 🚀 <code> After successfully completing all these steps, the Windows executable will be available in the dist folder.</code>
 
 > [!NOTE]
 you can still change the configuration of streamlit app with .streamlit/config.toml file e-g provide different port, change upload size etc
@@ -129,6 +132,6 @@ you can still change the configuration of streamlit app with .streamlit/config.t
 > [!TIP]
 > if problem with altair, Try version altair==4.0.1, and again compile
 
-## :rocket: Build executable in github action automatically
+## Build executable in github action automatically
 Automate the process of building executables for your project with the GitHub action example [Test streamlit executable for Windows](https://github.com/Arslan-Siraj/streamlit-template/blob/main/.github/workflows/test_streamlit_app.yaml)
 </br>

@@ -1,4 +1,4 @@
-# Creating a Windows Executable of a Streamlit App with Embeddable Python
+## 💻 Create a window executable of a Streamlit App with embeddable Python
 
 To create an executable for Streamlit app on Windows, we'll use an embeddable version of Python.</br>
 Here's a step-by-step guide:
@@ -52,7 +52,7 @@ Install all required packages from `requirements.txt`:
 ./python-3.11.9-embed-amd64/python -m pip install -r requirements.txt --no-warn-script-location
 ```
 
-### Copy App Files
+### Copy App Files and Create `run_app.bat` File
 
 1. Create a folder for your Streamlit app:
 
@@ -64,20 +64,20 @@ Install all required packages from `requirements.txt`:
 
     ```bash
     # Copy Python environment and app files
-    cp -r python-3.11.9-embed-amd64 streamlit_exe \
-    && cp -r src ../streamlit_exe \
-    && cp -r pages ../streamlit_exe \
-    && cp -r .streamlit ../streamlit_exe \
-    && cp -r example_data ../streamlit_exe \
-    && cp app.py ../streamlit_exe
+    cp -r python-3.11.9-embed-amd64 streamlit_exe
+    cp -r src pages .streamlit example_data app.py ../streamlit_exe
     ```
+   
+3. Create a Clickable Shortcut
 
-### Create a Clickable Shortcut
+    Create a `run_app.bat` file to make running the app easier:
+    
+    ```batch
+    @echo off
+    .\python-3.11.9-embed-amd64\python -m streamlit run app.py local
+    ```
+#### 🚀 <code> After successfully completing all these steps, the Streamlit app will be available by running the run_app.bat file.</code>
 
-Create a `run_app.bat` file to make running the app easier:
-
-```batch
-@echo off
-.\python-3.11.9-embed-amd64\python -m streamlit run app.py local
-```
+> [!NOTE]
+You can still change the configuration of Streamlit app with .streamlit/config.toml file, e.g., provide a different port, change upload size, etc.
 
