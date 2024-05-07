@@ -8,3 +8,5 @@ run_app.spec
 clean-up-workspaces.log
 *-embed-amd64
 get-pip.py
+run_app.bat
+python*
