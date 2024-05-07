@@ -50,7 +50,7 @@ jobs:
           cp -r src streamlit_exe
           cp -r pages streamlit_exe
           cp -r assets streamlit_exe
-          cp -r example_data streamlit_exe
+          cp -r example-data streamlit_exe
           cp -r .streamlit streamlit_exe
           cp app.py streamlit_exe
 
