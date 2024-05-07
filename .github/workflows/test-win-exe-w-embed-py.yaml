@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-win-executable-with-embeddable-python:
     runs-on: windows-latest
 
     env:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Download Python embeddable version
+      - name: Download python embeddable version
         run: |
            mkdir python-${{ env.PYTHON_VERSION }}
            curl -O https://www.python.org/ftp/python/${{ env.PYTHON_VERSION }}/python-${{ env.PYTHON_VERSION }}-embed-amd64.zip
@@ -39,8 +39,8 @@ jobs:
 
       - name: Create run_app.bat file
         run: |
-          echo @echo off > run_app.bat
-          echo .\\python-${{ env.PYTHON_VERSION }}\\python -m streamlit run app.py local >> run_app.bat
+          echo '@echo off' > run_app.bat
+          echo '.\\python-${{ env.PYTHON_VERSION }}\\python -m streamlit run app.py local' >> run_app.bat
       
       - name: Create All-in-one executable folder
         run: |
