@@ -75,11 +75,4 @@ Take a look at the example pages `Simple Workflow` or `Workflow with mzML files`
 ### Complex workflow using TOPP tools
 
 This template app features a module in `src/workflow` that allows for complex and long workflows to be built very efficiently. Check out the `TOPP Workflow Framework` page for more information (on the *sidebar*).
-
-## How to package everything for window executables
-
-This guide explains how to package streamlit apps into Windows executables using two different methods: 
-            
- - [window executable with pyinstaller](https://github.com/OpenMS/streamlit-template/blob/main/win_exe_with_pyinstaller.md)  
- - [window executable with embeddable python](https://github.com/OpenMS/streamlit-template/blob/main/win_exe_with_embed_py.md)
 """)

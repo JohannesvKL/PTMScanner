@@ -102,8 +102,7 @@ Install all required packages from `requirements.txt`:
     
 #### 🚀 <code> After successfully completing all these steps, the Streamlit app will be available by running the run_app.bat file.</code>
 
-> [!NOTE]
-You can still change the configuration of Streamlit app with .streamlit/config.toml file, e.g., provide a different port, change upload size, etc.
+:pencil: You can still change the configuration of Streamlit app with .streamlit/config.toml file, e.g., provide a different port, change upload size, etc.
 
 ## Build executable in github action automatically
 Automate the process of building executables for your project with the GitHub action example [Test streamlit executable for Windows with embeddable python](https://github.com/OpenMS/streamlit-template/blob/main/.github/workflows/test-win-exe-w-embed-py.yaml)
