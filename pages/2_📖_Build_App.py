@@ -80,6 +80,6 @@ This template app features a module in `src/workflow` that allows for complex an
 
 This guide explains how to package streamlit apps into Windows executables using two different methods: 
             
- - [window executable with pyinstaller](https://github.com/Arslan-Siraj/streamlit-template/blob/main/.github/workflows/win_exe_with_pyinstaller.md)  
- - [window executable with embeddable python](https://github.com/Arslan-Siraj/streamlit-template/blob/main/.github/workflows/win_exe_with_embed_py.md)
+ - [window executable with pyinstaller](https://github.com/OpenMS/streamlit-template/blob/main/win_exe_with_pyinstaller.md)  
+ - [window executable with embeddable python](https://github.com/OpenMS/streamlit-template/blob/main/win_exe_with_embed_py.md)
 """)
