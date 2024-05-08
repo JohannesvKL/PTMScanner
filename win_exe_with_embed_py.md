@@ -96,7 +96,8 @@ Install all required packages from `requirements.txt`:
     mv  run_app.bat ../streamlit_exe
 
     # copy streamlit app files
-    cp -r src pages .streamlit assets example_data app.py ../streamlit_exe
+    cp -r src pages .streamlit assets example-data ../streamlit_exe
+    cp app.py ../streamlit_exe
     ```
     
 #### 🚀 <code> After successfully completing all these steps, the Streamlit app will be available by running the run_app.bat file.</code>
