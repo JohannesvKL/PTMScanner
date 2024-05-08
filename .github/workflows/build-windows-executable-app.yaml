@@ -230,4 +230,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: OpenMS-App
-        path: dist
+        path: streamlit_exe
