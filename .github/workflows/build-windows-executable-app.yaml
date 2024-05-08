@@ -225,9 +225,14 @@ jobs:
       uses: geekyeggo/delete-artifact@v2
       with:
           name: OpenMS-share
+          
+    - name: Compress streamlit_exe folder to OpenMS-App.zip
+      run: |
+        7z a OpenMS-App.zip ./streamlit_exe/* -r
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: OpenMS-App
-        path: streamlit_exe
+        path: OpenMS-App.zip
+
