@@ -65,11 +65,7 @@ save_params()
 3. Update Python package dependency files:
     - `requirements.txt` if using `Dockerfile_simple`
     - `environment.yml` if using `Dockerfile`
-
-**for the Windows executable package**
-1. Update `datas` in `run_app_temp.spec` with the Python packages required for your app
-2. Update main Streamlit file name to run in `run_app.py`
-    
+   
 ## How to build a workflow
 
 ### Simple workflow using pyOpenMS
@@ -79,5 +75,11 @@ Take a look at the example pages `Simple Workflow` or `Workflow with mzML files`
 ### Complex workflow using TOPP tools
 
 This template app features a module in `src/workflow` that allows for complex and long workflows to be built very efficiently. Check out the `TOPP Workflow Framework` page for more information (on the *sidebar*).
-""")
 
+## How to package everything for window executables
+
+This guide explains how to package streamlit apps into Windows executables using two different methods: 
+            
+ - [window executable with pyinstaller](https://github.com/Arslan-Siraj/streamlit-template/blob/main/.github/workflows/win_exe_with_pyinstaller.md)  
+ - [window executable with embeddable python](https://github.com/Arslan-Siraj/streamlit-template/blob/main/.github/workflows/win_exe_with_embed_py.md)
+""")
