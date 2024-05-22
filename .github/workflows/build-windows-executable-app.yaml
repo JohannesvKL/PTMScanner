@@ -22,7 +22,7 @@ jobs:
         path: 'OpenMS'
 
     - name: Install Qt
-      uses: jurplel/install-qt-action@v34
+      uses: jurplel/install-qt-action@v4
       with:
         version: '5.15.2' # 5.12.7 is broken https://bugreports.qt.io/browse/QTBUG-81715, > 5.15.2 is not available on official archives (https://github.com/miurahr/aqtinstall/issues/636)
         host: 'windows' # default: win64_msvc2017_64
