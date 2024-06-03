@@ -54,7 +54,7 @@ tabs = st.tabs(tabs)
 
 # window executable with embeddable python
 with tabs[0]: 
-    markdown_url = "https://raw.githubusercontent.com/Arslan-Siraj/streamlit-template/main/win_exe_with_embed_py.md"
+    markdown_url = "https://raw.githubusercontent.com/OpenMS/streamlit-template/main/win_exe_with_embed_py.md"
 
     markdown_content = fetch_markdown_content(markdown_url)
 
@@ -66,7 +66,7 @@ with tabs[0]:
 # window executable with pyinstaller
 with tabs[1]: 
     # URL of the Markdown document
-    markdown_url = "https://raw.githubusercontent.com/Arslan-Siraj/streamlit-template/main/win_exe_with_pyinstaller.md"
+    markdown_url = "https://raw.githubusercontent.com/OpenMS/streamlit-template/main/win_exe_with_pyinstaller.md"
 
     markdown_content = fetch_markdown_content(markdown_url)
 
