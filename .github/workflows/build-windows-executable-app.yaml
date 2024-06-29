@@ -155,17 +155,11 @@ jobs:
           CI_PROVIDER: "GitHub-Actions"
           BUILD_NAME: "${{ env.RUN_NAME }}-Win64-class-topp-${{ github.run_number }}"
 
-    - name: Upload TOPP tools as artifact
+    - name: Upload package as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: OpenMS-bin
-        path: OpenMS/bld/bin
-
-    - name: Upload share as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: OpenMS-share
-        path: OpenMS/share
+        name: openms-package
+        path: ${{ github.workspace }}/OpenMS/bld/*.zip
 
   build-executable:
     runs-on: windows-latest
@@ -178,17 +172,18 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Download TOPP tools as artifact
+    - name: Download package as artifact
       uses: actions/download-artifact@v4
       with:
-        name: OpenMS-bin
-        path: openms-bin
+        name: openms-package
+        path: openms-package
 
-    - name: Download share as artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: OpenMS-share
-        path: share
+    - name: Extract bin and share from package
+      run: |
+        cd openms-package
+        unzip "*.zip" -d .
+        cp -r openms-package/bin ../openms-bin
+        cp -r openms-package/share ../share
 
     - name: Setup python embeddable version
       run: |
@@ -229,15 +224,10 @@ jobs:
         cp -r share streamlit_exe/share
         cp app.py streamlit_exe
 
-    - name: Delete OpenMS bin artifact
-      uses: geekyeggo/delete-artifact@v4
-      with:
-          name: OpenMS-bin
-
-    - name: Delete OpenMS share artifact
+    - name: Delete OpenMS package artifact
       uses: geekyeggo/delete-artifact@v2
       with:
-          name: OpenMS-share
+          name: openms-package
           
     - name: Compress streamlit_exe folder to OpenMS-App.zip
       run: |
