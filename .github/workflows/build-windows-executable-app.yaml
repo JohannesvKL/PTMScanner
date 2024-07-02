@@ -225,7 +225,7 @@ jobs:
         cp app.py streamlit_exe
 
     - name: Delete OpenMS package artifact
-      uses: geekyeggo/delete-artifact@v2
+      uses: geekyeggo/delete-artifact@v5
       with:
           name: openms-package
           
