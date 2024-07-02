@@ -14,8 +14,10 @@ output_folder = 'your_folder_goes_here'
 def content():
     page_setup()
 
+    # Generate full path
     dirpath = join(st.session_state["workspace"], output_folder)
-
+    
+    # Detect downloadable content
     if exists(dirpath):
         directories = sorted(
             [entry for entry in listdir(dirpath) if not isfile(entry)]
@@ -23,6 +25,7 @@ def content():
     else:
         directories = []
 
+    # Show error if no content is available for download
     if len(directories) == 0:
         st.error('No results to show yet. Please run a workflow first!')
         return
@@ -41,10 +44,12 @@ def content():
         with columns[1]:
             button_placeholder = st.empty()
             
+            # Show placeholder button before download is prepared
             clicked = button_placeholder.button('Prepare Download', key=i)
             if clicked:
                 button_placeholder.empty()
                 with st.spinner():
+                    # Create ZIP file
                     out_zip = join(dirpath, directory, 'output.zip')
                     if not exists(out_zip):
                         with ZipFile(out_zip, 'w', ZIP_DEFLATED) as zip_file:
@@ -54,6 +59,7 @@ def content():
                                         zip_file.writestr(basename(output), f.read())
                                 except:
                                     continue
+                    # Show download button after ZIP file was created
                     with open(out_zip, 'rb') as f:
                         button_placeholder.download_button(
                             "Download ⬇️", f, 
