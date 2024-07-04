@@ -136,10 +136,9 @@ jobs:
           ctest --output-on-failure -V -S $GITHUB_WORKSPACE/OpenMS/tools/ci/cipackage.cmake
       env:
           SOURCE_DIRECTORY: "${{ github.workspace }}/OpenMS"
-          PACKAGE_TYPE: nsis
+          PACKAGE_TYPE: zip
           SEARCH_ENGINES_DIRECTORY: "${{ github.workspace }}/_thirdparty"
           CI_PROVIDER: "GitHub-Actions"
-          PACK_ZIP: 1
           CPACK_PACKAGE_FILE_NAME: "openms-package"
 
     - name: Test Windows
