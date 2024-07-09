@@ -11,7 +11,7 @@ import requests
 page_setup()
 
 
-st.title("📖 Documentation")
+st.title("Documentation")
 
 cols = st.columns(2)
 
