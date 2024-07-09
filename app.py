@@ -21,9 +21,9 @@ Returns:
 from pathlib import Path
 import streamlit as st
 
-from src.common import page_setup, save_params
+from src.common import page_setup
 
-params = page_setup(page="main")
+page_setup(page="main")
 
 st.title("OpenMS Streamlit Template App")
 st.markdown("""
@@ -63,5 +63,3 @@ Check out the documentation for **users** and **developers** is included as page
 
 Try the example pages **📁 mzML file upload**, **👀 visualization** and **example workflows**.
 """)
-
-save_params(params)
