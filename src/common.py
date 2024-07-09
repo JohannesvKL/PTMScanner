@@ -101,6 +101,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
         menu_items=None,
     )
 
+    st.logo("assets/pyopenms_transparent_background.png")
+
     # Determine the workspace for the current session
     if "workspace" not in st.session_state:
         # Clear any previous caches
@@ -159,8 +161,7 @@ def render_sidebar(page: str = "") -> None:
     params = load_params()
     with st.sidebar:
         # The main page has workspace switcher
-        if page == "main":
-            st.markdown("🖥️ **Workspaces**")
+        with st.expander("🖥️ **Workspaces**"):
             # Define workspaces directory outside of repository
             workspaces_dir = Path("..", "workspaces-" + REPOSITORY_NAME)
             # Online: show current workspace name in info text and option to change to other existing workspace
@@ -230,9 +231,6 @@ You can share this unique workspace ID with other people.
                 img_formats.index(params["image-format"]),
                 key="image-format",
             )
-        if page != "main":
-            st.info(f"**{Path(st.session_state['workspace']).stem}**")
-        st.image("assets/OpenMS.png", "powered by")
     return params
 
 
