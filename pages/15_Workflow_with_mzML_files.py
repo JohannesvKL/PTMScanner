@@ -6,16 +6,9 @@ from pathlib import Path
 
 from src.common import page_setup, save_params, show_fig, show_table
 from src import mzmlfileworkflow
-from src.captcha_ import captcha_control
-
 
 # Page name "workflow" will show mzML file selector in sidebar
 params = page_setup()
-
-# If run in hosted mode, show captcha as long as it has not been solved
-if "controllo" not in st.session_state or params["controllo"] is False:
-    # Apply captcha by calling the captcha_control function
-    captcha_control()
 
 st.title("Workflow")
 st.markdown(

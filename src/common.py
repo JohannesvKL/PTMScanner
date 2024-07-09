@@ -9,6 +9,8 @@ from pathlib import Path
 import streamlit as st
 import pandas as pd
 
+from .captcha_ import captcha_control
+
 # set these variables according to your project
 APP_NAME = "OpenMS Streamlit App"
 REPOSITORY_NAME = "streamlit-template"
@@ -127,6 +129,13 @@ def page_setup(page: str = "") -> dict[str, Any]:
 
     # Render the sidebar
     params = render_sidebar(page)
+
+    # If run in hosted mode, show captcha as long as it has not been solved
+    if not "local" in sys.argv:
+        if "controllo" not in st.session_state or params["controllo"] is False:
+            # Apply captcha by calling the captcha_control function
+            captcha_control()
+
     return params
 
 
