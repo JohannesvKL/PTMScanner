@@ -269,7 +269,7 @@ def show_table(df: pd.DataFrame, download_name: str = "") -> None:
     return df
 
 
-def show_fig(fig, download_name: str, container_width: bool = True) -> None:
+def show_fig(fig, download_name: str, container_width: bool = True, selection_session_state_key: str = "") -> None:
     """
     Displays a Plotly chart and adds a download button to the plot.
 
@@ -277,32 +277,58 @@ def show_fig(fig, download_name: str, container_width: bool = True) -> None:
         fig (plotly.graph_objs._figure.Figure): The Plotly figure to display.
         download_name (str): The name for the downloaded file.
         container_width (bool, optional): If True, the figure will use the container width. Defaults to True.
+        selection_session_state_key (str, optional): If set, save the rectangular selection to session state with this key.
 
     Returns:
         None
     """
-    # Display plotly chart using container width and removed controls except for download
-    st.plotly_chart(
-        fig,
-        use_container_width=container_width,
-        config={
-            "displaylogo": False,
-            "modeBarButtonsToRemove": [
-                "zoom",
-                "pan",
-                "select",
-                "lasso",
-                "zoomin",
-                "autoscale",
-                "zoomout",
-                "resetscale",
-            ],
-            "toImageButtonOptions": {
-                "filename": download_name,
-                "format": st.session_state["image-format"],
+    if not selection_session_state_key:
+        st.plotly_chart(
+            fig,
+            use_container_width=container_width,
+            config={
+                "displaylogo": False,
+                "modeBarButtonsToRemove": [
+                    "zoom",
+                    "pan",
+                    "select",
+                    "lasso",
+                    "zoomin",
+                    "autoscale",
+                    "zoomout",
+                    "resetscale",
+                ],
+                "toImageButtonOptions": {
+                    "filename": download_name,
+                    "format": st.session_state["image-format"],
+                },
             },
-        },
-    )
+        )
+    else:
+        st.plotly_chart(
+            fig,
+            key=selection_session_state_key,
+            selection_mode=["points", "box"],
+            on_select="rerun",
+            config={
+                "displaylogo": False,
+                "modeBarButtonsToRemove": [
+                    "zoom",
+                    "pan",
+                    "lasso",
+                    "zoomin",
+                    "autoscale",
+                    "zoomout",
+                    "resetscale",
+                    "select"
+                ],
+                "toImageButtonOptions": {
+                    "filename": download_name,
+                    "format": st.session_state["image-format"],
+                },
+            },
+            use_container_width=True
+        )
 
 
 def reset_directory(path: Path) -> None:

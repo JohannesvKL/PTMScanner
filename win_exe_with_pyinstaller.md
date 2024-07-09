@@ -63,7 +63,6 @@ like: \hooks\hook-streamlit.py<br />
 from PyInstaller.utils.hooks import copy_metadata
 datas = []
 datas += copy_metadata('streamlit')
-datas += copy_metadata('streamlit_plotly_events')
 datas += copy_metadata('pyopenms')
 # can add new package e-g
 datas += copy_metadata('captcha')
@@ -112,7 +111,6 @@ datas=[
         ("myenv/Lib/site-packages/altair/vegalite/v4/schema/vega-lite-schema.json","./altair/vegalite/v4/schema/"),
         ("myenv/Lib/site-packages/streamlit/static", "./streamlit/static"),
         ("myenv/Lib/site-packages/streamlit/runtime", "./streamlit/runtime"),
-        ("myenv/Lib/site-packages/streamlit_plotly_events", "./streamlit_plotly_events/"),
         ("myenv/Lib/site-packages/pyopenms", "./pyopenms/"),
         # Add new datas e-g we add in hook captcha
         ("myenv/Lib/site-packages/captcha", "./captcha/")
