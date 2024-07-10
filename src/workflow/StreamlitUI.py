@@ -729,12 +729,11 @@ class StreamlitUI:
         c1, c2 = st.columns(2)
         # Select log level, this can be changed at run time or later without re-running the workflow
         log_level = c1.selectbox("log details", ["minimal", "commands and run times", "all"], key="log_level")
-        c2.markdown("##")
         if self.executor.pid_dir.exists():
-            if c2.button("Stop Workflow", type="primary", use_container_width=True):
+            if c1.button("Stop Workflow", type="primary", use_container_width=True):
                 self.executor.stop()
                 st.rerun()
-        elif st.button("Start Workflow", type="primary", use_container_width=True):
+        elif c1.button("Start Workflow", type="primary", use_container_width=True):
             start_workflow_function()
             st.rerun()
         log_path = Path(self.workflow_dir, "logs", log_level.replace(" ", "-") + ".log")
