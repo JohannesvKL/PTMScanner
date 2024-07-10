@@ -9,7 +9,7 @@ pages = {
     "TOPP Workflow Framework": [
         st.Page(Path("pages", "topp_workflow.py"), title="TOPP Workflow", icon="🚀"),
     ],
-    "Example MS Workflow" : [
+    "pyOpenMS Workflow" : [
         st.Page(Path("pages", "file_upload.py"), title="File Upload", icon="📂"),
         st.Page(Path("pages", "raw_data_viewer.py"), title="View MS data", icon="👀"),
         st.Page(Path("pages", "run_example_workflow.py"), title="Run Workflow", icon="⚙️"),

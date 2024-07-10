@@ -25,28 +25,29 @@ from src.common import page_setup
 
 page_setup(page="main")
 
-st.title("OpenMS Streamlit Template App")
-st.markdown("""
-This repository contains a template app for OpenMS workflows in a web application using the **streamlit** framework.
+st.title("OpenMS Web App Template")
+c1, c2 = st.columns(2)
+c1.info(
+    """
+**💡 Template app for OpenMS workflows in a web application using the **streamlit** framework.**
             
-It serves as a foundation for apps ranging from simple workflows with **pyOpenMS** to complex workflows utilizing **OpenMS TOPP tools** with parallel execution.
-
-It includes solutions for handling user data and parameters in workspaces as well as deployment with docker-compose.
-""")
-st.subheader("Features")
-st.markdown("""
+- Simple workflows with **pyOpenMS** 
+- Complex workflows utilizing **OpenMS TOPP tools** with parallel execution.
 - Workspaces for user data with unique shareable IDs
 - Persistent parameters and input files within a workspace
 - Captcha control
 - Packaged executables for Windows
-- framework for workflows with OpenMS TOPP tools
-- Deployment [with docker-compose](https://github.com/OpenMS/streamlit-deployment)
-""")
-st.subheader("Quick Start")
+- Deploy multiple apps easily with [docker-compose](https://github.com/OpenMS/streamlit-deployment)
+"""
+)
+c2.image("assets/pyopenms_transparent_background.png", width=300)
+st.markdown("## 👋 Quick Start")
 if Path("OpenMS-App.zip").exists():
-    st.markdown("""
+    st.subsubheader(
+        """
 Download the latest version for Windows here by clicking the button below.
-""")
+"""
+    )
     with open("OpenMS-App.zip", "rb") as file:
         st.download_button(
             label="Download for Windows",
@@ -55,11 +56,93 @@ Download the latest version for Windows here by clicking the button below.
             mime="archive/zip",
             type="primary",
         )
-    st.markdown("""
+    st.markdown(
+        """
 Extract the zip file and run the executable (.exe) file to launch the app. Since every dependency is compressed and packacked the app will take a while to launch (up to one minute).
-""")
-st.markdown("""
-Check out the documentation for **users** and **developers** is included as pages indicated by the 📖 icon
+"""
+    )
 
-Try the example pages **📁 mzML file upload**, **👀 visualization** and **example workflows**.
-""")
+st.markdown("### 📖 Documentation")
+st.markdown(
+    f"""
+This template app includes documentation for **users** including **installation** and introduction to template specific concepts such as **workspaces** and developers with detailed instructions on **how to create and deploy your own app** based on this template.
+"""
+)
+st.page_link(
+    "pages/documentation.py",
+    label="Read documentation here, select chapter in the content menu.",
+    icon="➡️",
+)
+st.markdown("### Example pages: workflows, visualization and more")
+st.markdown(
+    """
+This app serves both as documentation and showcase what's possible with OpenMS web apps. 
+            
+In general there are two options for building workflows.
+            
+#### 1. 🚀 **TOPP Workflow Framework**
+            
+Use this option if you want a standardized framework for building your workflow.
+
+- **pre-defined user interface** all in one streamlit page with all steps in different tabs:
+    - **File Upload**: upload, download and delete input files
+    - **Configure**: Automatically display input widgets for all paramters in TOPP tools and custom Python scripts
+    - **Run**: Start and stop workflow execution, includes continous log
+    - **Results**: Interactive result dashboard
+- **write less code**: everything from file upload, input widget generation and execution of tools is handled via convenient functions
+- **fast and performant workflows**: Automatic parallel execution of TOPP tools ensures great speed, comparable with workflows written in bash
+
+"""
+)
+st.page_link(
+    "pages/documentation.py",
+    label="Check out extensive documentation on the TOPP tool framework.",
+    icon="➡️",
+)
+st.page_link(
+    "pages/topp_workflow.py", label="Play around with the example workflow.", icon="➡️"
+)
+st.markdown(
+    """
+#### 2. 🐍 **Flexible, custom workflow with pyOpenMS on multiple pages**
+            
+Use this option if you want full control over your workflow implementation and user interface.
+
+Uses the integrated parameter handling with global parameters across pages, including uploaded files.
+            
+To get an idea check out the following pages from the example worklfow (file upload first!).
+"""
+)
+st.page_link(
+    "pages/file_upload.py",
+    label="Upload your own mzML files or use the provided example data set.",
+    icon="➡️",
+)
+st.page_link(
+    "pages/raw_data_viewer.py",
+    label="Visualize mzML file content in an interactive dashboard.",
+    icon="➡️",
+)
+st.page_link(
+    "pages/run_example_workflow.py",
+    label="Run a small example workflow with mzML files and check out results.",
+    icon="➡️",
+)
+
+st.markdown(
+    """
+#### Other Topics
+            
+Includes other example pages which are independent to showcase other functionalities.
+"""
+)
+st.page_link(
+    "pages/simple_workflow.py",
+    label="A very simple worklfow explaining the concepts of data caching in streamlit.",
+    icon="➡️",
+)
+st.page_link(
+    "pages/run_subprocess.py",
+    label="How to run any command line tool as subprocess from within the OpenMS web app.",
+    icon="➡️",
+)
