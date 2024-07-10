@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 
-from .BasePlotter import Colors, _BasePlotter, _BasePlotterConfig
+from src.plotting.BasePlotter import Colors, _BasePlotter, _BasePlotterConfig
 
 
 @dataclass(kw_only=True)
@@ -15,6 +15,13 @@ class MSExperimentPlotterConfig(_BasePlotterConfig):
     num_RT_bins: int = 50
     num_mz_bins: int = 50
     plot3D: bool = False
+    title: str = "Peak Map"
+    xlabel: str = "RT (s)"
+    ylabel: str = "m/z"
+    height: int = 500
+    width: int = 750
+    relative_intensity: bool = False
+    show_legend: bool = True
 
 
 class MSExperimentPlotter(_BasePlotter):
