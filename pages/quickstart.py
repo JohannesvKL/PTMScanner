@@ -21,16 +21,17 @@ Returns:
 from pathlib import Path
 import streamlit as st
 
-from src.common import page_setup
+from src.common import page_setup, v_space
 
 page_setup(page="main")
 
-st.title("OpenMS Web App Template")
+st.markdown("# 👋 Quick Start")
+st.markdown("## Template for OpenMS web apps using the **streamlit** framework")
 c1, c2 = st.columns(2)
-c1.info(
+c1.markdown(
     """
-**💡 Template app for OpenMS workflows in a web application using the **streamlit** framework.**
-            
+## ⭐ Features
+       
 - Simple workflows with **pyOpenMS** 
 - Complex workflows utilizing **OpenMS TOPP tools** with parallel execution.
 - Workspaces for user data with unique shareable IDs
@@ -40,8 +41,8 @@ c1.info(
 - Deploy multiple apps easily with [docker-compose](https://github.com/OpenMS/streamlit-deployment)
 """
 )
+v_space(1, c2)
 c2.image("assets/pyopenms_transparent_background.png", width=300)
-st.markdown("## 👋 Quick Start")
 if Path("OpenMS-App.zip").exists():
     st.subsubheader(
         """
@@ -62,7 +63,7 @@ Extract the zip file and run the executable (.exe) file to launch the app. Since
 """
     )
 
-st.markdown("### 📖 Documentation")
+st.markdown("## 📖 Documentation")
 st.markdown(
     f"""
 This template app includes documentation for **users** including **installation** and introduction to template specific concepts such as **workspaces** and developers with detailed instructions on **how to create and deploy your own app** based on this template.
@@ -73,25 +74,41 @@ st.page_link(
     label="Read documentation here, select chapter in the content menu.",
     icon="➡️",
 )
-st.markdown("### Example pages: workflows, visualization and more")
+
+st.markdown(
+    """##  Workspaces and Settings
+The **sidebar** contains to boxes, one for **workspaces** and one for **settings**.
+
+🖥️ **Workspaces** store user inputs, parameters and results for a specific session or analysis task.
+
+In **online mode** where the app is hosted on a remote server the workspace has a unique identifier number which can be shared with collaboration partners or stored for later access.
+
+In **local mode** where the app is run locally on a PC (e.g. via Windows executable) the user can create and delete separate workspaces for different projects.
+
+⚙️ **Settings** contain global settings which are relevant for all pages, such as the image export format.
+"""
+)
+
+
+st.markdown("## Example pages: workflows, visualization and more")
 st.markdown(
     """
 This app serves both as documentation and showcase what's possible with OpenMS web apps. 
             
 In general there are two options for building workflows.
             
-#### 1. 🚀 **TOPP Workflow Framework**
+### 1. 🚀 **TOPP Workflow Framework**
             
 Use this option if you want a standardized framework for building your workflow.
 
-- **pre-defined user interface** all in one streamlit page with all steps in different tabs:
+- **Pre-defined user interface** all in one streamlit page with all steps in different tabs:
     - **File Upload**: upload, download and delete input files
     - **Configure**: Automatically display input widgets for all paramters in TOPP tools and custom Python scripts
     - **Run**: Start and stop workflow execution, includes continous log
     - **Results**: Interactive result dashboard
-- **write less code**: everything from file upload, input widget generation and execution of tools is handled via convenient functions
-- **fast and performant workflows**: Automatic parallel execution of TOPP tools ensures great speed, comparable with workflows written in bash
-
+- **Write less code**: everything from file upload, input widget generation and execution of tools is handled via convenient functions
+- **Fast and performant workflows**: Automatic parallel execution of TOPP tools ensures great speed, comparable with workflows written in bash
+- **Ideal for longer workflows**: Close the app and come back to the still running or finish workflow the next day, by entering your workspace again.
 """
 )
 st.page_link(
@@ -104,7 +121,7 @@ st.page_link(
 )
 st.markdown(
     """
-#### 2. 🐍 **Flexible, custom workflow with pyOpenMS on multiple pages**
+### 2. 🐍 **Flexible, custom workflow with pyOpenMS on multiple pages**
             
 Use this option if you want full control over your workflow implementation and user interface.
 
@@ -131,7 +148,7 @@ st.page_link(
 
 st.markdown(
     """
-#### Other Topics
+### Other Topics
             
 Includes other example pages which are independent to showcase other functionalities.
 """
