@@ -106,8 +106,8 @@ def plot_bpc_tic() -> go.Figure:
                     name="XIC",
                     showlegend=True,
                 )
-        except:
-            st.error("Invalid m/z value.")
+        except ValueError:
+            st.error("Invalid m/z value for XIC provided. Please enter a valid number.")
 
     fig.update_layout(
         title=f"{st.session_state.view_selected_file}",

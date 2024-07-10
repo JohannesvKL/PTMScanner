@@ -261,7 +261,7 @@ To build your own workflow edit the file `src/TOPPWorkflow.py`. Use any streamli
 
 > 💡 Simply set a name for the workflow and overwrite the **`upload`**, **`configure`**, **`execution`** and **`results`** methods in your **`Workflow`** class.
 
-The file `pages/6_TOPP-Workflow.py` displays the workflow content and can, but does not have to be modified.
+The file `content/6_TOPP-Workflow.py` displays the workflow content and can, but does not have to be modified.
 
 The `Workflow` class contains four important members, which you can use to build your own workflow:
 

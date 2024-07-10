@@ -70,7 +70,7 @@ This template app includes documentation for **users** including **installation*
 """
 )
 st.page_link(
-    "pages/documentation.py",
+    "content/documentation.py",
     label="Read documentation here, select chapter in the content menu.",
     icon="➡️",
 )
@@ -112,12 +112,12 @@ Use this option if you want a standardized framework for building your workflow.
 """
 )
 st.page_link(
-    "pages/documentation.py",
+    "content/documentation.py",
     label="Check out extensive documentation on the TOPP tool framework.",
     icon="➡️",
 )
 st.page_link(
-    "pages/topp_workflow.py", label="Play around with the example workflow.", icon="➡️"
+    "content/topp_workflow.py", label="Play around with the example workflow.", icon="➡️"
 )
 st.markdown(
     """
@@ -131,17 +131,17 @@ To get an idea check out the following pages from the example worklfow (file upl
 """
 )
 st.page_link(
-    "pages/file_upload.py",
+    "content/file_upload.py",
     label="Upload your own mzML files or use the provided example data set.",
     icon="➡️",
 )
 st.page_link(
-    "pages/raw_data_viewer.py",
+    "content/raw_data_viewer.py",
     label="Visualize mzML file content in an interactive dashboard.",
     icon="➡️",
 )
 st.page_link(
-    "pages/run_example_workflow.py",
+    "content/run_example_workflow.py",
     label="Run a small example workflow with mzML files and check out results.",
     icon="➡️",
 )
@@ -154,12 +154,12 @@ Includes other example pages which are independent to showcase other functionali
 """
 )
 st.page_link(
-    "pages/simple_workflow.py",
+    "content/simple_workflow.py",
     label="A very simple worklfow explaining the concepts of data caching in streamlit.",
     icon="➡️",
 )
 st.page_link(
-    "pages/run_subprocess.py",
+    "content/run_subprocess.py",
     label="How to run any command line tool as subprocess from within the OpenMS web app.",
     icon="➡️",
 )
