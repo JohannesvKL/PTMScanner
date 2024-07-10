@@ -112,9 +112,10 @@ class StreamlitUI:
             if isinstance(fallback, str):
                 fallback = [fallback]
             for f in fallback:
+                c1, _ = st.columns(2)
                 if not Path(files_dir, f).exists():
                     shutil.copy(f, Path(files_dir, Path(f).name))
-                    st.info(f"Adding default file: **{f}**")
+                    c1.info(f"Adding default file: **{f}**")
             current_files = [
                 f.name
                 for f in files_dir.iterdir()
@@ -674,7 +675,8 @@ class StreamlitUI:
         
     def file_upload_section(self, custom_upload_function) -> None:
         custom_upload_function()
-        if st.button("⬇️ Download all uploaded files", use_container_width=True):
+        c1, _ = st.columns(2)
+        if c1.button("⬇️ Download all uploaded files", use_container_width=True):
             self.zip_and_download_files(Path(self.workflow_dir, "input-files"))
 
     def parameter_section(self, custom_paramter_function) -> None:

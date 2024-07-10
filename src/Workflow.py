@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.express as px
 from .common import show_fig
 
+
 class Workflow(WorkflowManager):
     # Setup pages for upload, parameter, execution and results.
     # For layout use any streamlit components such as tabs (as shown in example), columns, or even expanders.
@@ -14,14 +15,16 @@ class Workflow(WorkflowManager):
         # Initialize the parent class with the workflow name.
         super().__init__("TOPP Workflow", st.session_state["workspace"])
 
-    def upload(self)-> None:
-        t = st.tabs(["MS data", "Example with fallback data"])
+    def upload(self) -> None:
+        t = st.tabs(["MS data"])
         with t[0]:
             # Use the upload method from StreamlitUI to handle mzML file uploads.
-            self.ui.upload_widget(key="mzML-files", name="MS data", file_type="mzML")
-        with t[1]:
-            # Example with fallback data (not used in workflow)
-            self.ui.upload_widget(key="image", file_type="png", fallback="assets/OpenMS.png")
+            self.ui.upload_widget(
+                key="mzML-files",
+                name="MS data",
+                file_type="mzML",
+                fallback=[str(f) for f in Path("example-data", "mzML").glob("*.mzML")],
+            )
 
     def configure(self) -> None:
         # Allow users to select mzML files for the analysis.
@@ -33,7 +36,10 @@ class Workflow(WorkflowManager):
         )
         with t[0]:
             # Parameters for FeatureFinderMetabo TOPP tool.
-            self.ui.input_TOPP("FeatureFinderMetabo", custom_defaults={"algorithm:common:noise_threshold_int": 1000.0})
+            self.ui.input_TOPP(
+                "FeatureFinderMetabo",
+                custom_defaults={"algorithm:common:noise_threshold_int": 1000.0},
+            )
         with t[1]:
             # Paramters for MetaboliteAdductDecharger TOPP tool.
             self.ui.input_TOPP("FeatureLinkerUnlabeledKD")
@@ -52,12 +58,14 @@ class Workflow(WorkflowManager):
 
         # Get mzML files with FileManager
         in_mzML = self.file_manager.get_files(self.params["mzML-files"])
-        
+
         # Log any messages.
         self.logger.log(f"Number of input mzML files: {len(in_mzML)}")
 
         # Prepare output files for feature detection.
-        out_ffm = self.file_manager.get_files(in_mzML, "featureXML", "feature-detection")
+        out_ffm = self.file_manager.get_files(
+            in_mzML, "featureXML", "feature-detection"
+        )
 
         # Run FeatureFinderMetabo tool with input and output files.
         self.logger.log("Detecting features...")
@@ -67,13 +75,19 @@ class Workflow(WorkflowManager):
 
         # Prepare input and output files for feature linking
         in_fl = self.file_manager.get_files(out_ffm, collect=True)
-        out_fl = self.file_manager.get_files("feature_matrix.consensusXML", set_results_dir="feature-linking")
+        out_fl = self.file_manager.get_files(
+            "feature_matrix.consensusXML", set_results_dir="feature-linking"
+        )
 
         # Run FeatureLinkerUnlabaeledKD with all feature maps passed at once
         self.logger.log("Linking features...")
-        self.executor.run_topp("FeatureLinkerUnlabeledKD", input_output={"in": in_fl, "out": out_fl})
+        self.executor.run_topp(
+            "FeatureLinkerUnlabeledKD", input_output={"in": in_fl, "out": out_fl}
+        )
         self.logger.log("Exporting consensus features to pandas DataFrame...")
-        self.executor.run_python("export_consensus_feature_df", input_output={"in": out_fl[0]})
+        self.executor.run_python(
+            "export_consensus_feature_df", input_output={"in": out_fl[0]}
+        )
         # Check if adduct detection should be run.
         if self.params["run-python-script"]:
             # Example for a custom Python tool, which is located in src/python-tools.
@@ -82,19 +96,25 @@ class Workflow(WorkflowManager):
     def results(self) -> None:
         @st.experimental_fragment
         def show_consensus_features():
-                df = pd.read_csv(file, sep="\t", index_col=0)
-                st.metric("number of consensus features", df.shape[0])
-                c1, c2 = st.columns(2)
-                rows = c1.dataframe(df, selection_mode="multi-row", on_select="rerun")["selection"]["rows"]
-                if rows:
-                    df = df.iloc[rows, 4:]
-                    fig = px.bar(df, barmode="group", labels={"value": "intensity"})
-                    with c2:
-                        show_fig(fig, "consensus-feature-intensities")
-                else:
-                    st.info("💡 Select one ore more rows in the table to show a barplot with intensities.")
+            df = pd.read_csv(file, sep="\t", index_col=0)
+            st.metric("number of consensus features", df.shape[0])
+            c1, c2 = st.columns(2)
+            rows = c1.dataframe(df, selection_mode="multi-row", on_select="rerun")[
+                "selection"
+            ]["rows"]
+            if rows:
+                df = df.iloc[rows, 4:]
+                fig = px.bar(df, barmode="group", labels={"value": "intensity"})
+                with c2:
+                    show_fig(fig, "consensus-feature-intensities")
+            else:
+                st.info(
+                    "💡 Select one ore more rows in the table to show a barplot with intensities."
+                )
 
-        file = Path(self.workflow_dir, "results", "feature-linking", "feature_matrix.tsv")
+        file = Path(
+            self.workflow_dir, "results", "feature-linking", "feature_matrix.tsv"
+        )
         if file.exists():
             show_consensus_features()
         else:
