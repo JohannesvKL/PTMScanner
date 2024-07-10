@@ -15,6 +15,7 @@ class Workflow(WorkflowManager):
         # Initialize the parent class with the workflow name.
         super().__init__("TOPP Workflow", st.session_state["workspace"])
 
+    @st.experimental_fragment
     def upload(self) -> None:
         t = st.tabs(["MS data"])
         with t[0]:
@@ -26,6 +27,7 @@ class Workflow(WorkflowManager):
                 fallback=[str(f) for f in Path("example-data", "mzML").glob("*.mzML")],
             )
 
+    @st.experimental_fragment
     def configure(self) -> None:
         # Allow users to select mzML files for the analysis.
         self.ui.select_input_file("mzML-files", multiple=True)
@@ -50,6 +52,7 @@ class Workflow(WorkflowManager):
             # Parameters are specified within the file in the DEFAULTS dictionary.
             self.ui.input_python("example")
 
+    @st.experimental_fragment
     def execution(self) -> None:
         # Any parameter checks, here simply checking if mzML files are selected
         if not self.params["mzML-files"]:
@@ -93,6 +96,7 @@ class Workflow(WorkflowManager):
             # Example for a custom Python tool, which is located in src/python-tools.
             self.executor.run_python("example", {"in": in_mzML})
 
+    @st.experimental_fragment
     def results(self) -> None:
         @st.experimental_fragment
         def show_consensus_features():
