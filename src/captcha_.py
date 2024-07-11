@@ -203,7 +203,7 @@ def captcha_control():
         if "Captcha" not in st.session_state:
             st.session_state["Captcha"] = "".join(
                 random.choices(string.ascii_uppercase + string.digits, k=length_captcha)
-            )
+            ).replace("0", "A").replace("O", "B")
 
         col1, _ = st.columns(2)
         with col1.form("captcha-form"):
