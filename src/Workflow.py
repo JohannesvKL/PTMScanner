@@ -15,7 +15,6 @@ class Workflow(WorkflowManager):
         # Initialize the parent class with the workflow name.
         super().__init__("TOPP Workflow", st.session_state["workspace"])
 
-    @st.experimental_fragment
     def upload(self) -> None:
         t = st.tabs(["MS data"])
         with t[0]:

@@ -46,8 +46,15 @@ class StreamlitUI:
             name (str, optional): Display name for the upload component. Defaults to the key if not provided.
             fallback (Union[List, str], optional): Default files to use if no files are uploaded.
         """
-        # streamlit uploader can't handle file types with upper and lower case letters
         files_dir = Path(self.workflow_dir, "input-files", key)
+        
+        # create the files dir
+        files_dir.mkdir(exist_ok=True)
+
+        # check if only fallback files are in files_dir, if yes, reset the directory before adding new files
+        if [Path(f).name for f in Path(files_dir).iterdir()] == [Path(f).name for f in fallback]:
+            shutil.rmtree(files_dir)
+            files_dir.mkdir()
 
         if not name:
             name = key.replace("-", " ")
@@ -107,7 +114,7 @@ class StreamlitUI:
                         my_bar.empty()
                         st.success("Successfully copied files!")
 
-        if fallback:
+        if fallback and not any(Path(files_dir).iterdir()):
             files_dir.mkdir(parents=True, exist_ok=True)
             if isinstance(fallback, str):
                 fallback = [fallback]
