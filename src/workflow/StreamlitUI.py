@@ -49,7 +49,7 @@ class StreamlitUI:
         files_dir = Path(self.workflow_dir, "input-files", key)
         
         # create the files dir
-        files_dir.mkdir(exist_ok=True)
+        files_dir.mkdir(exist_ok=True, parents=True)
 
         # check if only fallback files are in files_dir, if yes, reset the directory before adding new files
         if [Path(f).name for f in Path(files_dir).iterdir()] == [Path(f).name for f in fallback]:
@@ -76,7 +76,6 @@ class StreamlitUI:
                 f"Add **{name}**", use_container_width=True, type="primary"
             ):
                 if files:
-                    files_dir.mkdir(parents=True, exist_ok=True)
                     # in case of online mode a single file is returned -> put in list
                     if not isinstance(files, list):
                         files = [files]
@@ -104,7 +103,6 @@ class StreamlitUI:
                             f"No files with type **{file_type}** found in specified folder."
                         )
                     else:
-                        files_dir.mkdir(parents=True, exist_ok=True)
                         # Copy all mzML files to workspace mzML directory, add to selected files
                         files = list(Path(local_dir).glob("*.mzML"))
                         my_bar = st.progress(0)
@@ -115,7 +113,6 @@ class StreamlitUI:
                         st.success("Successfully copied files!")
 
         if fallback and not any(Path(files_dir).iterdir()):
-            files_dir.mkdir(parents=True, exist_ok=True)
             if isinstance(fallback, str):
                 fallback = [fallback]
             for f in fallback:
@@ -137,10 +134,10 @@ class StreamlitUI:
         if files_dir.exists() and not any(files_dir.iterdir()):
             shutil.rmtree(files_dir)
 
-        c1, c2 = st.columns(2)
+        c1, _ = st.columns(2)
         if current_files:
             c1.info(f"Current **{name}** files:\n\n" + "\n\n".join(current_files))
-            if c2.button(
+            if c1.button(
                 f"🗑️ Remove all **{name}** files.",
                 use_container_width=True,
                 key=f"remove-files-{key}",
