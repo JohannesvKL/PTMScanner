@@ -13,6 +13,7 @@ pages = {
         st.Page(Path("content", "file_upload.py"), title="File Upload", icon="📂"),
         st.Page(Path("content", "raw_data_viewer.py"), title="View MS data", icon="👀"),
         st.Page(Path("content", "run_example_workflow.py"), title="Run Workflow", icon="⚙️"),
+        st.Page(Path("content", "download_section.py"), title="Download Results", icon="⬇️"),
     ],
     "Others Topics": [
         st.Page(Path("content", "simple_workflow.py"), title="Simple Workflow", icon="⚙️"),

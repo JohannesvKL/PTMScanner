@@ -3,6 +3,7 @@ from pathlib import Path
 import pyopenms as poms
 import pandas as pd
 import time
+from datetime import datetime
 from src.common import reset_directory
 
 
@@ -29,6 +30,7 @@ def mzML_file_get_num_spectra(filepath):
 def run_workflow(params, result_dir):
     """Load each mzML file into pyOpenMS Experiment and get the number of spectra."""
 
+    result_dir = Path(result_dir, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     # delete old workflow results and set new directory
     reset_directory(result_dir)
 

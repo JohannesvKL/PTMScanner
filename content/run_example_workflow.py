@@ -45,6 +45,11 @@ if run_workflow_button:
     else:
         st.warning("Select some mzML files.")
 
+result_dirs = [f.name for f in Path(result_dir).iterdir() if f.is_dir()]
+
+run_dir = st.selectbox("select result from run", result_dirs)
+
+result_dir = Path(result_dir, run_dir)
 # visualize workflow results if there are any
 result_file_path = Path(result_dir, "result.tsv")
 
