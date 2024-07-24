@@ -1,10 +1,8 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
 
 from pathlib import Path
 
-from src.common import page_setup, save_params, show_fig, show_table
+from src.common import page_setup, save_params
 from src import mzmlfileworkflow
 
 # Page name "workflow" will show mzML file selector in sidebar
@@ -45,26 +43,6 @@ if run_workflow_button:
     else:
         st.warning("Select some mzML files.")
 
-result_dirs = [f.name for f in Path(result_dir).iterdir() if f.is_dir()]
 
-run_dir = st.selectbox("select result from run", result_dirs)
 
-result_dir = Path(result_dir, run_dir)
-# visualize workflow results if there are any
-result_file_path = Path(result_dir, "result.tsv")
-
-if result_file_path.exists():
-    df = pd.read_csv(result_file_path, sep="\t", index_col="filenames")
-
-    if not df.empty:
-        tabs = st.tabs(["📁 data", "📊 plot"])
-
-        with tabs[0]:
-            show_table(df, "mzML-workflow-result")
-
-        with tabs[1]:
-            fig = px.bar(df)
-            st.info(
-                "💡 Download figure with camera icon in top right corner. File format can be specified in settings."
-            )
-            show_fig(fig, "mzML-workflow-results")
+mzmlfileworkflow.result_section(result_dir)
