@@ -67,6 +67,7 @@ There are a few key differences between operating in online and local modes:
 You can download the results of your analyses, including data, figures and tables, directly from the application:
 - **Figures**: Click the camera icon button, appearing while hovering on the top right corner of the figure. Set the desired image format in the settings panel in the side bar.
 - **Tables**: Use the download button to save tables in *csv* format, appearing while hovering on the top right corner of the table.
+- **Data**: Use the download section in the sidebar to download the raw results of your analysis.
 
 ## Getting Started
 
