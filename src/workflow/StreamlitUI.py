@@ -46,8 +46,15 @@ class StreamlitUI:
             name (str, optional): Display name for the upload component. Defaults to the key if not provided.
             fallback (Union[List, str], optional): Default files to use if no files are uploaded.
         """
-        # streamlit uploader can't handle file types with upper and lower case letters
         files_dir = Path(self.workflow_dir, "input-files", key)
+        
+        # create the files dir
+        files_dir.mkdir(exist_ok=True, parents=True)
+
+        # check if only fallback files are in files_dir, if yes, reset the directory before adding new files
+        if [Path(f).name for f in Path(files_dir).iterdir()] == [Path(f).name for f in fallback]:
+            shutil.rmtree(files_dir)
+            files_dir.mkdir()
 
         if not name:
             name = key.replace("-", " ")
@@ -69,7 +76,6 @@ class StreamlitUI:
                 f"Add **{name}**", use_container_width=True, type="primary"
             ):
                 if files:
-                    files_dir.mkdir(parents=True, exist_ok=True)
                     # in case of online mode a single file is returned -> put in list
                     if not isinstance(files, list):
                         files = [files]
@@ -97,7 +103,6 @@ class StreamlitUI:
                             f"No files with type **{file_type}** found in specified folder."
                         )
                     else:
-                        files_dir.mkdir(parents=True, exist_ok=True)
                         # Copy all mzML files to workspace mzML directory, add to selected files
                         files = list(Path(local_dir).glob("*.mzML"))
                         my_bar = st.progress(0)
@@ -107,14 +112,14 @@ class StreamlitUI:
                         my_bar.empty()
                         st.success("Successfully copied files!")
 
-        if fallback:
-            files_dir.mkdir(parents=True, exist_ok=True)
+        if fallback and not any(Path(files_dir).iterdir()):
             if isinstance(fallback, str):
                 fallback = [fallback]
             for f in fallback:
+                c1, _ = st.columns(2)
                 if not Path(files_dir, f).exists():
                     shutil.copy(f, Path(files_dir, Path(f).name))
-                    st.info(f"Adding default file: **{f}**")
+                    c1.info(f"Adding default file: **{f}**")
             current_files = [
                 f.name
                 for f in files_dir.iterdir()
@@ -129,10 +134,10 @@ class StreamlitUI:
         if files_dir.exists() and not any(files_dir.iterdir()):
             shutil.rmtree(files_dir)
 
-        c1, c2 = st.columns(2)
+        c1, _ = st.columns(2)
         if current_files:
             c1.info(f"Current **{name}** files:\n\n" + "\n\n".join(current_files))
-            if c2.button(
+            if c1.button(
                 f"🗑️ Remove all **{name}** files.",
                 use_container_width=True,
                 key=f"remove-files-{key}",
@@ -674,7 +679,8 @@ class StreamlitUI:
         
     def file_upload_section(self, custom_upload_function) -> None:
         custom_upload_function()
-        if st.button("⬇️ Download all uploaded files", use_container_width=True):
+        c1, _ = st.columns(2)
+        if c1.button("⬇️ Download all uploaded files", use_container_width=True):
             self.zip_and_download_files(Path(self.workflow_dir, "input-files"))
 
     def parameter_section(self, custom_paramter_function) -> None:
@@ -729,12 +735,11 @@ class StreamlitUI:
         c1, c2 = st.columns(2)
         # Select log level, this can be changed at run time or later without re-running the workflow
         log_level = c1.selectbox("log details", ["minimal", "commands and run times", "all"], key="log_level")
-        c2.markdown("##")
         if self.executor.pid_dir.exists():
-            if c2.button("Stop Workflow", type="primary", use_container_width=True):
+            if c1.button("Stop Workflow", type="primary", use_container_width=True):
                 self.executor.stop()
                 st.rerun()
-        elif st.button("Start Workflow", type="primary", use_container_width=True):
+        elif c1.button("Start Workflow", type="primary", use_container_width=True):
             start_workflow_function()
             st.rerun()
         log_path = Path(self.workflow_dir, "logs", log_level.replace(" ", "-") + ".log")

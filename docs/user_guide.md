@@ -1,9 +1,3 @@
-import streamlit as st
-from src.common import page_setup
-
-page_setup()
-
-st.markdown("""
 # User Guide
 
 Welcome to the OpenMS Streamlit Web Application! This guide will help you understand how to use our tools effectively.
@@ -33,9 +27,10 @@ There are a few key differences between operating in online and local modes:
 
 ## Downloading Results
 
-You can download the results of your analyses, including figures and tables, directly from the application:
+You can download the results of your analyses, including data, figures and tables, directly from the application:
 - **Figures**: Click the camera icon button, appearing while hovering on the top right corner of the figure. Set the desired image format in the settings panel in the side bar.
 - **Tables**: Use the download button to save tables in *csv* format, appearing while hovering on the top right corner of the table.
+- **Data**: Use the download section in the sidebar to download the raw results of your analysis.
 
 ## Getting Started
 
@@ -47,6 +42,3 @@ To get started:
 5. View and download your results.
 
 For more detailed information on each step, refer to the specific sections of this guide.
-""")
-
-

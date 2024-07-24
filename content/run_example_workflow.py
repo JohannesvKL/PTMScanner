@@ -1,21 +1,12 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
 
 from pathlib import Path
 
-from src.common import page_setup, save_params, show_fig, show_table
+from src.common import page_setup, save_params
 from src import mzmlfileworkflow
-from src.captcha_ import captcha_control
-
 
 # Page name "workflow" will show mzML file selector in sidebar
 params = page_setup()
-
-# If run in hosted mode, show captcha as long as it has not been solved
-if "controllo" not in st.session_state or params["controllo"] is False:
-    # Apply captcha by calling the captcha_control function
-    captcha_control()
 
 st.title("Workflow")
 st.markdown(
@@ -52,21 +43,6 @@ if run_workflow_button:
     else:
         st.warning("Select some mzML files.")
 
-# visualize workflow results if there are any
-result_file_path = Path(result_dir, "result.tsv")
 
-if result_file_path.exists():
-    df = pd.read_csv(result_file_path, sep="\t", index_col="filenames")
 
-    if not df.empty:
-        tabs = st.tabs(["📁 data", "📊 plot"])
-
-        with tabs[0]:
-            show_table(df, "mzML-workflow-result")
-
-        with tabs[1]:
-            fig = px.bar(df)
-            st.info(
-                "💡 Download figure with camera icon in top right corner. File format can be specified in settings."
-            )
-            show_fig(fig, "mzML-workflow-results")
+mzmlfileworkflow.result_section(result_dir)

@@ -64,7 +64,7 @@ def delete_page(main_script_path_str: str, page_name: str) -> None:
 
 def restore_all_pages(main_script_path_str: str) -> None:
     """
-    restore all pages found in the "pages" directory to an app's configuration.
+    restore all pages found in the "content" directory to an app's configuration.
 
     Args:
         main_script_path_str (str): The name of the main page, typically the app's name.
@@ -79,12 +79,12 @@ def restore_all_pages(main_script_path_str: str) -> None:
     main_script_path = Path(main_script_path_str)
 
     # Define the directory where pages are stored
-    pages_dir = main_script_path.parent / "pages"
+    pages_dir = main_script_path.parent / "content"
 
     # To store the pages for later, to add in ascending order
     pages_temp = []
 
-    # Iterate over all .py files in the "pages" directory
+    # Iterate over all .py files in the "content" directory
     for script_path in pages_dir.glob("*.py"):
         # append path with file name
         script_path_str = str(script_path.resolve())
@@ -146,7 +146,7 @@ def add_page(main_script_path_str: str, page_name: str) -> None:
     main_script_path = Path(main_script_path_str)
 
     # Define the directory where pages are stored
-    pages_dir = main_script_path.parent / "pages"
+    pages_dir = main_script_path.parent / "content"
 
     # Find the script path corresponding to the new page
     script_path = [f for f in pages_dir.glob("*.py") if f.name.find(page_name) != -1][0]
@@ -203,7 +203,7 @@ def captcha_control():
         if "Captcha" not in st.session_state:
             st.session_state["Captcha"] = "".join(
                 random.choices(string.ascii_uppercase + string.digits, k=length_captcha)
-            )
+            ).replace("0", "A").replace("O", "B")
 
         col1, _ = st.columns(2)
         with col1.form("captcha-form"):

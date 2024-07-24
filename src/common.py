@@ -9,6 +9,8 @@ from pathlib import Path
 import streamlit as st
 import pandas as pd
 
+from .captcha_ import captcha_control
+
 # set these variables according to your project
 APP_NAME = "OpenMS Streamlit App"
 REPOSITORY_NAME = "streamlit-template"
@@ -99,6 +101,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
         menu_items=None,
     )
 
+    st.logo("assets/pyopenms_transparent_background.png")
+
     # Determine the workspace for the current session
     if "workspace" not in st.session_state:
         # Clear any previous caches
@@ -127,6 +131,13 @@ def page_setup(page: str = "") -> dict[str, Any]:
 
     # Render the sidebar
     params = render_sidebar(page)
+
+    # If run in hosted mode, show captcha as long as it has not been solved
+    if not "local" in sys.argv:
+        if "controllo" not in st.session_state or params["controllo"] is False:
+            # Apply captcha by calling the captcha_control function
+            captcha_control()
+
     return params
 
 
@@ -150,8 +161,7 @@ def render_sidebar(page: str = "") -> None:
     params = load_params()
     with st.sidebar:
         # The main page has workspace switcher
-        if page == "main":
-            st.markdown("🖥️ **Workspaces**")
+        with st.expander("🖥️ **Workspaces**"):
             # Define workspaces directory outside of repository
             workspaces_dir = Path("..", "workspaces-" + REPOSITORY_NAME)
             # Online: show current workspace name in info text and option to change to other existing workspace
@@ -221,9 +231,6 @@ You can share this unique workspace ID with other people.
                 img_formats.index(params["image-format"]),
                 key="image-format",
             )
-        if page != "main":
-            st.info(f"**{Path(st.session_state['workspace']).stem}**")
-        st.image("assets/OpenMS.png", "powered by")
     return params
 
 
@@ -269,7 +276,7 @@ def show_table(df: pd.DataFrame, download_name: str = "") -> None:
     return df
 
 
-def show_fig(fig, download_name: str, container_width: bool = True) -> None:
+def show_fig(fig, download_name: str, container_width: bool = True, selection_session_state_key: str = "") -> None:
     """
     Displays a Plotly chart and adds a download button to the plot.
 
@@ -277,32 +284,58 @@ def show_fig(fig, download_name: str, container_width: bool = True) -> None:
         fig (plotly.graph_objs._figure.Figure): The Plotly figure to display.
         download_name (str): The name for the downloaded file.
         container_width (bool, optional): If True, the figure will use the container width. Defaults to True.
+        selection_session_state_key (str, optional): If set, save the rectangular selection to session state with this key.
 
     Returns:
         None
     """
-    # Display plotly chart using container width and removed controls except for download
-    st.plotly_chart(
-        fig,
-        use_container_width=container_width,
-        config={
-            "displaylogo": False,
-            "modeBarButtonsToRemove": [
-                "zoom",
-                "pan",
-                "select",
-                "lasso",
-                "zoomin",
-                "autoscale",
-                "zoomout",
-                "resetscale",
-            ],
-            "toImageButtonOptions": {
-                "filename": download_name,
-                "format": st.session_state["image-format"],
+    if not selection_session_state_key:
+        st.plotly_chart(
+            fig,
+            use_container_width=container_width,
+            config={
+                "displaylogo": False,
+                "modeBarButtonsToRemove": [
+                    "zoom",
+                    "pan",
+                    "select",
+                    "lasso",
+                    "zoomin",
+                    "autoscale",
+                    "zoomout",
+                    "resetscale",
+                ],
+                "toImageButtonOptions": {
+                    "filename": download_name,
+                    "format": st.session_state["image-format"],
+                },
             },
-        },
-    )
+        )
+    else:
+        st.plotly_chart(
+            fig,
+            key=selection_session_state_key,
+            selection_mode=["points", "box"],
+            on_select="rerun",
+            config={
+                "displaylogo": False,
+                "modeBarButtonsToRemove": [
+                    "zoom",
+                    "pan",
+                    "lasso",
+                    "zoomin",
+                    "autoscale",
+                    "zoomout",
+                    "resetscale",
+                    "select"
+                ],
+                "toImageButtonOptions": {
+                    "filename": download_name,
+                    "format": st.session_state["image-format"],
+                },
+            },
+            use_container_width=True
+        )
 
 
 def reset_directory(path: Path) -> None:

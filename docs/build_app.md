@@ -1,17 +1,8 @@
-import streamlit as st 
-
-from src.common import page_setup
-
-page_setup()
-
-st.markdown("""
 # Build your own app based on this template
 
 ## App layout
 
-- *Main page* contains explanatory text on how to use the app and a workspace selector. `app.py`
-- *Pages* can be navigated via *Sidebar*. Sidebar also contains the OpenMS logo, settings panel and a workspace indicator. The *main page* contains a workspace selector as well.
-- See *pages* in the template app for example use cases. The content of this app serves as a documentation.
+*Pages* can be navigated via the *sidebar*, which also contains the OpenMS logo, settings panel and a workspace indicator.
 
 ## Key concepts
 
@@ -32,8 +23,8 @@ save_params()
 ```
 
 ## Code structure
-
-- **Pages** must be placed in the `pages` directory.
+- The main file `app.py` defines page layout.
+- **Pages** must be placed in the `content` directory.
 - It is recommended to use a separate file for defining functions per page in the `src` directory.
 - The `src/common.py` file contains a set of useful functions for common use (e.g. rendering a table with download button).
 
@@ -75,4 +66,3 @@ Take a look at the example pages `Simple Workflow` or `Workflow with mzML files`
 ### Complex workflow using TOPP tools
 
 This template app features a module in `src/workflow` that allows for complex and long workflows to be built very efficiently. Check out the `TOPP Workflow Framework` page for more information (on the *sidebar*).
-""")

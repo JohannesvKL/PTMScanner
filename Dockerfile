@@ -113,7 +113,7 @@ COPY app.py /app/app.py
 COPY src/ /app/src
 COPY assets/ /app/assets
 COPY example-data/ /app/example-data
-COPY pages/ /app/pages
+COPY content/ /app/pages
 # For streamlit configuration
 COPY .streamlit/config.toml /app/.streamlit/config.toml
 COPY clean-up-workspaces.py /app/clean-up-workspaces.py
