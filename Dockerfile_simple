@@ -57,7 +57,7 @@ COPY app.py /app/app.py
 COPY src/ /app/src
 COPY assets/ /app/assets
 COPY example-data/ /app/example-data
-COPY content/ /app/pages
+COPY content/ /app/content
 # For streamlit configuration
 COPY .streamlit/config.toml /app/.streamlit/config.toml
 
