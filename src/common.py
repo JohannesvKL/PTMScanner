@@ -104,7 +104,11 @@ def page_setup(page: str = "") -> dict[str, Any]:
     st.logo("assets/pyopenms_transparent_background.png")
 
     # Determine the workspace for the current session
-    if "workspace" not in st.session_state:
+    if (
+        ("workspace" not in st.session_state) or 
+        ('workspace' not in st.query_params) or
+        (st.query_params.workspace != st.session_state.workspace.name)
+        ):
         # Clear any previous caches
         st.cache_data.clear()
         st.cache_resource.clear()
@@ -118,10 +122,17 @@ def page_setup(page: str = "") -> dict[str, Any]:
             os.chdir("../streamlit-template")
         # Define the directory where all workspaces will be stored
         workspaces_dir = Path("..", "workspaces-" + REPOSITORY_NAME)
-        if st.session_state.location == "online":
-            st.session_state.workspace = Path(workspaces_dir, str(uuid.uuid1()))
+        if 'workspace' in st.query_params:
+            st.session_state.workspace = Path(workspaces_dir, st.query_params.workspace)
+        elif st.session_state.location == "online":
+            workspace_id = str(uuid.uuid1())
+            st.session_state.workspace = Path(workspaces_dir, workspace_id)
+            st.query_params.workspace = workspace_id
         else:
             st.session_state.workspace = Path(workspaces_dir, "default")
+            st.query_params.workspace = 'default'
+            
+        if st.session_state.location != "online":
             # not any captcha so, controllo should be true
             st.session_state["controllo"] = True
 
@@ -172,6 +183,7 @@ def render_sidebar(page: str = "") -> None:
                     path = Path(workspaces_dir, new_workspace)
                     if path.exists():
                         st.session_state.workspace = path
+                        st.query_params.workspace = new_workspace
                     else:
                         st.warning("⚠️ Workspace does not exist.")
                 # Display info on current workspace and warning
@@ -194,6 +206,7 @@ You can share this unique workspace ID with other people.
                     st.session_state.workspace = Path(
                         workspaces_dir, st.session_state["chosen-workspace"]
                     )
+                    st.query_params.workspace = st.session_state["chosen-workspace"]
 
                 # Get all available workspaces as options
                 options = [
@@ -214,12 +227,14 @@ You can share this unique workspace ID with other people.
                 if st.button("**Create Workspace**"):
                     path.mkdir(parents=True, exist_ok=True)
                     st.session_state.workspace = path
+                    st.query_params.workspace = create_remove
                     st.rerun()
                 # Remove existing workspace and fall back to default
                 if st.button("⚠️ Delete Workspace"):
                     if path.exists():
                         shutil.rmtree(path)
                         st.session_state.workspace = Path(workspaces_dir, "default")
+                        st.query_params.workspace = 'default'
                         st.rerun()
 
         # All pages have settings, workflow indicator and logo
