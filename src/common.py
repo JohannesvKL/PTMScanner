@@ -176,28 +176,7 @@ def render_sidebar(page: str = "") -> None:
             # Define workspaces directory outside of repository
             workspaces_dir = Path("..", "workspaces-" + REPOSITORY_NAME)
             # Online: show current workspace name in info text and option to change to other existing workspace
-            if st.session_state.location == "online":
-                # Change workspace...
-                new_workspace = st.text_input("enter workspace", "")
-                if st.button("**Enter Workspace**") and new_workspace:
-                    path = Path(workspaces_dir, new_workspace)
-                    if path.exists():
-                        st.session_state.workspace = path
-                        st.query_params.workspace = new_workspace
-                    else:
-                        st.warning("⚠️ Workspace does not exist.")
-                # Display info on current workspace and warning
-                st.info(
-                    f"""💡 Your workspace ID:
-
-**{st.session_state['workspace'].name}**
-
-You can share this unique workspace ID with other people.
-
-⚠️ Anyone with this ID can access your data!"""
-                )
-            # Local: user can create/remove workspaces as well and see all available
-            elif st.session_state.location == "local":
+            if st.session_state.location == "local":
                 # Define callback function to change workspace
                 def change_workspace():
                     for key in params.keys():
