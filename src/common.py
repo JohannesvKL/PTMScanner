@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 import uuid
+import time
 from typing import Any
 from pathlib import Path
 
@@ -106,8 +107,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
     # Determine the workspace for the current session
     if (
         ("workspace" not in st.session_state) or 
-        ('workspace' not in st.query_params) or
-        (st.query_params.workspace != st.session_state.workspace.name)
+        (('workspace' in st.query_params) and
+        (st.query_params.workspace != st.session_state.workspace.name))
         ):
         # Clear any previous caches
         st.cache_data.clear()
@@ -136,6 +137,9 @@ def page_setup(page: str = "") -> dict[str, Any]:
             # not any captcha so, controllo should be true
             st.session_state["controllo"] = True
 
+    if 'workspace' not in st.query_params:
+        st.query_params.workspace = st.session_state.workspace.name
+        
     # Make sure the necessary directories exist
     st.session_state.workspace.mkdir(parents=True, exist_ok=True)
     Path(st.session_state.workspace, "mzML-files").mkdir(parents=True, exist_ok=True)
@@ -207,6 +211,8 @@ def render_sidebar(page: str = "") -> None:
                     path.mkdir(parents=True, exist_ok=True)
                     st.session_state.workspace = path
                     st.query_params.workspace = create_remove
+                    # Temporary as the query update takes a short amount of time
+                    time.sleep(1)
                     st.rerun()
                 # Remove existing workspace and fall back to default
                 if st.button("⚠️ Delete Workspace"):
