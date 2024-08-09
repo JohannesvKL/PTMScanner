@@ -6,6 +6,7 @@ import uuid
 import time
 from typing import Any
 from pathlib import Path
+from streamlit.components.v1 import html
 
 import streamlit as st
 import pandas as pd
@@ -93,6 +94,10 @@ def page_setup(page: str = "") -> dict[str, Any]:
     Returns:
         dict[str, Any]: A dictionary containing the parameters loaded from the parameter file.
     """
+    if 'settings' not in st.session_state:
+        with open('settings.json', 'r') as f:
+            st.session_state.settings = json.load(f)
+
     # Set Streamlit page configurations
     st.set_page_config(
         page_title=APP_NAME,
@@ -103,6 +108,24 @@ def page_setup(page: str = "") -> dict[str, Any]:
     )
 
     st.logo("assets/pyopenms_transparent_background.png")
+
+    if 'tracking_consent' not in st.session_state:
+        st.session_state.tracking_consent = None
+    if (st.session_state.settings['google_analytics']['enabled']) and (st.session_state.tracking_consent == True):
+        html(
+            f"""
+            <!-- Google tag (gtag.js) -->
+            <script async src="https://www.googletagmanager.com/gtag/js?id={st.session_state.settings['google_analytics']['tag']}"></script>
+            <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){{dataLayer.push(arguments);}}
+                gtag('js', new Date());
+                
+                gtag('config', '{st.session_state.settings['google_analytics']['tag']}');
+            </script>
+            """, 
+            width=1, height=1
+        )
 
     # Determine the workspace for the current session
     if (
