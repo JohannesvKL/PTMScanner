@@ -16,7 +16,10 @@ const klaroConfig = {
             onDecline: onDeclineCallback,
         },
     ]
-}
+};
+
+// This will make klaroConfig globally accessible
+(window as any).klaroConfig = klaroConfig
 
 // Klaro creates global variable for access to manager
 declare global {
