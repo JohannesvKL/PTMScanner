@@ -35,7 +35,7 @@ class StreamlitUI:
         file_types: Union[str, List[str]],
         name: str = "",
         fallback: Union[List, str] = None,
-        symlink: bool = True,
+        symlink: bool = False,
     ) -> None:
         """
         Handles file uploads through the Streamlit interface, supporting both direct
