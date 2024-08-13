@@ -199,15 +199,17 @@ def captcha_control():
     # control if the captcha is correct
     if "controllo" not in st.session_state or st.session_state["controllo"] == False:
         
+        # Check if consent for tracking was given
         if st.session_state.tracking_consent is None:
             with st.spinner():
+                # Ask for consent
                 st.session_state.tracking_consent = consent_component()
                 if st.session_state.tracking_consent is None:
+                    # No response by user yet
                     st.stop()
                 else:
-                    print(st.session_state.tracking_consent)
+                    # Consent choice was made
                     st.rerun()
-
 
         st.title("Make sure you are not a robot🤖")
 

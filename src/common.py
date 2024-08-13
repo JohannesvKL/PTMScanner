@@ -109,20 +109,32 @@ def page_setup(page: str = "") -> dict[str, Any]:
 
     st.logo("assets/pyopenms_transparent_background.png")
 
+    # Create google analytics if consent was given
     if 'tracking_consent' not in st.session_state:
         st.session_state.tracking_consent = None
     if (st.session_state.settings['google_analytics']['enabled']) and (st.session_state.tracking_consent == True):
         html(
             f"""
-            <!-- Google tag (gtag.js) -->
-            <script async src="https://www.googletagmanager.com/gtag/js?id={st.session_state.settings['google_analytics']['tag']}"></script>
-            <script>
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){{dataLayer.push(arguments);}}
-                gtag('js', new Date());
-                
-                gtag('config', '{st.session_state.settings['google_analytics']['tag']}');
-            </script>
+            <!DOCTYPE html>
+            <html lang="en">
+                <head>
+                    <!-- Google tag (gtag.js) -->
+                    <script async src="https://www.googletagmanager.com/gtag/js?id={st.session_state.settings['google_analytics']['tag']}" crossorigin='anonymous'></script>
+                    <script crossorigin='anonymous'>
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){{dataLayer.push(arguments);}}
+                    gtag('js', new Date());
+                    gtag('consent', 'default', {{
+                        'ad_storage': 'denied',
+                        'ad_user_data': 'denied',
+                        'ad_personalization': 'denied',
+                        'analytics_storage': 'granted'
+                    }});
+                    gtag('config', '{st.session_state.settings['google_analytics']['tag']}');
+                    </script>
+                </head>
+                <body></body>
+            </html>
             """, 
             width=1, height=1
         )
