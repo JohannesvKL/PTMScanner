@@ -15,6 +15,9 @@ from .captcha_ import captcha_control
 APP_NAME = "OpenMS Streamlit App"
 REPOSITORY_NAME = "streamlit-template"
 
+# Detect system platform
+OS_PLATFORM = sys.platform
+
 
 def load_params(default: bool = False) -> dict[str, Any]:
     """
