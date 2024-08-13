@@ -5,6 +5,7 @@ import shutil
 import subprocess
 from typing import Any, Union, List
 import json
+import os
 import sys
 import importlib.util
 import time
@@ -31,9 +32,10 @@ class StreamlitUI:
     def upload_widget(
         self,
         key: str,
-        file_type: str,
+        file_types: Union[str, List[str]],
         name: str = "",
         fallback: Union[List, str] = None,
+        symlink: bool = True
     ) -> None:
         """
         Handles file uploads through the Streamlit interface, supporting both direct
@@ -42,9 +44,10 @@ class StreamlitUI:
 
         Args:
             key (str): A unique identifier for the upload component.
-            file_type (str): Expected file type for the uploaded files.
+            file_types (Union[str, List[str]]): Expected file type(s) for the uploaded files.
             name (str, optional): Display name for the upload component. Defaults to the key if not provided.
             fallback (Union[List, str], optional): Default files to use if no files are uploaded.
+            symlink (bool, optional): Whether to symlink the uploaded files. This is used if local to avoid making duplicate copies. Defaults to True.
         """
         files_dir = Path(self.workflow_dir, "input-files", key)
         
@@ -62,10 +65,13 @@ class StreamlitUI:
         c1, c2 = st.columns(2)
         c1.markdown("**Upload file(s)**")
         with c1.form(f"{key}-upload", clear_on_submit=True):
-            if any(c.isupper() for c in file_type) and (c.islower() for c in file_type):
-                file_type_for_uploader = None
-            else:
-                file_type_for_uploader = [file_type]
+            # Convert file_types to a list if it's a string
+            if isinstance(file_types, str):
+                file_types = [file_types]
+
+            # Streamlit file uploader accepts file types as a list or None
+            file_type_for_uploader = file_types if file_types else None
+
             files = st.file_uploader(
                 f"{name}",
                 accept_multiple_files=(st.session_state.location == "local"),
@@ -80,9 +86,10 @@ class StreamlitUI:
                     if not isinstance(files, list):
                         files = [files]
                     for f in files:
+                        # Check if file type is in the list of accepted file types
                         if f.name not in [
                             f.name for f in files_dir.iterdir()
-                        ] and f.name.endswith(file_type):
+                        ] and any(f.name.endswith(ft) for ft in file_types):
                             with open(Path(files_dir, f.name), "wb") as fh:
                                 fh.write(f.getbuffer())
                     st.success("Successfully added uploaded files!")
@@ -97,18 +104,33 @@ class StreamlitUI:
                 if st.form_submit_button(
                     f"Copy **{name}** files from local folder", use_container_width=True
                 ):
-                    # raw string for file paths
-                    if not any(Path(local_dir).glob(f"*.{file_type}")):
+                    files = []
+                    local_dir = Path(local_dir).expanduser()  # Expand ~ to full home directory path
+
+                    for ft in file_types:
+                        print(f"Searching for files with type: {ft} in {local_dir}")
+                        # Search for both files and directories with the specified extension
+                        for path in local_dir.iterdir():
+                            if path.is_file() and path.name.endswith(f".{ft}"):
+                                files.append(path)
+                            elif path.is_dir() and path.name.endswith(f".{ft}"):
+                                files.append(path)
+                        print(f"files: {files}")
+
+                    if not files:
                         st.warning(
-                            f"No files with type **{file_type}** found in specified folder."
+                            f"No files with type **{', '.join(file_types)}** found in specified folder."
                         )
                     else:
-                        # Copy all mzML files to workspace mzML directory, add to selected files
-                        files = list(Path(local_dir).glob("*.mzML"))
                         my_bar = st.progress(0)
                         for i, f in enumerate(files):
                             my_bar.progress((i + 1) / len(files))
-                            shutil.copy(f, Path(files_dir, f.name))
+                            if not symlink:
+                                shutil.copy(f, Path(files_dir, f.name))
+                            else:
+                                symlink_target = Path(files_dir, f.name)
+                                if not symlink_target.exists():
+                                    os.symlink(f, symlink_target)
                         my_bar.empty()
                         st.success("Successfully copied files!")
 
@@ -149,7 +171,7 @@ class StreamlitUI:
                 st.rerun()
         elif not fallback:
             st.warning(f"No **{name}** files!")
-
+    
     def select_input_file(
         self,
         key: str,
