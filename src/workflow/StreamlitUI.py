@@ -47,7 +47,7 @@ class StreamlitUI:
             file_types (Union[str, List[str]]): Expected file type(s) for the uploaded files.
             name (str, optional): Display name for the upload component. Defaults to the key if not provided.
             fallback (Union[List, str], optional): Default files to use if no files are uploaded.
-            symlink (bool, optional): Whether to symlink the uploaded files. This is used if local to avoid making duplicate copies. Defaults to True.
+            symlink (bool, optional): Whether to symlink the uploaded files. This is used if local to avoid making duplicate copies. Defaults to False.
         """
         files_dir = Path(self.workflow_dir, "input-files", key)
 
