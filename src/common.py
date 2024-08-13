@@ -149,7 +149,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
         st.cache_data.clear()
         st.cache_resource.clear()
         # Check location
-        if "local" in sys.argv:
+        if not st.session_state.settings['online_deployment']:
             st.session_state.location = "local"
         else:
             st.session_state.location = "online"
