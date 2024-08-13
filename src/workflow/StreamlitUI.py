@@ -13,6 +13,8 @@ from io import BytesIO
 import zipfile
 from datetime import datetime
 
+from ..common import OS_PLATFORM
+
 class StreamlitUI:
     """
     Provides an interface for Streamlit applications to handle file uploads,
@@ -131,8 +133,18 @@ class StreamlitUI:
                                 shutil.copy(f, Path(files_dir, f.name))
                             else:
                                 symlink_target = Path(files_dir, f.name)
-                                if not symlink_target.exists():
-                                    os.symlink(f, symlink_target)
+                                if OS_PLATFORM == "win32":
+                                    # Detect if it's a file or directory
+                                    if f.is_file():
+                                        if not symlink_target.exists():
+                                            os.link(f, symlink_target)
+                                    else:
+                                        # Use mklink /J for directories
+                                        if not symlink_target.exists():
+                                            subprocess.call(["mklink", "/J", str(symlink_target), str(f)], shell=True)
+                                else:
+                                    if not symlink_target.exists():
+                                        os.symlink(f, symlink_target)
                         my_bar.empty()
                         st.success("Successfully copied files!")
 
