@@ -35,7 +35,7 @@ class StreamlitUI:
         file_types: Union[str, List[str]],
         name: str = "",
         fallback: Union[List, str] = None,
-        symlink: bool = True
+        symlink: bool = True,
     ) -> None:
         """
         Handles file uploads through the Streamlit interface, supporting both direct
@@ -50,12 +50,14 @@ class StreamlitUI:
             symlink (bool, optional): Whether to symlink the uploaded files. This is used if local to avoid making duplicate copies. Defaults to True.
         """
         files_dir = Path(self.workflow_dir, "input-files", key)
-        
+
         # create the files dir
         files_dir.mkdir(exist_ok=True, parents=True)
 
         # check if only fallback files are in files_dir, if yes, reset the directory before adding new files
-        if [Path(f).name for f in Path(files_dir).iterdir()] == [Path(f).name for f in fallback]:
+        if [Path(f).name for f in Path(files_dir).iterdir()] == [
+            Path(f).name for f in fallback
+        ]:
             shutil.rmtree(files_dir)
             files_dir.mkdir()
 
@@ -87,9 +89,9 @@ class StreamlitUI:
                         files = [files]
                     for f in files:
                         # Check if file type is in the list of accepted file types
-                        if f.name not in [
-                            f.name for f in files_dir.iterdir()
-                        ] and any(f.name.endswith(ft) for ft in file_types):
+                        if f.name not in [f.name for f in files_dir.iterdir()] and any(
+                            f.name.endswith(ft) for ft in file_types
+                        ):
                             with open(Path(files_dir, f.name), "wb") as fh:
                                 fh.write(f.getbuffer())
                     st.success("Successfully added uploaded files!")
@@ -105,17 +107,17 @@ class StreamlitUI:
                     f"Copy **{name}** files from local folder", use_container_width=True
                 ):
                     files = []
-                    local_dir = Path(local_dir).expanduser()  # Expand ~ to full home directory path
+                    local_dir = Path(
+                        local_dir
+                    ).expanduser()  # Expand ~ to full home directory path
 
                     for ft in file_types:
-                        print(f"Searching for files with type: {ft} in {local_dir}")
                         # Search for both files and directories with the specified extension
                         for path in local_dir.iterdir():
                             if path.is_file() and path.name.endswith(f".{ft}"):
                                 files.append(path)
                             elif path.is_dir() and path.name.endswith(f".{ft}"):
                                 files.append(path)
-                        print(f"files: {files}")
 
                     if not files:
                         st.warning(
@@ -166,12 +168,14 @@ class StreamlitUI:
             ):
                 shutil.rmtree(files_dir)
                 del self.params[key]
-                with open(self.parameter_manager.params_file, "w", encoding="utf-8") as f:
+                with open(
+                    self.parameter_manager.params_file, "w", encoding="utf-8"
+                ) as f:
                     json.dump(self.params, f, indent=4)
                 st.rerun()
         elif not fallback:
             st.warning(f"No **{name}** files!")
-    
+
     def select_input_file(
         self,
         key: str,
@@ -420,7 +424,6 @@ class StreamlitUI:
                     if encoded_key in param.keys():
                         param.setValue(encoded_key, value)
                 poms.ParamXMLFile().store(str(ini_file_path), param)
-            
 
         # read into Param object
         param = poms.Param()
@@ -453,7 +456,7 @@ class StreamlitUI:
                 "section_description": param.getSectionDescription(':'.join(key.decode().split(':')[:-1]))
             }
             params_decoded.append(tmp)
-                    
+
         # for each parameter in params_decoded
         # if a parameter with custom default value exists, use that value
         # else check if the parameter is already in self.params, if yes take the value from self.params
@@ -471,7 +474,7 @@ class StreamlitUI:
         section_description = None
         cols = st.columns(num_cols)
         i = 0
-        
+
         for p in params_decoded:
             # skip avdanced parameters if not selected
             if not st.session_state["advanced"] and p["advanced"]:
@@ -479,11 +482,11 @@ class StreamlitUI:
 
             key = f"{self.parameter_manager.topp_param_prefix}{p['key'].decode()}"
             if display_subsections:
-                 name = p["name"]
-                 if section_description is None:
+                name = p["name"]
+                if section_description is None:
                     section_description = p['section_description']
-                    
-                 elif section_description != p['section_description']:
+
+                elif section_description != p['section_description']:
                     section_description = p['section_description']
                     st.markdown(f"**{section_description}**")
                     cols = st.columns(num_cols)
@@ -660,7 +663,7 @@ class StreamlitUI:
         Args:
             directory (str): The directory whose files are to be zipped.
         """
-       # Ensure directory is a Path object and check if directory is empty
+        # Ensure directory is a Path object and check if directory is empty
         directory = Path(directory)
         if not any(directory.iterdir()):
             st.error("No files to compress.")
@@ -697,8 +700,7 @@ class StreamlitUI:
             mime="application/zip",
             use_container_width=True
         )
-        
-        
+
     def file_upload_section(self, custom_upload_function) -> None:
         custom_upload_function()
         c1, _ = st.columns(2)
