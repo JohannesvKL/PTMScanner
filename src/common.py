@@ -114,6 +114,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
         # Check location
         if "local" in sys.argv:
             st.session_state.location = "local"
+            st.session_state["previous_dir"] = os.getcwd()
+            st.session_state["local_dir"] = ""
         else:
             st.session_state.location = "online"
         # if we run the packaged windows version, we start within the Python directory -> need to change working directory to ..\streamlit-template
