@@ -36,8 +36,7 @@ class StreamlitUI:
         key: str,
         file_types: Union[str, List[str]],
         name: str = "",
-        fallback: Union[List, str] = None,
-        symlink: bool = False,
+        fallback: Union[List, str] = None
     ) -> None:
         """
         Handles file uploads through the Streamlit interface, supporting both direct
@@ -49,7 +48,6 @@ class StreamlitUI:
             file_types (Union[str, List[str]]): Expected file type(s) for the uploaded files.
             name (str, optional): Display name for the upload component. Defaults to the key if not provided.
             fallback (Union[List, str], optional): Default files to use if no files are uploaded.
-            symlink (bool, optional): Whether to symlink the uploaded files. This is used if local to avoid making duplicate copies. Defaults to False.
         """
         files_dir = Path(self.workflow_dir, "input-files", key)
 
@@ -102,7 +100,9 @@ class StreamlitUI:
 
         # Local file upload option: via directory path
         if st.session_state.location == "local":
-            c2.markdown("**OR copy files from local folder**")
+            c2_text, c2_checkbox = c2.columns([2, 1])
+            c2_text.markdown("**OR copy files from local folder**")
+            use_symlink = c2_checkbox.checkbox("Use symlinks", key=f"{key}-symlink", help="Use symbolic links instead of copying files.")
             with c2.form(f"{key}-local-file-upload"):
                 local_dir = st.text_input(f"path to folder with **{name}** files")
                 if st.form_submit_button(
@@ -129,8 +129,11 @@ class StreamlitUI:
                         my_bar = st.progress(0)
                         for i, f in enumerate(files):
                             my_bar.progress((i + 1) / len(files))
-                            if not symlink:
-                                shutil.copy(f, Path(files_dir, f.name))
+                            if not use_symlink:
+                                if os.path.isfile(f):
+                                    shutil.copy(f, Path(files_dir, f.name))
+                                elif os.path.isdir(f):
+                                    shutil.copytree(f, Path(files_dir, f.name), dirs_exist_ok=True)
                             else:
                                 symlink_target = Path(files_dir, f.name)
                                 if OS_PLATFORM == "win32":
@@ -147,7 +150,9 @@ class StreamlitUI:
                                         os.symlink(f, symlink_target)
                         my_bar.empty()
                         st.success("Successfully copied files!")
-
+            if use_symlink:
+                c2.warning("**Warning**: You have selected to use symbolic links to the original files instead of making copies. This **_assumes you know what you are doing_**. If you are unsure, please uncheck the `Use symlinks` checkbox to use the safer copy option.")
+                
         if fallback and not any(Path(files_dir).iterdir()):
             if isinstance(fallback, str):
                 fallback = [fallback]
