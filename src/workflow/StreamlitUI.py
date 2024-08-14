@@ -13,6 +13,12 @@ from io import BytesIO
 import zipfile
 from datetime import datetime
 
+try:
+    from tkinter import Tk, filedialog
+    TK_AVAILABLE = True
+except ImportError:
+    TK_AVAILABLE = False
+        
 from ..common import OS_PLATFORM
 
 class StreamlitUI:
@@ -30,6 +36,26 @@ class StreamlitUI:
         self.executor = executor
         self.parameter_manager = paramter_manager
         self.params = self.parameter_manager.get_parameters_from_json()
+
+    def tk_directory_dialog(self, title: str = "Select Directory", parent_dir: str = os.getcwd()):
+        """
+        Creates a Tkinter directory dialog for selecting a directory.
+
+        Args:
+            title (str): The title of the directory dialog.
+            parent_dir (str): The path to the parent directory of the directory dialog.
+
+        Returns:
+            str: The path to the selected directory.
+        
+        Warning:
+            This function is not avaliable in a streamlit cloud context.
+        """
+        root = Tk()
+        root.withdraw()
+        file_path = filedialog.askdirectory(title=title, initialdir=parent_dir)
+        root.destroy()
+        return file_path
 
     def upload_widget(
         self,
@@ -100,14 +126,23 @@ class StreamlitUI:
 
         # Local file upload option: via directory path
         if st.session_state.location == "local":
-            c2_text, c2_checkbox = c2.columns([2, 1])
+            c2_text, c2_checkbox = c2.columns([1.5, 1], gap="large")
             c2_text.markdown("**OR copy files from local folder**")
-            use_symlink = c2_checkbox.checkbox("Use symlinks", key=f"{key}-symlink", help="Use symbolic links instead of copying files.")
-            with c2.form(f"{key}-local-file-upload"):
-                local_dir = st.text_input(f"path to folder with **{name}** files")
-                if st.form_submit_button(
-                    f"Copy **{name}** files from local folder", use_container_width=True
-                ):
+            use_copy = c2_checkbox.checkbox("Make a copy of files", key=f"{key}-copy_files", value=True, help="Create a copy of files in workspace.")
+            with c2.container(border=True):
+                st_cols = st.columns([0.05, 0.55], gap="small")
+                with st_cols[0]:
+                    st.write("\n")
+                    st.write("\n")
+                    dialog_button = st.button("📁", key='local_browse', help="Browse for your local directory with MS data.", disabled=not TK_AVAILABLE)
+                    if dialog_button:
+                        st.session_state["local_dir"] = self.tk_directory_dialog("Select directory with your MS data", st.session_state["previous_dir"])
+                        st.session_state["previous_dir"] = st.session_state["local_dir"]
+
+                with st_cols[1]:
+                    local_dir = st.text_input(f"path to folder with **{name}** files", value=st.session_state["local_dir"])
+                    
+                if c2.button(f"Copy **{name}** files from local folder", use_container_width=True):
                     files = []
                     local_dir = Path(
                         local_dir
@@ -129,35 +164,29 @@ class StreamlitUI:
                         my_bar = st.progress(0)
                         for i, f in enumerate(files):
                             my_bar.progress((i + 1) / len(files))
-                            if not use_symlink:
+                            if use_copy:
                                 if os.path.isfile(f):
                                     shutil.copy(f, Path(files_dir, f.name))
                                 elif os.path.isdir(f):
                                     shutil.copytree(f, Path(files_dir, f.name), dirs_exist_ok=True)
                             else:
-                                symlink_target = Path(files_dir, f.name)
-                                if OS_PLATFORM == "win32":
-                                    # Detect if it's a file or directory
-                                    if f.is_file():
-                                        if not symlink_target.exists():
-                                            os.link(f, symlink_target)
-                                    else:
-                                        # Use mklink /J for directories
-                                        if not symlink_target.exists():
-                                            subprocess.call(["mklink", "/J", str(symlink_target), str(f)], shell=True)
-                                else:
-                                    if not symlink_target.exists():
-                                        os.symlink(f, symlink_target)
+                                # Do we need to change the reference of Path(st.session_state.workspace, "mzML-files") to point to local dir? 
+                                pass
                         my_bar.empty()
                         st.success("Successfully copied files!")
-            if use_symlink:
-                c2.warning(
-                    "**Warning**: You have selected to use symbolic links to the original files instead of making copies. "
-                    "This **_assumes you know what you are doing_**. Symbolic links point to the original files, "
-                    "meaning changes to the original will affect the links. If you are unsure, please uncheck the "
-                    "`Use symlinks` checkbox to use the safer copy option."
-                )
+                        
+            if not TK_AVAILABLE:
+                c2.warning("**Warning**: Failed to import tkinter, either it is not installed, or this is being called from a cloud context. " "This function is not available in a Streamlit Cloud context. "
+                "You will have to manually enter the path to the folder with the MS files."
+                           )
 
+            if not use_copy:
+                c2.warning(
+        "**Warning**: You have deselected the `Make a copy of files` option. "
+        "This **_assumes you know what you are doing_**. "
+        "This means that the original files will be used instead. "
+    )
+                
         if fallback and not any(Path(files_dir).iterdir()):
             if isinstance(fallback, str):
                 fallback = [fallback]
@@ -197,7 +226,7 @@ class StreamlitUI:
                 st.rerun()
         elif not fallback:
             st.warning(f"No **{name}** files!")
-
+            
     def select_input_file(
         self,
         key: str,
