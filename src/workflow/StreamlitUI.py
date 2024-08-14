@@ -151,8 +151,13 @@ class StreamlitUI:
                         my_bar.empty()
                         st.success("Successfully copied files!")
             if use_symlink:
-                c2.warning("**Warning**: You have selected to use symbolic links to the original files instead of making copies. This **_assumes you know what you are doing_**. If you are unsure, please uncheck the `Use symlinks` checkbox to use the safer copy option.")
-                
+                c2.warning(
+                    "**Warning**: You have selected to use symbolic links to the original files instead of making copies. "
+                    "This **_assumes you know what you are doing_**. Symbolic links point to the original files, "
+                    "meaning changes to the original will affect the links. If you are unsure, please uncheck the "
+                    "`Use symlinks` checkbox to use the safer copy option."
+                )
+
         if fallback and not any(Path(files_dir).iterdir()):
             if isinstance(fallback, str):
                 fallback = [fallback]
