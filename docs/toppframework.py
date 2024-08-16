@@ -61,7 +61,7 @@ All input files for the workflow will be stored within the workflow directory in
 
 The subdirectory name will be determined by a **key** that is defined in the `self.ui.upload_widget` method. The uploaded files are available by the specific key for parameter input widgets and accessible while building the workflow.
 
-Calling this method will create a complete file upload widget section with the following components:
+Calling this method will create a complete file upload widget page with the following components:
 
 - file uploader
 - list of currently uploaded files with this key (or a warning if there are none)
@@ -84,11 +84,11 @@ Fallback files(s) can be specified, which will be used if the user doesn't uploa
         """
 ## Parameter Input
 
-The paramter section is already pre-defined as a form with buttons to **save parameters** and **load defaults** and a toggle to show TOPP tool parameters marked as advanced.
+The parameter page is already pre-defined as a form with buttons to **save parameters** and **load defaults** and a toggle to show TOPP tool parameters marked as advanced.
 
 Generating parameter input widgets is done with the `self.ui.input` method for any parameter and the `self.ui.input_TOPP` method for TOPP tools.
 
-**1. Choose `self.ui.input_widget` for any paramter not-related to a TOPP tool or `self.ui.select_input_file` for any input file:**
+**1. Choose `self.ui.input_widget` for any parameter not-related to a TOPP tool or `self.ui.select_input_file` for any input file:**
 
 It takes the obligatory **key** parameter. The key is used to access the parameter value in the workflow parameters dictionary `self.params`. Default values do not need to be specified in a separate file. Instead they are determined from the widgets default value automatically. Widget types can be specified or automatically determined from **default** and **options** parameters. It's suggested to add a **help** text and other parameters for numerical input.
 
@@ -140,7 +140,7 @@ Takes the obligatory **script_file** argument. The default location for the Pyth
         """
 ## Building the Workflow
 
-Building the workflow involves **calling all (TOPP) tools** using **`self.executor`** with **input and output files** based on the **`FileManager`** class. For TOPP tools non-input-output parameters are handled automatically. Parameters for other processes and workflow logic can be accessed via widget keys (set in the parameter section) in the **`self.params`** dictionary.
+Building the workflow involves **calling all (TOPP) tools** using **`self.executor`** with **input and output files** based on the **`FileManager`** class. For TOPP tools non-input-output parameters are handled automatically. Parameters for other processes and workflow logic can be accessed via widget keys (set on the parameter page) in the **`self.params`** dictionary.
 
 ### FileManager
 
@@ -166,7 +166,7 @@ mzML_files = self.file_manager.get_files(self.params["mzML-files])
 feature_detection_out = self.file_manager.get_files(mzML_files, set_file_type="featureXML", set_results_dir="feature-detection")
 # feature_detection_out = ['../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Control.featureXML', '../workspaces-streamlit-template/default/topp-workflow/results/feature-detection/Treatment.featureXML']
 
-# Setting a name for the output directory automatically (useful if you never plan to access these files in the results section).
+# Setting a name for the output directory automatically (useful if you never plan to access these files within the results page).
 feature_detection_out = self.file_manager.get_files(mzML_files, set_file_type="featureXML", set_results_dir="auto")
 # feature_detection_out = ['../workspaces-streamlit-template/default/topp-workflow/results/6DUd/Control.featureXML', '../workspaces-streamlit-template/default/topp-workflow/results/6DUd/Treatment.featureXML']
 
@@ -258,7 +258,7 @@ self.ui.input_python(script_file="example", input_output={"in": in_mzML, "in_exp
         """
     )
 
-    st.markdown("**Example for a complete workflow section:**")
+    st.markdown("**Example for a complete workflow:**")
 
     st.code(getsource(Workflow.execution))
 
