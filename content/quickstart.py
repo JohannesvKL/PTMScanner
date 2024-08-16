@@ -101,7 +101,7 @@ In general there are two options for building workflows.
             
 Use this option if you want a standardized framework for building your workflow.
 
-- **Pre-defined user interface** all in one streamlit page with all steps in different tabs:
+- **Pre-defined user interface** all in one streamlit page with all steps on different pages:
     - **File Upload**: upload, download and delete input files
     - **Configure**: Automatically display input widgets for all paramters in TOPP tools and custom Python scripts
     - **Run**: Start and stop workflow execution, includes continous log
