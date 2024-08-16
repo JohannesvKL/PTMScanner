@@ -77,11 +77,11 @@ st.page_link(
 
 st.markdown(
     """##  Workspaces and Settings
-The **sidebar** contains to boxes, one for **workspaces** and one for **settings**.
+The **sidebar** contains to boxes, one for **workspaces** (in local mode) and one for **settings**.
 
 🖥️ **Workspaces** store user inputs, parameters and results for a specific session or analysis task.
 
-In **online mode** where the app is hosted on a remote server the workspace has a unique identifier number which can be shared with collaboration partners or stored for later access.
+In **online mode** where the app is hosted on a remote server the workspace has a unique identifier number which can be shared with collaboration partners or stored for later access. The identifier is embedded within the url.
 
 In **local mode** where the app is run locally on a PC (e.g. via Windows executable) the user can create and delete separate workspaces for different projects.
 
