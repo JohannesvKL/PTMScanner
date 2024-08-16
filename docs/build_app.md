@@ -9,7 +9,7 @@
 - **Workspaces**
 : Directories where all data is generated and uploaded can be stored as well as a workspace specific parameter file.
 - **Run the app locally and online**
-: Launching the app with the `local` argument lets the user create/remove workspaces. In the online the user gets a workspace with a specific ID.
+: Launching the app with online mode disabled in the settings.json lets the user create/remove workspaces. In the online the user gets a workspace with a specific ID.
 - **Parameters**
 : Parameters (defaults in `assets/default-params.json`) store changing parameters for each workspace. Parameters are loaded via the page_setup function at the start of each page. To track a widget variable via parameters simply give them a key and add a matching entry in the default parameters file. Initialize a widget value from the params dictionary.
 

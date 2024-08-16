@@ -20,7 +20,7 @@ Multiple streamlit apps based on the [OpenMS streamlit template](https://github.
 
 **2. Specify GitHub token (to download Windows executables).**
 
-> This is **important**! Ommitting this step while result in all apps not having the option to download exetutables any more.
+> This is **important**! Omitting this step while result in all apps not having the option to download executables any more.
 
 Create a temporary `.env` file with your Github token. It should contain only one line:
 
@@ -30,25 +30,27 @@ Create a temporary `.env` file with your Github token. It should contain only on
 
 `docker-compose up --build -d`
 
-> Make sure to remove the `.env` file with your Github token after successfull build
+> Make sure to remove the `.env` file with your Github token after successful build
 
 ## Add new app
 
 This will add your app as a submodule to the streamlit deployment repository. 
 
-**1. Fork and clone the [OpenMS streamlit deployment](https://github.com/OpenMS/streamlit-deployment) repository locally.**
+**1. Enable online mode in the apps settings.json.**
 
-**2. Add your app as submodule. Make sure the app name is not used already.**
+**2. Fork and clone the [OpenMS streamlit deployment](https://github.com/OpenMS/streamlit-deployment) repository locally.**
+
+**3. Add your app as submodule. Make sure the app name is not used already.**
 
 `git submodule add <url-to-git-repository> <name-of-app>`
 
-**3. Initialize and update submodules.**
+**4. Initialize and update submodules.**
 
 `git submodule init`
 
 `git submodule update`
 
-**4. Add your app to `docker-compose.yml` file as a new service.**
+**5. Add your app to `docker-compose.yml` file as a new service.**
 
 Copy the last service as a template.
 
