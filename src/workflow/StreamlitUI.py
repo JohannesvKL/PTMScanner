@@ -260,7 +260,15 @@ class StreamlitUI:
         if not path.exists():
             st.warning(f"No **{name}** files!")
             return
-        options = [str(f) for f in path.iterdir()]
+        options = [str(f) for f in path.iterdir() if "external_files.txt" not in str(f)]
+        
+        # Check if local files are available
+        external_files = Path(self.workflow_dir, "input-files", key, "external_files.txt")
+        
+        if external_files.exists():
+            with open(external_files, "r") as f:
+                external_files_list = f.read().splitlines()
+            options += external_files_list
         if (key in self.params.keys()) and isinstance(self.params[key], list):
             self.params[key] = [f for f in self.params[key] if f in options]
 
