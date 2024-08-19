@@ -52,6 +52,7 @@ class StreamlitUI:
             This function is not avaliable in a streamlit cloud context.
         """
         root = Tk()
+        root.attributes("-topmost", True)
         root.withdraw()
         file_path = filedialog.askdirectory(title=title, initialdir=parent_dir)
         root.destroy()
