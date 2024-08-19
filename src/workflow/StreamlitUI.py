@@ -172,6 +172,15 @@ class StreamlitUI:
                                     shutil.copytree(f, Path(files_dir, f.name), dirs_exist_ok=True)
                             else:
                                 # Do we need to change the reference of Path(st.session_state.workspace, "mzML-files") to point to local dir? 
+                                # Create a temporary file to store the path to the local directories
+                                external_files = Path(files_dir, "external_files.txt")
+                                # Check if the file exists, if not create it
+                                if not external_files.exists():
+                                    external_files.touch()
+                                # Write the path to the local directories to the file
+                                with open(external_files, "a") as f_handle:
+                                    f_handle.write(f"{f}\n")
+                                    
                                 pass
                         my_bar.empty()
                         st.success("Successfully copied files!")
