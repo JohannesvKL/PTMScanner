@@ -153,8 +153,6 @@ class StreamlitUI:
                                 # Write the path to the local directories to the file
                                 with open(external_files, "a") as f_handle:
                                     f_handle.write(f"{f}\n")
-                                    
-                                pass
                         my_bar.empty()
                         st.success("Successfully copied files!")
                         
