@@ -145,7 +145,6 @@ class StreamlitUI:
                                 elif os.path.isdir(f):
                                     shutil.copytree(f, Path(files_dir, f.name), dirs_exist_ok=True)
                             else:
-                                # Do we need to change the reference of Path(st.session_state.workspace, "mzML-files") to point to local dir? 
                                 # Create a temporary file to store the path to the local directories
                                 external_files = Path(files_dir, "external_files.txt")
                                 # Check if the file exists, if not create it
