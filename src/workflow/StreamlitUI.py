@@ -13,13 +13,8 @@ from io import BytesIO
 import zipfile
 from datetime import datetime
 
-try:
-    from tkinter import Tk, filedialog
-    TK_AVAILABLE = True
-except ImportError:
-    TK_AVAILABLE = False
-        
-from ..common import OS_PLATFORM
+
+from ..common import OS_PLATFORM, TK_AVAILABLE, tk_directory_dialog
 
 class StreamlitUI:
     """
@@ -36,27 +31,6 @@ class StreamlitUI:
         self.executor = executor
         self.parameter_manager = paramter_manager
         self.params = self.parameter_manager.get_parameters_from_json()
-
-    def tk_directory_dialog(self, title: str = "Select Directory", parent_dir: str = os.getcwd()):
-        """
-        Creates a Tkinter directory dialog for selecting a directory.
-
-        Args:
-            title (str): The title of the directory dialog.
-            parent_dir (str): The path to the parent directory of the directory dialog.
-
-        Returns:
-            str: The path to the selected directory.
-        
-        Warning:
-            This function is not avaliable in a streamlit cloud context.
-        """
-        root = Tk()
-        root.attributes("-topmost", True)
-        root.withdraw()
-        file_path = filedialog.askdirectory(title=title, initialdir=parent_dir)
-        root.destroy()
-        return file_path
 
     def upload_widget(
         self,
@@ -137,7 +111,7 @@ class StreamlitUI:
                     st.write("\n")
                     dialog_button = st.button("📁", key='local_browse', help="Browse for your local directory with MS data.", disabled=not TK_AVAILABLE)
                     if dialog_button:
-                        st.session_state["local_dir"] = self.tk_directory_dialog("Select directory with your MS data", st.session_state["previous_dir"])
+                        st.session_state["local_dir"] = tk_directory_dialog("Select directory with your MS data", st.session_state["previous_dir"])
                         st.session_state["previous_dir"] = st.session_state["local_dir"]
 
                 with st_cols[1]:

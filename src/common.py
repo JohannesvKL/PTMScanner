@@ -9,6 +9,12 @@ from pathlib import Path
 import streamlit as st
 import pandas as pd
 
+try:
+    from tkinter import Tk, filedialog
+    TK_AVAILABLE = True
+except ImportError:
+    TK_AVAILABLE = False
+
 from .captcha_ import captcha_control
 
 # set these variables according to your project
@@ -358,6 +364,27 @@ def reset_directory(path: Path) -> None:
         shutil.rmtree(path)
     path.mkdir(parents=True, exist_ok=True)
 
+def tk_directory_dialog(title: str = "Select Directory", parent_dir: str = os.getcwd()):
+        """
+        Creates a Tkinter directory dialog for selecting a directory.
+
+        Args:
+            title (str): The title of the directory dialog.
+            parent_dir (str): The path to the parent directory of the directory dialog.
+
+        Returns:
+            str: The path to the selected directory.
+        
+        Warning:
+            This function is not avaliable in a streamlit cloud context.
+        """
+        root = Tk()
+        root.attributes("-topmost", True)
+        root.withdraw()
+        file_path = filedialog.askdirectory(title=title, initialdir=parent_dir)
+        root.destroy()
+        return file_path
+
 
 # General warning/error messages
 WARNINGS = {
@@ -369,3 +396,4 @@ ERRORS = {
     "workflow": "Something went wrong during workflow execution.",
     "visualization": "Something went wrong during visualization of results.",
 }
+
