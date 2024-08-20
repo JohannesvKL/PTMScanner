@@ -9,11 +9,20 @@ from pathlib import Path
 import streamlit as st
 import pandas as pd
 
+try:
+    from tkinter import Tk, filedialog
+    TK_AVAILABLE = True
+except ImportError:
+    TK_AVAILABLE = False
+
 from .captcha_ import captcha_control
 
 # set these variables according to your project
 APP_NAME = "OpenMS Streamlit App"
 REPOSITORY_NAME = "streamlit-template"
+
+# Detect system platform
+OS_PLATFORM = sys.platform
 
 
 def load_params(default: bool = False) -> dict[str, Any]:
@@ -111,6 +120,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
         # Check location
         if "local" in sys.argv:
             st.session_state.location = "local"
+            st.session_state["previous_dir"] = os.getcwd()
+            st.session_state["local_dir"] = ""
         else:
             st.session_state.location = "online"
         # if we run the packaged windows version, we start within the Python directory -> need to change working directory to ..\streamlit-template
@@ -251,6 +262,68 @@ def v_space(n: int, col=None) -> None:
         else:
             st.write("#")
 
+def display_large_dataframe(df, 
+                            chunk_sizes: list[int] = [100, 1_000, 10_000]):
+    """
+    Displays a large DataFrame in chunks with pagination controls and row selection.
+
+    Args:
+        df: The DataFrame to display.
+        chunk_sizes: A list of chunk sizes to choose from.
+
+    Returns:
+        Selected rows from the current chunk.
+    """
+    # Dropdown for selecting chunk size
+    chunk_size = st.selectbox("Select Number of Rows to Display", chunk_sizes)
+    
+    # Calculate total number of chunks
+    total_chunks = (len(df) + chunk_size - 1) // chunk_size
+
+    # Initialize session state for pagination
+    if 'current_chunk' not in st.session_state:
+        st.session_state.current_chunk = 0
+
+    # Function to get the current chunk of the DataFrame
+    def get_current_chunk(df, chunk_size, chunk_index):
+        start = chunk_index * chunk_size
+        end = min(start + chunk_size, len(df))  # Ensure end does not exceed dataframe length
+        return df.iloc[start:end], start, end
+
+    # Display the current chunk
+    current_chunk_df, start_row, end_row = get_current_chunk(df, chunk_size, st.session_state.current_chunk)
+
+    event = st.dataframe(
+        current_chunk_df,
+        column_order=[
+            "spectrum ID",
+            "RT",
+            "MS level",
+            "max intensity m/z",
+            "precursor m/z",
+        ],
+        selection_mode="single-row",
+        on_select="rerun",
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.write(f"Showing rows {start_row + 1} to {end_row} of {len(df)} ({get_dataframe_mem_useage(current_chunk_df):.2f} MB)")
+    
+    # Pagination buttons
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col1:
+        if st.button("Previous") and st.session_state.current_chunk > 0:
+            st.session_state.current_chunk -= 1
+
+    with col3:
+        if st.button("Next") and st.session_state.current_chunk < total_chunks - 1:
+            st.session_state.current_chunk += 1   
+
+    if event is not None:
+        return event
+    return None
 
 def show_table(df: pd.DataFrame, download_name: str = "") -> None:
     """
@@ -353,6 +426,43 @@ def reset_directory(path: Path) -> None:
         shutil.rmtree(path)
     path.mkdir(parents=True, exist_ok=True)
 
+def tk_directory_dialog(title: str = "Select Directory", parent_dir: str = os.getcwd()):
+        """
+        Creates a Tkinter directory dialog for selecting a directory.
+
+        Args:
+            title (str): The title of the directory dialog.
+            parent_dir (str): The path to the parent directory of the directory dialog.
+
+        Returns:
+            str: The path to the selected directory.
+        
+        Warning:
+            This function is not avaliable in a streamlit cloud context.
+        """
+        root = Tk()
+        root.attributes("-topmost", True)
+        root.withdraw()
+        file_path = filedialog.askdirectory(title=title, initialdir=parent_dir)
+        root.destroy()
+        return file_path
+
+def get_dataframe_mem_useage(df):
+    """
+    Get the memory usage of a pandas DataFrame in megabytes.
+    
+    Args:
+        df (pd.DataFrame): The DataFrame to calculate the memory usage for.
+        
+    Returns:
+        float: The memory usage of the DataFrame in megabytes.
+    """
+    # Calculate the memory usage of the DataFrame in bytes
+    memory_usage_bytes = df.memory_usage(deep=True).sum()
+    # Convert bytes to megabytes
+    memory_usage_mb = memory_usage_bytes / (1024 ** 2)
+    return memory_usage_mb
+
 
 # General warning/error messages
 WARNINGS = {
@@ -364,3 +474,4 @@ ERRORS = {
     "workflow": "Something went wrong during workflow execution.",
     "visualization": "Something went wrong during visualization of results.",
 }
+
