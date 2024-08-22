@@ -135,15 +135,15 @@ class StreamlitUI:
                         file_types,
                         st.session_state["previous_dir"],
                     )
-                    st.write(local_files)
-                    my_bar = st.progress(0)
-                    for i, f in enumerate(local_files):
-                        with open(external_files, "a") as f_handle:
-                            f_handle.write(f"{f}\n")
-                    my_bar.empty()
-                    st.success("Successfully copied files!")
-                    
-                    st.session_state["previous_dir"] = Path(local_files[0]).parent
+                    if local_files:
+                        my_bar = st.progress(0)
+                        for i, f in enumerate(local_files):
+                            with open(external_files, "a") as f_handle:
+                                f_handle.write(f"{f}\n")
+                        my_bar.empty()
+                        st.success("Successfully copied files!")
+                        
+                        st.session_state["previous_dir"] = Path(local_files[0]).parent
 
         # Local file upload option: via directory path
         if st.session_state.location == "local":
