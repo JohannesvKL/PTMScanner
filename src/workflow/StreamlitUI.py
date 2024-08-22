@@ -102,7 +102,7 @@ class StreamlitUI:
         # Local file upload option: via directory path
         if st.session_state.location == "local":
             c2_text, c2_checkbox = c2.columns([1.5, 1], gap="large")
-            c2_text.markdown("**OR copy files from local folder**")
+            c2_text.markdown("**OR add files from local folder**")
             use_copy = c2_checkbox.checkbox("Make a copy of files", key=f"{key}-copy_files", value=True, help="Create a copy of files in workspace.")
             with c2.container(border=True):
                 st_cols = st.columns([0.05, 0.55], gap="small")
@@ -117,7 +117,7 @@ class StreamlitUI:
                 with st_cols[1]:
                     local_dir = st.text_input(f"path to folder with **{name}** files", value=st.session_state["local_dir"])
                     
-                if c2.button(f"Copy **{name}** files from local folder", use_container_width=True):
+                if c2.button(f"Add **{name}** files from local folder", use_container_width=True):
                     files = []
                     local_dir = Path(
                         local_dir
