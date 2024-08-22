@@ -183,7 +183,16 @@ class StreamlitUI:
             ]
         else:
             if files_dir.exists():
-                current_files = [f.name for f in files_dir.iterdir()]
+                current_files = [f.name for f in files_dir.iterdir() if "external_files.txt" not in f.name]
+                
+                # Check if local files are available
+                external_files = Path(self.workflow_dir, "input-files", key, "external_files.txt")
+                
+                if external_files.exists():
+                    with open(external_files, "r") as f:
+                        external_files_list = f.read().splitlines()
+                    # Only make files available that still exist
+                    current_files += [f"(local) {Path(f).name}" for f in external_files_list if os.path.exists(f)]            
             else:
                 current_files = []
 
