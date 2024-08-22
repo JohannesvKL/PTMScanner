@@ -239,7 +239,8 @@ class StreamlitUI:
         if external_files.exists():
             with open(external_files, "r") as f:
                 external_files_list = f.read().splitlines()
-            options += external_files_list
+            # Only make files available that still exist
+            options += [f for f in external_files_list if os.path.exists(f)]
         if (key in self.params.keys()) and isinstance(self.params[key], list):
             self.params[key] = [f for f in self.params[key] if f in options]
 
