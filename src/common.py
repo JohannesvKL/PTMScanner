@@ -385,6 +385,31 @@ def tk_directory_dialog(title: str = "Select Directory", parent_dir: str = os.ge
         root.destroy()
         return file_path
 
+def tk_file_dialog(title: str = "Select File", file_types: list[tuple] = [], parent_dir: str = os.getcwd(), multiple:bool = True):
+    """
+    Creates a Tkinter file dialog for selecting a file.
+
+    Args:
+        title (str): The title of the file dialog.
+        file_types (list(tuple)): The file types to filter the file dialog.
+        parent_dir (str): The path to the parent directory of the file dialog.
+        multiple (bool): If True, multiple files can be selected.
+
+    Returns:
+        str: The path to the selected file.
+    
+    Warning:
+        This function is not avaliable in a streamlit cloud context.
+    """
+    root = Tk()
+    root.attributes("-topmost", True)
+    root.withdraw()
+    file_types.extend([("All files", "*.*")])
+    file_path = filedialog.askopenfilename(
+        title=title, filetypes=file_types, initialdir=parent_dir, multiple=True
+    )
+    root.destroy()
+    return file_path
 
 # General warning/error messages
 WARNINGS = {
