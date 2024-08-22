@@ -119,7 +119,7 @@ class StreamlitUI:
                     type="primary",
                     use_container_width=True,
                     key="local_browse_single",
-                    help="Browse for your local directory with MS data.",
+                    help="Browse for your local MS data files.",
                     disabled=not TK_AVAILABLE,
                 )
                 
