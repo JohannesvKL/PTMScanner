@@ -132,7 +132,7 @@ class StreamlitUI:
                 
                 if dialog_button:
                     local_files = tk_file_dialog(
-                        "Select directory with your MS data",
+                        "Select your local MS data files",
                         tk_file_types,
                         st.session_state["previous_dir"],
                     )
