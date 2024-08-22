@@ -14,7 +14,7 @@ import zipfile
 from datetime import datetime
 
 
-from ..common import OS_PLATFORM, TK_AVAILABLE, tk_directory_dialog
+from ..common import OS_PLATFORM, TK_AVAILABLE, tk_directory_dialog, tk_file_dialog
 
 class StreamlitUI:
     """
@@ -67,43 +67,89 @@ class StreamlitUI:
 
         c1, c2 = st.columns(2)
         c1.markdown("**Upload file(s)**")
-        with c1.form(f"{key}-upload", clear_on_submit=True):
-            # Convert file_types to a list if it's a string
-            if isinstance(file_types, str):
-                file_types = [file_types]
 
-            # Streamlit file uploader accepts file types as a list or None
-            file_type_for_uploader = file_types if file_types else None
-
-            files = st.file_uploader(
-                f"{name}",
-                accept_multiple_files=(st.session_state.location == "local"),
-                type=file_type_for_uploader,
-                label_visibility="collapsed",
-            )
-            if st.form_submit_button(
-                f"Add **{name}**", use_container_width=True, type="primary"
-            ):
-                if files:
-                    # in case of online mode a single file is returned -> put in list
-                    if not isinstance(files, list):
-                        files = [files]
-                    for f in files:
-                        # Check if file type is in the list of accepted file types
-                        if f.name not in [f.name for f in files_dir.iterdir()] and any(
-                            f.name.endswith(ft) for ft in file_types
-                        ):
-                            with open(Path(files_dir, f.name), "wb") as fh:
-                                fh.write(f.getbuffer())
-                    st.success("Successfully added uploaded files!")
-                else:
-                    st.error("Nothing to add, please upload file.")
-
-        # Local file upload option: via directory path
         if st.session_state.location == "local":
             c2_text, c2_checkbox = c2.columns([1.5, 1], gap="large")
             c2_text.markdown("**OR add files from local folder**")
             use_copy = c2_checkbox.checkbox("Make a copy of files", key=f"{key}-copy_files", value=True, help="Create a copy of files in workspace.")
+        else:
+            use_copy = True
+
+        if use_copy:
+            with c1.form(f"{key}-upload", clear_on_submit=True):
+                # Convert file_types to a list if it's a string
+                if isinstance(file_types, str):
+                    file_types = [file_types]
+                # Streamlit file uploader accepts file types as a list or None
+                file_type_for_uploader = file_types if file_types else None
+
+                files = st.file_uploader(
+                    f"{name}",
+                    accept_multiple_files=(st.session_state.location == "local"),
+                    type=file_type_for_uploader,
+                    label_visibility="collapsed",
+                )
+                if st.form_submit_button(
+                    f"Add **{name}**", use_container_width=True, type="primary"
+                ):
+                    if files:
+                        # in case of online mode a single file is returned -> put in list
+                        if not isinstance(files, list):
+                            files = [files]
+                        for f in files:
+                            # Check if file type is in the list of accepted file types
+                            if f.name not in [f.name for f in files_dir.iterdir()] and any(
+                                f.name.endswith(ft) for ft in file_types
+                            ):
+                                with open(Path(files_dir, f.name), "wb") as fh:
+                                    fh.write(f.getbuffer())
+                        st.success("Successfully added uploaded files!")
+                    else:
+                        st.error("Nothing to add, please upload file.")
+        else:
+            # Create a temporary file to store the path to the local directories
+            external_files = Path(files_dir, "external_files.txt")
+            # Check if the file exists, if not create it
+            if not external_files.exists():
+                external_files.touch()
+            c1.write("\n")
+            with c1.container(border=True):
+                dialog_button = st.button(
+                    rf"$\textsf{{\Large 📁 Add }} \textsf{{ \Large \textbf{{{name}}} }}$",
+                    type="primary",
+                    use_container_width=True,
+                    key="local_browse_single",
+                    help="Browse for your local directory with MS data.",
+                    disabled=not TK_AVAILABLE,
+                )
+                
+                # Tk file dialog requires file types to be a list of tuples
+                if isinstance(file_types, list):
+                    file_types = [(f"{ft}", f"*.{ft}") for ft in file_types]
+                if isinstance(file_types, str):
+                    file_types = [(f"{file_types}", f"*.{file_types}")]
+                
+                if dialog_button:
+                    local_files = tk_file_dialog(
+                        "Select directory with your MS data",
+                        file_types,
+                        st.session_state["previous_dir"],
+                    )
+                    st.write(local_files)
+                    my_bar = st.progress(0)
+                    for i, f in enumerate(local_files):
+                        with open(external_files, "a") as f_handle:
+                            f_handle.write(f"{f}\n")
+                    my_bar.empty()
+                    st.success("Successfully copied files!")
+                    
+                    st.session_state["previous_dir"] = Path(local_files[0]).parent
+
+        # Local file upload option: via directory path
+        if st.session_state.location == "local":
+            # c2_text, c2_checkbox = c2.columns([1.5, 1], gap="large")
+            # c2_text.markdown("**OR add files from local folder**")
+            # use_copy = c2_checkbox.checkbox("Make a copy of files", key=f"{key}-copy_files", value=True, help="Create a copy of files in workspace.")
             with c2.container(border=True):
                 st_cols = st.columns([0.05, 0.55], gap="small")
                 with st_cols[0]:
@@ -116,7 +162,7 @@ class StreamlitUI:
 
                 with st_cols[1]:
                     local_dir = st.text_input(f"path to folder with **{name}** files", value=st.session_state["local_dir"])
-                    
+
                 if c2.button(f"Add **{name}** files from local folder", use_container_width=True):
                     files = []
                     local_dir = Path(
@@ -145,17 +191,12 @@ class StreamlitUI:
                                 elif os.path.isdir(f):
                                     shutil.copytree(f, Path(files_dir, f.name), dirs_exist_ok=True)
                             else:
-                                # Create a temporary file to store the path to the local directories
-                                external_files = Path(files_dir, "external_files.txt")
-                                # Check if the file exists, if not create it
-                                if not external_files.exists():
-                                    external_files.touch()
                                 # Write the path to the local directories to the file
                                 with open(external_files, "a") as f_handle:
                                     f_handle.write(f"{f}\n")
                         my_bar.empty()
                         st.success("Successfully copied files!")
-                        
+
             if not TK_AVAILABLE:
                 c2.warning("**Warning**: Failed to import tkinter, either it is not installed, or this is being called from a cloud context. " "This function is not available in a Streamlit Cloud context. "
                 "You will have to manually enter the path to the folder with the MS files."
@@ -167,7 +208,7 @@ class StreamlitUI:
         "This **_assumes you know what you are doing_**. "
         "This means that the original files will be used instead. "
     )
-                
+
         if fallback and not any(Path(files_dir).iterdir()):
             if isinstance(fallback, str):
                 fallback = [fallback]
@@ -184,10 +225,10 @@ class StreamlitUI:
         else:
             if files_dir.exists():
                 current_files = [f.name for f in files_dir.iterdir() if "external_files.txt" not in f.name]
-                
+
                 # Check if local files are available
                 external_files = Path(self.workflow_dir, "input-files", key, "external_files.txt")
-                
+
                 if external_files.exists():
                     with open(external_files, "r") as f:
                         external_files_list = f.read().splitlines()
@@ -216,7 +257,7 @@ class StreamlitUI:
                 st.rerun()
         elif not fallback:
             st.warning(f"No **{name}** files!")
-            
+
     def select_input_file(
         self,
         key: str,
@@ -241,10 +282,10 @@ class StreamlitUI:
             st.warning(f"No **{name}** files!")
             return
         options = [str(f) for f in path.iterdir() if "external_files.txt" not in str(f)]
-        
+
         # Check if local files are available
         external_files = Path(self.workflow_dir, "input-files", key, "external_files.txt")
-        
+
         if external_files.exists():
             with open(external_files, "r") as f:
                 external_files_list = f.read().splitlines()
