@@ -75,11 +75,12 @@ class StreamlitUI:
         else:
             use_copy = True
 
+        # Convert file_types to a list if it's a string
+        if isinstance(file_types, str):
+            file_types = [file_types]
+            
         if use_copy:
             with c1.form(f"{key}-upload", clear_on_submit=True):
-                # Convert file_types to a list if it's a string
-                if isinstance(file_types, str):
-                    file_types = [file_types]
                 # Streamlit file uploader accepts file types as a list or None
                 file_type_for_uploader = file_types if file_types else None
 
@@ -125,14 +126,14 @@ class StreamlitUI:
                 
                 # Tk file dialog requires file types to be a list of tuples
                 if isinstance(file_types, list):
-                    file_types = [(f"{ft}", f"*.{ft}") for ft in file_types]
+                    tk_file_types = [(f"{ft}", f"*.{ft}") for ft in file_types]
                 if isinstance(file_types, str):
-                    file_types = [(f"{file_types}", f"*.{file_types}")]
+                    tk_file_types = [(f"{file_types}", f"*.{file_types}")]
                 
                 if dialog_button:
                     local_files = tk_file_dialog(
                         "Select directory with your MS data",
-                        file_types,
+                        tk_file_types,
                         st.session_state["previous_dir"],
                     )
                     if local_files:
