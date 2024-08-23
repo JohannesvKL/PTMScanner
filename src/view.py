@@ -121,7 +121,7 @@ def plot_bpc_tic() -> go.Figure:
 
 
 @st.cache_resource
-def plot_ms_spectrum(spec, title, color):
+def plot_ms_spectrum_old(spec, title, color):
     """
     Takes a pandas Series (spec) and generates a needle plot with m/z and intensity dimension.
 
@@ -186,6 +186,13 @@ def plot_ms_spectrum(spec, title, color):
     )
     return fig
 
+@st.cache_resource
+def plot_ms_spectrum(df, title):
+    fig = df.plot(kind="spectrum", backend="ms_plotly", x="mz", y="intensity", line_color="#2d3a9d", title=title, show_plot=False, grid = False)
+    fig = fig.fig
+    fig.update_layout(template="plotly_white", dragmode="select", plot_bgcolor="rgb(255,255,255)")
+    return fig
+    
 
 @st.experimental_fragment
 def view_peak_map():
@@ -198,9 +205,19 @@ def view_peak_map():
             df = df[df["mz"] > box[0]["y"][1]]
             df = df[df["mz"] < box[0]["y"][0]]
             df = df[df["RT"] < box[0]["x"][1]]
-    peak_map = plotMSExperiment(
-        df, plot3D=False, title=st.session_state.view_selected_file
+    peak_map = df.plot(
+        kind="peakmap",
+        x="RT",
+        y="mz",
+        z="inty",
+        title=st.session_state.view_selected_file,
+        grid=False,
+        show_plot=False,
+        bin_peaks=True,
+        backend="ms_plotly",
     )
+    peak_map.fig.update_layout(template="simple_white", dragmode="select")
+    peak_map = peak_map.fig
     c1, c2 = st.columns(2)
     with c1:
         st.info(
@@ -253,7 +270,21 @@ def view_spectrum():
                 title = f"{st.session_state.view_selected_file}  spec={rows[0]+1}  mslevel={df['MS level']}"
                 if df["precursor m/z"] > 0:
                     title += f" precursor m/z: {round(df['precursor m/z'], 4)}"
-                fig = plot_ms_spectrum(df, title, "#2d3a9d")
+                
+                df_selected = pd.DataFrame(
+                    {
+                        "mz": df["mzarray"],
+                        "intensity": df["intarray"],
+                    }
+                )
+                df_selected['RT'] = df['RT']
+                df_selected['MS level'] = df['MS level']
+                df_selected['precursor m/z'] = df['precursor m/z']
+                df_selected['max intensity m/z'] = df['max intensity m/z']
+                
+                # fig = plot_ms_spectrum(df, title, "#2d3a9d")
+                fig = plot_ms_spectrum(df_selected, title)
+                
                 show_fig(fig, title.replace(" ", "_"), True, "view_spectrum_selection")
             else:
                 st.session_state.pop("view_spectrum_selection")
