@@ -188,7 +188,7 @@ def plot_ms_spectrum_old(spec, title, color):
 
 
 @st.cache_resource
-def plot_ms_spectrum(df, title):
+def plot_ms_spectrum(df, title, bin_peaks, num_x_bins):
     fig = df.plot(
         kind="spectrum",
         backend="ms_plotly",
@@ -198,8 +198,8 @@ def plot_ms_spectrum(df, title):
         title=title,
         show_plot=False,
         grid=False,
-        bin_peaks=st.session_state.spectrum_bin_peaks,
-        num_x_bins=st.session_state.spectrum_num_bins,
+        bin_peaks=bin_peaks,
+        num_x_bins=num_x_bins,
     )
     fig = fig.fig
     fig.update_layout(
@@ -297,7 +297,7 @@ def view_spectrum():
                 df_selected['max intensity m/z'] = df['max intensity m/z']
                 
                 # fig = plot_ms_spectrum(df, title, "#2d3a9d")
-                fig = plot_ms_spectrum(df_selected, title)
+                fig = plot_ms_spectrum(df_selected, title, st.session_state.spectrum_bin_peaks, st.session_state.spectrum_num_bins)
                 
                 show_fig(fig, title.replace(" ", "_"), True, "view_spectrum_selection")
             else:
