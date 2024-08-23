@@ -186,13 +186,27 @@ def plot_ms_spectrum_old(spec, title, color):
     )
     return fig
 
+
 @st.cache_resource
 def plot_ms_spectrum(df, title):
-    fig = df.plot(kind="spectrum", backend="ms_plotly", x="mz", y="intensity", line_color="#2d3a9d", title=title, show_plot=False, grid = False)
+    fig = df.plot(
+        kind="spectrum",
+        backend="ms_plotly",
+        x="mz",
+        y="intensity",
+        line_color="#2d3a9d",
+        title=title,
+        show_plot=False,
+        grid=False,
+        bin_peaks=st.session_state.spectrum_bin_peaks,
+        num_x_bins=st.session_state.spectrum_num_bins,
+    )
     fig = fig.fig
-    fig.update_layout(template="plotly_white", dragmode="select", plot_bgcolor="rgb(255,255,255)")
+    fig.update_layout(
+        template="plotly_white", dragmode="select", plot_bgcolor="rgb(255,255,255)"
+    )
     return fig
-    
+
 
 @st.experimental_fragment
 def view_peak_map():
