@@ -60,6 +60,7 @@ def get_df(file: Union[str, Path]) -> pd.DataFrame:
     else:
         st.session_state["view_ms2"] = pd.DataFrame()
 
+
 def plot_bpc_tic() -> go.Figure:
     """Plot the base peak and total ion chromatogram (TIC).
 
@@ -67,26 +68,41 @@ def plot_bpc_tic() -> go.Figure:
         A plotly Figure object containing the BPC and TIC plot.
     """
     fig = go.Figure()
+    max_int = 0
     if st.session_state.view_tic:
         df = st.session_state.view_ms1.groupby("RT").sum().reset_index()
-        fig.add_scatter(
-            x=df["RT"],
-            y=df["inty"],
-            mode="lines",
-            line=dict(color="#f24c5c", width=3),  # OpenMS red
-            name="TIC",
-            showlegend=True,
+        df["type"] = "TIC"
+        if df["inty"].max() > max_int:
+            max_int = df["inty"].max()
+        fig = df.plot(
+            backend="ms_plotly",
+            kind="chromatogram",
+            fig=fig,
+            x="RT",
+            y="inty",
+            by="type",
+            line_color="#f24c5c",
+            show_plot=False,
+            grid=False,
         )
+        fig = fig.fig
     if st.session_state.view_bpc:
         df = st.session_state.view_ms1.groupby("RT").max().reset_index()
-        fig.add_scatter(
-            x=df["RT"],
-            y=df["inty"],
-            mode="lines",
-            line=dict(color="#2d3a9d", width=3),  # OpenMS blue
-            name="BPC",
-            showlegend=True,
+        df["type"] = "BPC"
+        if df["inty"].max() > max_int:
+            max_int = df["inty"].max()
+        fig = df.plot(
+            backend="ms_plotly",
+            kind="chromatogram",
+            fig=fig,
+            x="RT",
+            y="inty",
+            by="type",
+            line_color="#2d3a9d",
+            show_plot=False,
+            grid=False,
         )
+        fig = fig.fig
     if st.session_state.view_eic:
         df = st.session_state.view_ms1
         target_value = st.session_state.view_eic_mz.strip().replace(",", ".")
@@ -96,19 +112,30 @@ def plot_bpc_tic() -> go.Figure:
             tolerance = (target_value * ppm_tolerance) / 1e6
 
             # Filter the DataFrame
-            df_eic = df[(df['mz'] >= target_value - tolerance) & (df['mz'] <= target_value + tolerance)]
+            df_eic = df[
+                (df["mz"] >= target_value - tolerance)
+                & (df["mz"] <= target_value + tolerance)
+            ]
             if not df_eic.empty:
-                fig.add_scatter(
-                    x=df_eic["RT"],
-                    y=df_eic["inty"],
-                    mode="lines",
-                    line=dict(color="#f6bf26", width=3),
-                    name="XIC",
-                    showlegend=True,
+                df_eic["type"] = "XIC"
+                if df_eic["inty"].max() > max_int:
+                    max_int = df_eic["inty"].max()
+                fig = df_eic.plot(
+                    backend="ms_plotly",
+                    kind="chromatogram",
+                    fig=fig,
+                    x="RT",
+                    y="inty",
+                    by="type",
+                    line_color="#f6bf26",
+                    show_plot=False,
+                    grid=False,
                 )
+                fig = fig.fig
         except ValueError:
             st.error("Invalid m/z value for XIC provided. Please enter a valid number.")
 
+    fig.update_yaxes(range=[0, max_int])
     fig.update_layout(
         title=f"{st.session_state.view_selected_file}",
         xaxis_title="retention time (s)",
@@ -117,73 +144,6 @@ def plot_bpc_tic() -> go.Figure:
         height=500,
     )
     fig.layout.template = "plotly_white"
-    return fig
-
-
-@st.cache_resource
-def plot_ms_spectrum_old(spec, title, color):
-    """
-    Takes a pandas Series (spec) and generates a needle plot with m/z and intensity dimension.
-
-    Args:
-        spec: Pandas Series representing the mass spectrum with "mzarray" and "intarray" columns.
-        title: Title of the plot.
-        color: Color of the line in the plot.
-
-    Returns:
-        A Plotly Figure object representing the needle plot of the mass spectrum.
-    """
-
-    # Every Peak is represented by three dots in the line plot: (x, 0), (x, y), (x, 0)
-    def create_spectra(x, y, zero=0):
-        x = np.repeat(x, 3)
-        y = np.repeat(y, 3)
-        y[::3] = y[2::3] = zero
-        return pd.DataFrame({"mz": x, "intensity": y})
-
-    df = create_spectra(spec["mzarray"], spec["intarray"])
-    fig = px.line(df, x="mz", y="intensity")
-    fig.update_traces(line_color=color)
-    fig.add_hline(0, line=dict(color="#DDDDDD"), line_width=3)
-    fig.update_layout(
-        showlegend=False,
-        title_text=title,
-        xaxis_title="m/z",
-        yaxis_title="intensity",
-        plot_bgcolor="rgb(255,255,255)",
-        dragmode="select",
-    )
-    # add annotations
-    top_indices = np.argsort(spec["intarray"])[-5:][::-1]
-    for index in top_indices:
-        mz = spec["mzarray"][index]
-        i = spec["intarray"][index]
-        fig.add_annotation(
-            dict(
-                x=mz,
-                y=i,
-                text=str(round(mz, 5)),
-                showarrow=False,
-                xanchor="left",
-                font=dict(
-                    family="Open Sans Mono, monospace",
-                    size=12,
-                    color=color,
-                ),
-            )
-        )
-    fig.layout.template = "plotly_white"
-    # adjust x-axis limits to not cut peaks and annotations
-    x_values = [trace.x for trace in fig.data]
-    xmin = min([min(values) for values in x_values])
-    xmax = max([max(values) for values in x_values])
-    padding = 0.15 * (xmax - xmin)
-    fig.update_layout(
-        xaxis_range=[
-            xmin - padding,
-            xmax + padding,
-        ]
-    )
     return fig
 
 
@@ -244,8 +204,24 @@ def view_peak_map():
         )
     with c2:
         if df.shape[0] < 2500:
-            peak_map_3D = plotMSExperiment(df, plot3D=True, title="")
-            st.pyplot(peak_map_3D, use_container_width=True)
+            peak_map_3D = df.plot(
+                kind="peakmap",
+                plot_3d=True,
+                backend="ms_plotly",
+                x="RT",
+                y="mz",
+                z="inty",
+                zlabel="Intensity",
+                title="",
+                show_plot=False,
+                grid=False,
+                bin_peaks=st.session_state.spectrum_bin_peaks,
+                num_x_bins=st.session_state.spectrum_num_bins,
+                height=650,
+                width=900,
+            )
+            peak_map_3D = peak_map_3D.fig
+            st.plotly_chart(peak_map_3D, use_container_width=True)
 
 
 @st.experimental_fragment
@@ -284,7 +260,7 @@ def view_spectrum():
                 title = f"{st.session_state.view_selected_file}  spec={rows[0]+1}  mslevel={df['MS level']}"
                 if df["precursor m/z"] > 0:
                     title += f" precursor m/z: {round(df['precursor m/z'], 4)}"
-                
+
                 df_selected = pd.DataFrame(
                     {
                         "mz": df["mzarray"],
@@ -295,10 +271,14 @@ def view_spectrum():
                 df_selected['MS level'] = df['MS level']
                 df_selected['precursor m/z'] = df['precursor m/z']
                 df_selected['max intensity m/z'] = df['max intensity m/z']
-                
-                # fig = plot_ms_spectrum(df, title, "#2d3a9d")
-                fig = plot_ms_spectrum(df_selected, title, st.session_state.spectrum_bin_peaks, st.session_state.spectrum_num_bins)
-                
+
+                fig = plot_ms_spectrum(
+                    df_selected,
+                    title,
+                    st.session_state.spectrum_bin_peaks,
+                    st.session_state.spectrum_num_bins,
+                )
+
                 show_fig(fig, title.replace(" ", "_"), True, "view_spectrum_selection")
             else:
                 st.session_state.pop("view_spectrum_selection")
