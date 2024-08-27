@@ -125,10 +125,13 @@ class StreamlitUI:
                 )
                 
                 # Tk file dialog requires file types to be a list of tuples
-                if isinstance(file_types, list):
-                    tk_file_types = [(f"{ft}", f"*.{ft}") for ft in file_types]
                 if isinstance(file_types, str):
                     tk_file_types = [(f"{file_types}", f"*.{file_types}")]
+                elif isinstance(file_types, list):
+                    tk_file_types = [(f"{ft}", f"*.{ft}") for ft in file_types]
+                else:
+                    raise ValueError("'file_types' must be either of type str or list")
+                
                 
                 if dialog_button:
                     local_files = tk_file_dialog(
