@@ -142,7 +142,7 @@ class StreamlitUI:
                             with open(external_files, "a") as f_handle:
                                 f_handle.write(f"{f}\n")
                         my_bar.empty()
-                        st.success("Successfully copied files!")
+                        st.success("Successfully added files!")
                         
                         st.session_state["previous_dir"] = Path(local_files[0]).parent
 
