@@ -11,7 +11,7 @@ from streamlit.components.v1 import html
 import streamlit as st
 import pandas as pd
 
-from .captcha_ import captcha_control
+from src.captcha_ import captcha_control
 
 # set these variables according to your project
 APP_NAME = "OpenMS Streamlit App"
