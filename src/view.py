@@ -5,8 +5,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 import pyopenms as poms
-from .plotting.MSExperimentPlotter import plotMSExperiment
-from .common import show_fig
+from src.plotting.MSExperimentPlotter import plotMSExperiment
+from src.common import show_fig
 
 from typing import Union
 

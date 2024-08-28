@@ -1,11 +1,11 @@
 import streamlit as st
-from .workflow.WorkflowManager import WorkflowManager
+from src.workflow.WorkflowManager import WorkflowManager
 
 # for result section:
 from pathlib import Path
 import pandas as pd
 import plotly.express as px
-from .common import show_fig
+from src.common import show_fig
 
 
 class Workflow(WorkflowManager):
