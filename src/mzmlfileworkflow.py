@@ -70,7 +70,7 @@ def run_workflow(params, result_dir):
     )
     df.to_csv(Path(result_dir, "result.tsv"), sep="\t", index=False)
 
-@stfragment
+@st.fragment
 def result_section(result_dir):
     date_strings = [f.name for f in Path(result_dir).iterdir() if f.is_dir()]
 
