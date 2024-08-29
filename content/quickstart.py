@@ -21,7 +21,7 @@ Returns:
 from pathlib import Path
 import streamlit as st
 
-from src.common import page_setup, v_space
+from src.common.common import page_setup, v_space
 
 page_setup(page="main")
 

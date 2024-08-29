@@ -3,7 +3,7 @@ from pathlib import Path
 import streamlit as st
 import pandas as pd
 
-from src.common import page_setup, save_params, v_space, show_table, TK_AVAILABLE, tk_directory_dialog
+from src.common.common import page_setup, save_params, v_space, show_table, TK_AVAILABLE, tk_directory_dialog
 from src import fileupload
 
 params = page_setup()

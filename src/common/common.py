@@ -17,7 +17,7 @@ try:
 except ImportError:
     TK_AVAILABLE = False
 
-from src.captcha_ import captcha_control
+from src.common.captcha_ import captcha_control
 
 # set these variables according to your project
 APP_NAME = "OpenMS Streamlit App"

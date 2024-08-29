@@ -5,7 +5,7 @@ from src.workflow.WorkflowManager import WorkflowManager
 from pathlib import Path
 import pandas as pd
 import plotly.express as px
-from src.common import show_fig
+from src.common.common import show_fig
 
 
 class Workflow(WorkflowManager):

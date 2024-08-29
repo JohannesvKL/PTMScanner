@@ -2,7 +2,7 @@ import streamlit as st
 
 from pathlib import Path
 
-from src.common import page_setup, save_params
+from src.common.common import page_setup, save_params
 from src import mzmlfileworkflow
 
 # Page name "workflow" will show mzML file selector in sidebar

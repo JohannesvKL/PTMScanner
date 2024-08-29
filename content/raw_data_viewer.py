@@ -2,7 +2,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from src.common import page_setup
+from src.common.common import page_setup
 from src import view
 
 

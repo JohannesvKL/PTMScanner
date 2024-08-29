@@ -4,7 +4,7 @@ import pyopenms as poms
 import pandas as pd
 import time
 from datetime import datetime
-from src.common import reset_directory, show_fig, show_table
+from src.common.common import reset_directory, show_fig, show_table
 import plotly.express as px
 
 
