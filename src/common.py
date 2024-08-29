@@ -263,15 +263,17 @@ def display_large_dataframe(df,
     Returns:
         Selected rows from the current chunk.
     """
+    def update_on_change():
+        # Initialize session state for pagination
+        if 'current_chunk' not in st.session_state:
+            st.session_state.current_chunk = 0
+        st.session_state.current_chunk = 0
+    
     # Dropdown for selecting chunk size
-    chunk_size = st.selectbox("Select Number of Rows to Display", chunk_sizes)
+    chunk_size = st.selectbox("Select Number of Rows to Display", chunk_sizes, on_change=update_on_change)
     
     # Calculate total number of chunks
-    total_chunks = (len(df) + chunk_size - 1) // chunk_size
-
-    # Initialize session state for pagination
-    if 'current_chunk' not in st.session_state:
-        st.session_state.current_chunk = 0
+    total_chunks = (len(df) + chunk_size - 1) // chunk_size    
 
     # Function to get the current chunk of the DataFrame
     def get_current_chunk(df, chunk_size, chunk_index):
