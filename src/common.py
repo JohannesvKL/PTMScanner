@@ -252,13 +252,16 @@ def v_space(n: int, col=None) -> None:
             st.write("#")
 
 def display_large_dataframe(df, 
-                            chunk_sizes: list[int] = [100, 1_000, 10_000]):
+                            chunk_sizes: list[int] = [100, 1_000, 10_000],
+                            **kwargs
+                            ):
     """
     Displays a large DataFrame in chunks with pagination controls and row selection.
 
     Args:
         df: The DataFrame to display.
         chunk_sizes: A list of chunk sizes to choose from.
+        ...: Additional keyword arguments to pass to the `st.dataframe` function. See: https://docs.streamlit.io/develop/api-reference/data/st.dataframe
 
     Returns:
         Selected rows from the current chunk.
@@ -286,17 +289,7 @@ def display_large_dataframe(df,
 
     event = st.dataframe(
         current_chunk_df,
-        column_order=[
-            "spectrum ID",
-            "RT",
-            "MS level",
-            "max intensity m/z",
-            "precursor m/z",
-        ],
-        selection_mode="single-row",
-        on_select="rerun",
-        use_container_width=True,
-        hide_index=True,
+        **kwargs
     )
 
     st.write(f"Showing rows {start_row + 1} to {end_row} of {len(df)} ({get_dataframe_mem_useage(current_chunk_df):.2f} MB)")

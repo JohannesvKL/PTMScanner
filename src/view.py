@@ -222,7 +222,20 @@ def view_spectrum():
     with cols[0]:
         df = st.session_state.view_spectra.copy()
         df["spectrum ID"] = df.index + 1
-        event = display_large_dataframe(df)
+        event = display_large_dataframe(
+            df,
+            column_order=[
+                "spectrum ID",
+                "RT",
+                "MS level",
+                "max intensity m/z",
+                "precursor m/z",
+            ],
+            selection_mode="single-row",
+            on_select="rerun",
+            use_container_width=True,
+            hide_index=True,
+        )
         rows = event.selection.rows
     with cols[1]:
         if rows:
