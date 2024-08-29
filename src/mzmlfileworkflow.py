@@ -82,6 +82,10 @@ def result_section(result_dir):
 
     run_dir = st.selectbox("select result from run", result_dirs)
 
+    if run_dir is None:
+        st.error("Please select a result from a run!")
+        return
+
     result_dir = Path(result_dir, run_dir)
     # visualize workflow results if there are any
     result_file_path = Path(result_dir, "result.tsv")
