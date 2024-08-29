@@ -72,6 +72,10 @@ def run_workflow(params, result_dir):
 
 @st.fragment
 def result_section(result_dir):
+    if not Path(result_dir).exists():
+        st.error("No results to show yet. Please run a workflow first!")
+        return
+
     date_strings = [f.name for f in Path(result_dir).iterdir() if f.is_dir()]
 
     result_dirs = sorted(date_strings, key=lambda date: datetime.strptime(date, "%Y-%m-%d %H:%M:%S"))[::-1]
