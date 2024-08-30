@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import streamlit as st
 import pyopenms as poms
 from .plotting.MSExperimentPlotter import plotMSExperiment
-from .common import show_fig
+from .common import show_fig, display_large_dataframe
 
 from typing import Union
 
@@ -216,14 +216,13 @@ def view_peak_map():
             peak_map_3D = plotMSExperiment(df, plot3D=True, title="")
             st.pyplot(peak_map_3D, use_container_width=True)
 
-
 @st.experimental_fragment
 def view_spectrum():
     cols = st.columns([0.34, 0.66])
     with cols[0]:
         df = st.session_state.view_spectra.copy()
         df["spectrum ID"] = df.index + 1
-        event = st.dataframe(
+        event = display_large_dataframe(
             df,
             column_order=[
                 "spectrum ID",
