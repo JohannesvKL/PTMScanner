@@ -297,6 +297,63 @@ def v_space(n: int, col=None) -> None:
         else:
             st.write("#")
 
+def display_large_dataframe(df, 
+                            chunk_sizes: list[int] = [100, 1_000, 10_000],
+                            **kwargs
+                            ):
+    """
+    Displays a large DataFrame in chunks with pagination controls and row selection.
+
+    Args:
+        df: The DataFrame to display.
+        chunk_sizes: A list of chunk sizes to choose from.
+        ...: Additional keyword arguments to pass to the `st.dataframe` function. See: https://docs.streamlit.io/develop/api-reference/data/st.dataframe
+
+    Returns:
+        Selected rows from the current chunk.
+    """
+    def update_on_change():
+        # Initialize session state for pagination
+        if 'current_chunk' not in st.session_state:
+            st.session_state.current_chunk = 0
+        st.session_state.current_chunk = 0
+    
+    # Dropdown for selecting chunk size
+    chunk_size = st.selectbox("Select Number of Rows to Display", chunk_sizes, on_change=update_on_change)
+    
+    # Calculate total number of chunks
+    total_chunks = (len(df) + chunk_size - 1) // chunk_size    
+
+    # Function to get the current chunk of the DataFrame
+    def get_current_chunk(df, chunk_size, chunk_index):
+        start = chunk_index * chunk_size
+        end = min(start + chunk_size, len(df))  # Ensure end does not exceed dataframe length
+        return df.iloc[start:end], start, end
+
+    # Display the current chunk
+    current_chunk_df, start_row, end_row = get_current_chunk(df, chunk_size, st.session_state.current_chunk)
+
+    event = st.dataframe(
+        current_chunk_df,
+        **kwargs
+    )
+
+    st.write(f"Showing rows {start_row + 1} to {end_row} of {len(df)} ({get_dataframe_mem_useage(current_chunk_df):.2f} MB)")
+    
+    # Pagination buttons
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col1:
+        if st.button("Previous") and st.session_state.current_chunk > 0:
+            st.session_state.current_chunk -= 1
+
+    with col3:
+        if st.button("Next") and st.session_state.current_chunk < total_chunks - 1:
+            st.session_state.current_chunk += 1   
+
+    if event is not None:
+        return event
+    return None
 
 def show_table(df: pd.DataFrame, download_name: str = "") -> None:
     """
@@ -398,6 +455,22 @@ def reset_directory(path: Path) -> None:
     if path.exists():
         shutil.rmtree(path)
     path.mkdir(parents=True, exist_ok=True)
+
+def get_dataframe_mem_useage(df):
+    """
+    Get the memory usage of a pandas DataFrame in megabytes.
+    
+    Args:
+        df (pd.DataFrame): The DataFrame to calculate the memory usage for.
+        
+    Returns:
+        float: The memory usage of the DataFrame in megabytes.
+    """
+    # Calculate the memory usage of the DataFrame in bytes
+    memory_usage_bytes = df.memory_usage(deep=True).sum()
+    # Convert bytes to megabytes
+    memory_usage_mb = memory_usage_bytes / (1024 ** 2)
+    return memory_usage_mb
 
 def tk_directory_dialog(title: str = "Select Directory", parent_dir: str = os.getcwd()):
         """

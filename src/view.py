@@ -5,8 +5,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 import pyopenms as poms
+
 from src.plotting.MSExperimentPlotter import plotMSExperiment
-from src.common.common import show_fig
+from src.common.common import show_fig, display_large_dataframe
 
 from typing import Union
 
@@ -223,7 +224,7 @@ def view_spectrum():
     with cols[0]:
         df = st.session_state.view_spectra.copy()
         df["spectrum ID"] = df.index + 1
-        event = st.dataframe(
+        event = display_large_dataframe(
             df,
             column_order=[
                 "spectrum ID",
