@@ -9,11 +9,20 @@ from pathlib import Path
 import streamlit as st
 import pandas as pd
 
+try:
+    from tkinter import Tk, filedialog
+    TK_AVAILABLE = True
+except ImportError:
+    TK_AVAILABLE = False
+
 from .captcha_ import captcha_control
 
 # set these variables according to your project
 APP_NAME = "OpenMS Streamlit App"
 REPOSITORY_NAME = "streamlit-template"
+
+# Detect system platform
+OS_PLATFORM = sys.platform
 
 
 def load_params(default: bool = False) -> dict[str, Any]:
@@ -111,6 +120,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
         # Check location
         if "local" in sys.argv:
             st.session_state.location = "local"
+            st.session_state["previous_dir"] = os.getcwd()
+            st.session_state["local_dir"] = ""
         else:
             st.session_state.location = "online"
         # if we run the packaged windows version, we start within the Python directory -> need to change working directory to ..\streamlit-template
@@ -426,6 +437,52 @@ def get_dataframe_mem_useage(df):
     memory_usage_mb = memory_usage_bytes / (1024 ** 2)
     return memory_usage_mb
 
+def tk_directory_dialog(title: str = "Select Directory", parent_dir: str = os.getcwd()):
+        """
+        Creates a Tkinter directory dialog for selecting a directory.
+
+        Args:
+            title (str): The title of the directory dialog.
+            parent_dir (str): The path to the parent directory of the directory dialog.
+
+        Returns:
+            str: The path to the selected directory.
+        
+        Warning:
+            This function is not avaliable in a streamlit cloud context.
+        """
+        root = Tk()
+        root.attributes("-topmost", True)
+        root.withdraw()
+        file_path = filedialog.askdirectory(title=title, initialdir=parent_dir)
+        root.destroy()
+        return file_path
+
+def tk_file_dialog(title: str = "Select File", file_types: list[tuple] = [], parent_dir: str = os.getcwd(), multiple:bool = True):
+    """
+    Creates a Tkinter file dialog for selecting a file.
+
+    Args:
+        title (str): The title of the file dialog.
+        file_types (list(tuple)): The file types to filter the file dialog.
+        parent_dir (str): The path to the parent directory of the file dialog.
+        multiple (bool): If True, multiple files can be selected.
+
+    Returns:
+        str: The path to the selected file.
+    
+    Warning:
+        This function is not avaliable in a streamlit cloud context.
+    """
+    root = Tk()
+    root.attributes("-topmost", True)
+    root.withdraw()
+    file_types.extend([("All files", "*.*")])
+    file_path = filedialog.askopenfilename(
+        title=title, filetypes=file_types, initialdir=parent_dir, multiple=True
+    )
+    root.destroy()
+    return file_path
 
 # General warning/error messages
 WARNINGS = {
@@ -437,3 +494,4 @@ ERRORS = {
     "workflow": "Something went wrong during workflow execution.",
     "visualization": "Something went wrong during visualization of results.",
 }
+

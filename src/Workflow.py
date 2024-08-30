@@ -22,7 +22,7 @@ class Workflow(WorkflowManager):
             self.ui.upload_widget(
                 key="mzML-files",
                 name="MS data",
-                file_type="mzML",
+                file_types="mzML",
                 fallback=[str(f) for f in Path("example-data", "mzML").glob("*.mzML")],
             )
 
