@@ -61,7 +61,7 @@ All input files for the workflow will be stored within the workflow directory in
 
 The subdirectory name will be determined by a **key** that is defined in the `self.ui.upload_widget` method. The uploaded files are available by the specific key for parameter input widgets and accessible while building the workflow.
 
-Calling this method will create a complete file upload widget page with the following components:
+Calling this method will create a complete file upload page with the following components:
 
 - file uploader
 - list of currently uploaded files with this key (or a warning if there are none)
