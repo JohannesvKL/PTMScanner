@@ -1,7 +1,6 @@
 workspaces-streamlit-template
 build
 myenv
-hooks/__pycache__/
 build.log
 run_app.spec
 clean-up-workspaces.log
