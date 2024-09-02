@@ -81,7 +81,7 @@ The **sidebar** contains to boxes, one for **workspaces** (in local mode) and on
 
 🖥️ **Workspaces** store user inputs, parameters and results for a specific session or analysis task.
 
-In **online mode** where the app is hosted on a remote server the workspace has a unique identifier number which can be shared with collaboration partners or stored for later access. The identifier is embedded within the url.
+In **online mode** where the app is hosted on a remote server the workspace has a unique identifier number embedded within the URL. To share your data analysis with collaboration partners simply share the URL.
 
 In **local mode** where the app is run locally on a PC (e.g. via Windows executable) the user can create and delete separate workspaces for different projects.
 
