@@ -5,8 +5,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 import pyopenms as poms
-from .plotting.MSExperimentPlotter import plotMSExperiment
-from .common import show_fig, display_large_dataframe
+
+from src.plotting.MSExperimentPlotter import plotMSExperiment
+from src.common.common import show_fig, display_large_dataframe
 
 from typing import Union
 
@@ -187,7 +188,7 @@ def plot_ms_spectrum(spec, title, color):
     return fig
 
 
-@st.experimental_fragment
+@st.fragment
 def view_peak_map():
     df = st.session_state.view_ms1
     if "view_peak_map_selection" in st.session_state:
@@ -216,7 +217,8 @@ def view_peak_map():
             peak_map_3D = plotMSExperiment(df, plot3D=True, title="")
             st.pyplot(peak_map_3D, use_container_width=True)
 
-@st.experimental_fragment
+
+@st.fragment
 def view_spectrum():
     cols = st.columns([0.34, 0.66])
     with cols[0]:
@@ -261,7 +263,7 @@ def view_spectrum():
             st.info("💡 Select rows in the spectrum table to display plot.")
 
 
-@st.experimental_fragment()
+@st.fragment()
 def view_bpc_tic():
     cols = st.columns(5)
     cols[0].checkbox(

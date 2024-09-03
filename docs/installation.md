@@ -27,9 +27,9 @@ Create and activate the conda environment:
 
 ### run the app
 
-Run the app via streamlit command in the terminal with or without *local* mode (default is *online* mode). Learn more about *local* and *online* mode in the documentation page 📖 **OpenMS Template App**.
+Run the app via streamlit command in the terminal. *local* and *online* mode can be toggled in the settings.json. Learn more about *local* and *online* mode in the documentation page 📖 **OpenMS Template App**.
 
-`streamlit run app.py [local]`
+`streamlit run app.py`
 
 ## Docker
 

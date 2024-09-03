@@ -1,5 +1,5 @@
 import streamlit as st
-from src.common import page_setup
+from src.common.common import page_setup
 from pathlib import Path
 from docs.toppframework import content as topp_framework_content
 

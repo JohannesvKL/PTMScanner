@@ -14,7 +14,7 @@ import zipfile
 from datetime import datetime
 
 
-from src.common import OS_PLATFORM, TK_AVAILABLE, tk_directory_dialog, tk_file_dialog
+from src.common.common import OS_PLATFORM, TK_AVAILABLE, tk_directory_dialog, tk_file_dialog
 
 class StreamlitUI:
     """

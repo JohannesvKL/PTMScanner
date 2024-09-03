@@ -218,12 +218,12 @@ jobs:
         cp app.py streamlit_exe
 
     - name: Delete OpenMS bin artifact
-      uses: geekyeggo/delete-artifact@v4
+      uses: geekyeggo/delete-artifact@v5
       with:
           name: OpenMS-bin
 
     - name: Delete OpenMS share artifact
-      uses: geekyeggo/delete-artifact@v2
+      uses: geekyeggo/delete-artifact@v5
       with:
           name: OpenMS-share
           
