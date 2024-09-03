@@ -116,6 +116,20 @@ def page_setup(page: str = "") -> dict[str, Any]:
         menu_items=None,
     )
 
+    # Expand sidebar navigation
+    st.markdown(
+        """
+        <style>
+            .stMultiSelect [data-baseweb=select] span{
+                max-width: 500px;
+                font-size: 1rem;
+            }
+            div[data-testid='stSidebarNav'] ul {max-height:none}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     st.logo("assets/pyopenms_transparent_background.png")
 
     # Create google analytics if consent was given
