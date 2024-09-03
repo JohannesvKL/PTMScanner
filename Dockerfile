@@ -115,6 +115,7 @@ COPY assets/ /app/assets
 COPY example-data/ /app/example-data
 COPY content/ /app/content
 COPY gdpr_consent/ /app/gdpr_consent
+COPY settings.json /app/settings.json
 
 # For streamlit configuration
 COPY .streamlit/config.toml /app/.streamlit/config.toml
