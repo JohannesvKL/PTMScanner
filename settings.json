@@ -3,5 +3,5 @@
         "enabled" : true,
         "tag" : "G-E14B1EB0SB"
     },
-    "online_deployment": false
+    "online_deployment": true
 }
