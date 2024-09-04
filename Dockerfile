@@ -109,12 +109,13 @@ FROM compile-openms AS run-app
 
 # note: specifying folder with slash as suffix and repeating the folder name seems important to preserve directory structure
 WORKDIR /app
-COPY app.py /app/app.py 
-COPY src/ /app/src
 COPY assets/ /app/assets
-COPY example-data/ /app/example-data
 COPY content/ /app/content
+COPY docs/ /app/docs
+COPY example-data/ /app/example-data
 COPY gdpr_consent/ /app/gdpr_consent
+COPY src/ /app/src
+COPY app.py /app/app.py 
 COPY settings.json /app/settings.json
 
 # For streamlit configuration
