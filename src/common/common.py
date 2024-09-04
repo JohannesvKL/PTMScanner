@@ -147,13 +147,16 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     window.dataLayer = window.dataLayer || [];
                     function gtag(){{dataLayer.push(arguments);}}
                     gtag('js', new Date());
+                    
                     gtag('consent', 'default', {{
                         'ad_storage': 'denied',
                         'ad_user_data': 'denied',
                         'ad_personalization': 'denied',
                         'analytics_storage': 'granted'
                     }});
-                    gtag('config', '{st.session_state.settings['google_analytics']['tag']}');
+                    gtag('config', '{st.session_state.settings['google_analytics']['tag']}' , {{
+                         'cookie_flags': 'samesite=none;secure'
+                    }});
                     </script>
                 </head>
                 <body></body>
