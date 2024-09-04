@@ -5,7 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 import pyopenms as poms
-from src.common.common import show_fig
+from src.common.common import show_fig, display_large_dataframe
 from typing import Union
 
 
