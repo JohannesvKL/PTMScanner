@@ -155,8 +155,10 @@ def page_setup(page: str = "") -> dict[str, Any]:
                         'analytics_storage': 'granted'
                     }});
                     gtag('config', '{st.session_state.settings['google_analytics']['tag']}' , {{
+                         'debug_mode': true,
                          'cookie_flags': 'samesite=none;secure'
                     }});
+                    console.log('Done!')
                     </script>
                 </head>
                 <body></body>
