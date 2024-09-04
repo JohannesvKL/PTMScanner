@@ -13,6 +13,7 @@ import pandas as pd
 
 try:
     from tkinter import Tk, filedialog
+
     TK_AVAILABLE = True
 except ImportError:
     TK_AVAILABLE = False
@@ -103,8 +104,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
     Returns:
         dict[str, Any]: A dictionary containing the parameters loaded from the parameter file.
     """
-    if 'settings' not in st.session_state:
-        with open('settings.json', 'r') as f:
+    if "settings" not in st.session_state:
+        with open("settings.json", "r") as f:
             st.session_state.settings = json.load(f)
 
     # Set Streamlit page configurations
@@ -133,9 +134,11 @@ def page_setup(page: str = "") -> dict[str, Any]:
     st.logo("assets/pyopenms_transparent_background.png")
 
     # Create google analytics if consent was given
-    if 'tracking_consent' not in st.session_state:
+    if "tracking_consent" not in st.session_state:
         st.session_state.tracking_consent = None
-    if (st.session_state.settings['google_analytics']['enabled']) and (st.session_state.tracking_consent == True):
+    if (st.session_state.settings["google_analytics"]["enabled"]) and (
+        st.session_state.tracking_consent == True
+    ):
         html(
             f"""
             <!DOCTYPE html>
@@ -158,21 +161,21 @@ def page_setup(page: str = "") -> dict[str, Any]:
                 </head>
                 <body></body>
             </html>
-            """, 
-            width=1, height=1
+            """,
+            width=1,
+            height=1,
         )
 
     # Determine the workspace for the current session
-    if (
-        ("workspace" not in st.session_state) or 
-        (('workspace' in st.query_params) and
-        (st.query_params.workspace != st.session_state.workspace.name))
-        ):
+    if ("workspace" not in st.session_state) or (
+        ("workspace" in st.query_params)
+        and (st.query_params.workspace != st.session_state.workspace.name)
+    ):
         # Clear any previous caches
         st.cache_data.clear()
         st.cache_resource.clear()
         # Check location
-        if not st.session_state.settings['online_deployment']:
+        if not st.session_state.settings["online_deployment"]:
             st.session_state.location = "local"
             st.session_state["previous_dir"] = os.getcwd()
             st.session_state["local_dir"] = ""
@@ -183,7 +186,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
             os.chdir("../streamlit-template")
         # Define the directory where all workspaces will be stored
         workspaces_dir = Path("..", "workspaces-" + REPOSITORY_NAME)
-        if 'workspace' in st.query_params:
+        if "workspace" in st.query_params:
             st.session_state.workspace = Path(workspaces_dir, st.query_params.workspace)
         elif st.session_state.location == "online":
             workspace_id = str(uuid.uuid1())
@@ -191,15 +194,15 @@ def page_setup(page: str = "") -> dict[str, Any]:
             st.query_params.workspace = workspace_id
         else:
             st.session_state.workspace = Path(workspaces_dir, "default")
-            st.query_params.workspace = 'default'
-            
+            st.query_params.workspace = "default"
+
         if st.session_state.location != "online":
             # not any captcha so, controllo should be true
             st.session_state["controllo"] = True
 
-    if 'workspace' not in st.query_params:
+    if "workspace" not in st.query_params:
         st.query_params.workspace = st.session_state.workspace.name
-        
+
     # Make sure the necessary directories exist
     st.session_state.workspace.mkdir(parents=True, exist_ok=True)
     Path(st.session_state.workspace, "mzML-files").mkdir(parents=True, exist_ok=True)
@@ -279,7 +282,7 @@ def render_sidebar(page: str = "") -> None:
                     if path.exists():
                         shutil.rmtree(path)
                         st.session_state.workspace = Path(workspaces_dir, "default")
-                        st.query_params.workspace = 'default'
+                        st.query_params.workspace = "default"
                         st.rerun()
 
         # All pages have settings, workflow indicator and logo
@@ -293,8 +296,10 @@ def render_sidebar(page: str = "") -> None:
             )
             st.markdown("## Spectrum Plotting")
             st.selectbox("Bin Peaks", ["auto", True, False], key="spectrum_bin_peaks")
-            if st.session_state["spectrum_bin_peaks"]  == True:
-                st.number_input("Number of Bins (m/z)", 1, 10000, 50, key="spectrum_num_bins")
+            if st.session_state["spectrum_bin_peaks"] == True:
+                st.number_input(
+                    "Number of Bins (m/z)", 1, 10000, 50, key="spectrum_num_bins"
+                )
             else:
                 st.session_state["spectrum_num_bins"] = 50
     return params
@@ -317,10 +322,10 @@ def v_space(n: int, col=None) -> None:
         else:
             st.write("#")
 
-def display_large_dataframe(df, 
-                            chunk_sizes: list[int] = [100, 1_000, 10_000],
-                            **kwargs
-                            ):
+
+def display_large_dataframe(
+    df, chunk_sizes: list[int] = [10, 100, 1_000, 10_000], **kwargs
+):
     """
     Displays a large DataFrame in chunks with pagination controls and row selection.
 
@@ -330,50 +335,44 @@ def display_large_dataframe(df,
         ...: Additional keyword arguments to pass to the `st.dataframe` function. See: https://docs.streamlit.io/develop/api-reference/data/st.dataframe
 
     Returns:
-        Selected rows from the current chunk.
+        Index of selected row.
     """
-    def update_on_change():
-        # Initialize session state for pagination
-        if 'current_chunk' not in st.session_state:
-            st.session_state.current_chunk = 0
-        st.session_state.current_chunk = 0
-    
+
     # Dropdown for selecting chunk size
-    chunk_size = st.selectbox("Select Number of Rows to Display", chunk_sizes, on_change=update_on_change)
-    
+    chunk_size = st.selectbox("Select Number of Rows to Display", chunk_sizes)
+
     # Calculate total number of chunks
-    total_chunks = (len(df) + chunk_size - 1) // chunk_size    
+    total_chunks = (len(df) + chunk_size - 1) // chunk_size
+
+    if total_chunks > 1:
+        page = int(st.number_input("Select Page", 1, total_chunks, 1, step=1))
+    else:
+        page = 1
 
     # Function to get the current chunk of the DataFrame
     def get_current_chunk(df, chunk_size, chunk_index):
         start = chunk_index * chunk_size
-        end = min(start + chunk_size, len(df))  # Ensure end does not exceed dataframe length
+        end = min(
+            start + chunk_size, len(df)
+        )  # Ensure end does not exceed dataframe length
         return df.iloc[start:end], start, end
 
     # Display the current chunk
-    current_chunk_df, start_row, end_row = get_current_chunk(df, chunk_size, st.session_state.current_chunk)
+    current_chunk_df, start_row, end_row = get_current_chunk(df, chunk_size, page - 1)
 
-    event = st.dataframe(
-        current_chunk_df,
-        **kwargs
+    event = st.dataframe(current_chunk_df, **kwargs)
+
+    st.write(
+        f"Showing rows {start_row + 1} to {end_row} of {len(df)} ({get_dataframe_mem_useage(current_chunk_df):.2f} MB)"
     )
 
-    st.write(f"Showing rows {start_row + 1} to {end_row} of {len(df)} ({get_dataframe_mem_useage(current_chunk_df):.2f} MB)")
-    
-    # Pagination buttons
-    col1, col2, col3 = st.columns([1, 2, 1])
+    rows = event["selection"]["rows"]
+    if not rows:
+        return None
+    # Calculate the index based on the current page and chunk size
+    base_index = (page - 1) * chunk_size
+    return base_index + rows[0]
 
-    with col1:
-        if st.button("Previous") and st.session_state.current_chunk > 0:
-            st.session_state.current_chunk -= 1
-
-    with col3:
-        if st.button("Next") and st.session_state.current_chunk < total_chunks - 1:
-            st.session_state.current_chunk += 1   
-
-    if event is not None:
-        return event
-    return None
 
 def show_table(df: pd.DataFrame, download_name: str = "") -> None:
     """
@@ -399,7 +398,12 @@ def show_table(df: pd.DataFrame, download_name: str = "") -> None:
     return df
 
 
-def show_fig(fig, download_name: str, container_width: bool = True, selection_session_state_key: str = "") -> None:
+def show_fig(
+    fig,
+    download_name: str,
+    container_width: bool = True,
+    selection_session_state_key: str = "",
+) -> None:
     """
     Displays a Plotly chart and adds a download button to the plot.
 
@@ -450,14 +454,14 @@ def show_fig(fig, download_name: str, container_width: bool = True, selection_se
                     "autoscale",
                     "zoomout",
                     "resetscale",
-                    "select"
+                    "select",
                 ],
                 "toImageButtonOptions": {
                     "filename": download_name,
                     "format": st.session_state["image-format"],
                 },
             },
-            use_container_width=True
+            use_container_width=True,
         )
 
 
@@ -476,44 +480,52 @@ def reset_directory(path: Path) -> None:
         shutil.rmtree(path)
     path.mkdir(parents=True, exist_ok=True)
 
+
 def get_dataframe_mem_useage(df):
     """
     Get the memory usage of a pandas DataFrame in megabytes.
-    
+
     Args:
         df (pd.DataFrame): The DataFrame to calculate the memory usage for.
-        
+
     Returns:
         float: The memory usage of the DataFrame in megabytes.
     """
     # Calculate the memory usage of the DataFrame in bytes
     memory_usage_bytes = df.memory_usage(deep=True).sum()
     # Convert bytes to megabytes
-    memory_usage_mb = memory_usage_bytes / (1024 ** 2)
+    memory_usage_mb = memory_usage_bytes / (1024**2)
     return memory_usage_mb
 
+
 def tk_directory_dialog(title: str = "Select Directory", parent_dir: str = os.getcwd()):
-        """
-        Creates a Tkinter directory dialog for selecting a directory.
+    """
+    Creates a Tkinter directory dialog for selecting a directory.
 
-        Args:
-            title (str): The title of the directory dialog.
-            parent_dir (str): The path to the parent directory of the directory dialog.
+    Args:
+        title (str): The title of the directory dialog.
+        parent_dir (str): The path to the parent directory of the directory dialog.
 
-        Returns:
-            str: The path to the selected directory.
-        
-        Warning:
-            This function is not avaliable in a streamlit cloud context.
-        """
-        root = Tk()
-        root.attributes("-topmost", True)
-        root.withdraw()
-        file_path = filedialog.askdirectory(title=title, initialdir=parent_dir)
-        root.destroy()
-        return file_path
+    Returns:
+        str: The path to the selected directory.
 
-def tk_file_dialog(title: str = "Select File", file_types: list[tuple] = [], parent_dir: str = os.getcwd(), multiple:bool = True):
+    Warning:
+        This function is not avaliable in a streamlit cloud context.
+    """
+    root = Tk()
+    root.attributes("-topmost", True)
+    root.withdraw()
+    file_path = filedialog.askdirectory(title=title, initialdir=parent_dir)
+    root.destroy()
+    return file_path
+
+
+def tk_file_dialog(
+    title: str = "Select File",
+    file_types: list[tuple] = [],
+    parent_dir: str = os.getcwd(),
+    multiple: bool = True,
+):
     """
     Creates a Tkinter file dialog for selecting a file.
 
@@ -525,7 +537,7 @@ def tk_file_dialog(title: str = "Select File", file_types: list[tuple] = [], par
 
     Returns:
         str: The path to the selected file.
-    
+
     Warning:
         This function is not avaliable in a streamlit cloud context.
     """
@@ -539,6 +551,7 @@ def tk_file_dialog(title: str = "Select File", file_types: list[tuple] = [], par
     root.destroy()
     return file_path
 
+
 # General warning/error messages
 WARNINGS = {
     "missing-mzML": "Upload or select some mzML files first!",
@@ -549,4 +562,3 @@ ERRORS = {
     "workflow": "Something went wrong during workflow execution.",
     "visualization": "Something went wrong during visualization of results.",
 }
-

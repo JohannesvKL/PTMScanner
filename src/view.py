@@ -228,7 +228,7 @@ def view_spectrum():
     with cols[0]:
         df = st.session_state.view_spectra.copy()
         df["spectrum ID"] = df.index + 1
-        event = display_large_dataframe(
+        index = display_large_dataframe(
             df,
             column_order=[
                 "spectrum ID",
@@ -242,10 +242,9 @@ def view_spectrum():
             use_container_width=True,
             hide_index=True,
         )
-        rows = event.selection.rows
     with cols[1]:
-        if rows:
-            df = st.session_state.view_spectra.iloc[rows[0]]
+        if index is not None:
+            df = st.session_state.view_spectra.iloc[index]
             if "view_spectrum_selection" in st.session_state:
                 box = st.session_state.view_spectrum_selection.selection.box
                 if box:
@@ -255,7 +254,7 @@ def view_spectrum():
                     df["mzarray"] = df["mzarray"][mask]
 
             if df["mzarray"].size > 0:
-                title = f"{st.session_state.view_selected_file}  spec={rows[0]+1}  mslevel={df['MS level']}"
+                title = f"{st.session_state.view_selected_file}  spec={index+1}  mslevel={df['MS level']}"
                 if df["precursor m/z"] > 0:
                     title += f" precursor m/z: {round(df['precursor m/z'], 4)}"
 
