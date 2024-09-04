@@ -3,17 +3,28 @@ import os
 import shutil
 import sys
 import uuid
+import time
 from typing import Any
 from pathlib import Path
+from streamlit.components.v1 import html
 
 import streamlit as st
 import pandas as pd
 
-from .captcha_ import captcha_control
+try:
+    from tkinter import Tk, filedialog
+    TK_AVAILABLE = True
+except ImportError:
+    TK_AVAILABLE = False
+
+from src.common.captcha_ import captcha_control
 
 # set these variables according to your project
 APP_NAME = "OpenMS Streamlit App"
 REPOSITORY_NAME = "streamlit-template"
+
+# Detect system platform
+OS_PLATFORM = sys.platform
 
 
 def load_params(default: bool = False) -> dict[str, Any]:
@@ -92,6 +103,10 @@ def page_setup(page: str = "") -> dict[str, Any]:
     Returns:
         dict[str, Any]: A dictionary containing the parameters loaded from the parameter file.
     """
+    if 'settings' not in st.session_state:
+        with open('settings.json', 'r') as f:
+            st.session_state.settings = json.load(f)
+
     # Set Streamlit page configurations
     st.set_page_config(
         page_title=APP_NAME,
@@ -101,16 +116,66 @@ def page_setup(page: str = "") -> dict[str, Any]:
         menu_items=None,
     )
 
+    # Expand sidebar navigation
+    st.markdown(
+        """
+        <style>
+            .stMultiSelect [data-baseweb=select] span{
+                max-width: 500px;
+                font-size: 1rem;
+            }
+            div[data-testid='stSidebarNav'] ul {max-height:none}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     st.logo("assets/pyopenms_transparent_background.png")
 
+    # Create google analytics if consent was given
+    if 'tracking_consent' not in st.session_state:
+        st.session_state.tracking_consent = None
+    if (st.session_state.settings['google_analytics']['enabled']) and (st.session_state.tracking_consent == True):
+        html(
+            f"""
+            <!DOCTYPE html>
+            <html lang="en">
+                <head>
+                    <!-- Google tag (gtag.js) -->
+                    <script async src="https://www.googletagmanager.com/gtag/js?id={st.session_state.settings['google_analytics']['tag']}" crossorigin='anonymous'></script>
+                    <script crossorigin='anonymous'>
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){{dataLayer.push(arguments);}}
+                    gtag('js', new Date());
+                    gtag('consent', 'default', {{
+                        'ad_storage': 'denied',
+                        'ad_user_data': 'denied',
+                        'ad_personalization': 'denied',
+                        'analytics_storage': 'granted'
+                    }});
+                    gtag('config', '{st.session_state.settings['google_analytics']['tag']}');
+                    </script>
+                </head>
+                <body></body>
+            </html>
+            """, 
+            width=1, height=1
+        )
+
     # Determine the workspace for the current session
-    if "workspace" not in st.session_state:
+    if (
+        ("workspace" not in st.session_state) or 
+        (('workspace' in st.query_params) and
+        (st.query_params.workspace != st.session_state.workspace.name))
+        ):
         # Clear any previous caches
         st.cache_data.clear()
         st.cache_resource.clear()
         # Check location
-        if "local" in sys.argv:
+        if not st.session_state.settings['online_deployment']:
             st.session_state.location = "local"
+            st.session_state["previous_dir"] = os.getcwd()
+            st.session_state["local_dir"] = ""
         else:
             st.session_state.location = "online"
         # if we run the packaged windows version, we start within the Python directory -> need to change working directory to ..\streamlit-template
@@ -118,13 +183,23 @@ def page_setup(page: str = "") -> dict[str, Any]:
             os.chdir("../streamlit-template")
         # Define the directory where all workspaces will be stored
         workspaces_dir = Path("..", "workspaces-" + REPOSITORY_NAME)
-        if st.session_state.location == "online":
-            st.session_state.workspace = Path(workspaces_dir, str(uuid.uuid1()))
+        if 'workspace' in st.query_params:
+            st.session_state.workspace = Path(workspaces_dir, st.query_params.workspace)
+        elif st.session_state.location == "online":
+            workspace_id = str(uuid.uuid1())
+            st.session_state.workspace = Path(workspaces_dir, workspace_id)
+            st.query_params.workspace = workspace_id
         else:
             st.session_state.workspace = Path(workspaces_dir, "default")
+            st.query_params.workspace = 'default'
+            
+        if st.session_state.location != "online":
             # not any captcha so, controllo should be true
             st.session_state["controllo"] = True
 
+    if 'workspace' not in st.query_params:
+        st.query_params.workspace = st.session_state.workspace.name
+        
     # Make sure the necessary directories exist
     st.session_state.workspace.mkdir(parents=True, exist_ok=True)
     Path(st.session_state.workspace, "mzML-files").mkdir(parents=True, exist_ok=True)
@@ -165,27 +240,7 @@ def render_sidebar(page: str = "") -> None:
             # Define workspaces directory outside of repository
             workspaces_dir = Path("..", "workspaces-" + REPOSITORY_NAME)
             # Online: show current workspace name in info text and option to change to other existing workspace
-            if st.session_state.location == "online":
-                # Change workspace...
-                new_workspace = st.text_input("enter workspace", "")
-                if st.button("**Enter Workspace**") and new_workspace:
-                    path = Path(workspaces_dir, new_workspace)
-                    if path.exists():
-                        st.session_state.workspace = path
-                    else:
-                        st.warning("⚠️ Workspace does not exist.")
-                # Display info on current workspace and warning
-                st.info(
-                    f"""💡 Your workspace ID:
-
-**{st.session_state['workspace'].name}**
-
-You can share this unique workspace ID with other people.
-
-⚠️ Anyone with this ID can access your data!"""
-                )
-            # Local: user can create/remove workspaces as well and see all available
-            elif st.session_state.location == "local":
+            if st.session_state.location == "local":
                 # Define callback function to change workspace
                 def change_workspace():
                     for key in params.keys():
@@ -194,6 +249,7 @@ You can share this unique workspace ID with other people.
                     st.session_state.workspace = Path(
                         workspaces_dir, st.session_state["chosen-workspace"]
                     )
+                    st.query_params.workspace = st.session_state["chosen-workspace"]
 
                 # Get all available workspaces as options
                 options = [
@@ -214,12 +270,16 @@ You can share this unique workspace ID with other people.
                 if st.button("**Create Workspace**"):
                     path.mkdir(parents=True, exist_ok=True)
                     st.session_state.workspace = path
+                    st.query_params.workspace = create_remove
+                    # Temporary as the query update takes a short amount of time
+                    time.sleep(1)
                     st.rerun()
                 # Remove existing workspace and fall back to default
                 if st.button("⚠️ Delete Workspace"):
                     if path.exists():
                         shutil.rmtree(path)
                         st.session_state.workspace = Path(workspaces_dir, "default")
+                        st.query_params.workspace = 'default'
                         st.rerun()
 
         # All pages have settings, workflow indicator and logo
@@ -257,6 +317,63 @@ def v_space(n: int, col=None) -> None:
         else:
             st.write("#")
 
+def display_large_dataframe(df, 
+                            chunk_sizes: list[int] = [100, 1_000, 10_000],
+                            **kwargs
+                            ):
+    """
+    Displays a large DataFrame in chunks with pagination controls and row selection.
+
+    Args:
+        df: The DataFrame to display.
+        chunk_sizes: A list of chunk sizes to choose from.
+        ...: Additional keyword arguments to pass to the `st.dataframe` function. See: https://docs.streamlit.io/develop/api-reference/data/st.dataframe
+
+    Returns:
+        Selected rows from the current chunk.
+    """
+    def update_on_change():
+        # Initialize session state for pagination
+        if 'current_chunk' not in st.session_state:
+            st.session_state.current_chunk = 0
+        st.session_state.current_chunk = 0
+    
+    # Dropdown for selecting chunk size
+    chunk_size = st.selectbox("Select Number of Rows to Display", chunk_sizes, on_change=update_on_change)
+    
+    # Calculate total number of chunks
+    total_chunks = (len(df) + chunk_size - 1) // chunk_size    
+
+    # Function to get the current chunk of the DataFrame
+    def get_current_chunk(df, chunk_size, chunk_index):
+        start = chunk_index * chunk_size
+        end = min(start + chunk_size, len(df))  # Ensure end does not exceed dataframe length
+        return df.iloc[start:end], start, end
+
+    # Display the current chunk
+    current_chunk_df, start_row, end_row = get_current_chunk(df, chunk_size, st.session_state.current_chunk)
+
+    event = st.dataframe(
+        current_chunk_df,
+        **kwargs
+    )
+
+    st.write(f"Showing rows {start_row + 1} to {end_row} of {len(df)} ({get_dataframe_mem_useage(current_chunk_df):.2f} MB)")
+    
+    # Pagination buttons
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col1:
+        if st.button("Previous") and st.session_state.current_chunk > 0:
+            st.session_state.current_chunk -= 1
+
+    with col3:
+        if st.button("Next") and st.session_state.current_chunk < total_chunks - 1:
+            st.session_state.current_chunk += 1   
+
+    if event is not None:
+        return event
+    return None
 
 def show_table(df: pd.DataFrame, download_name: str = "") -> None:
     """
@@ -359,6 +476,68 @@ def reset_directory(path: Path) -> None:
         shutil.rmtree(path)
     path.mkdir(parents=True, exist_ok=True)
 
+def get_dataframe_mem_useage(df):
+    """
+    Get the memory usage of a pandas DataFrame in megabytes.
+    
+    Args:
+        df (pd.DataFrame): The DataFrame to calculate the memory usage for.
+        
+    Returns:
+        float: The memory usage of the DataFrame in megabytes.
+    """
+    # Calculate the memory usage of the DataFrame in bytes
+    memory_usage_bytes = df.memory_usage(deep=True).sum()
+    # Convert bytes to megabytes
+    memory_usage_mb = memory_usage_bytes / (1024 ** 2)
+    return memory_usage_mb
+
+def tk_directory_dialog(title: str = "Select Directory", parent_dir: str = os.getcwd()):
+        """
+        Creates a Tkinter directory dialog for selecting a directory.
+
+        Args:
+            title (str): The title of the directory dialog.
+            parent_dir (str): The path to the parent directory of the directory dialog.
+
+        Returns:
+            str: The path to the selected directory.
+        
+        Warning:
+            This function is not avaliable in a streamlit cloud context.
+        """
+        root = Tk()
+        root.attributes("-topmost", True)
+        root.withdraw()
+        file_path = filedialog.askdirectory(title=title, initialdir=parent_dir)
+        root.destroy()
+        return file_path
+
+def tk_file_dialog(title: str = "Select File", file_types: list[tuple] = [], parent_dir: str = os.getcwd(), multiple:bool = True):
+    """
+    Creates a Tkinter file dialog for selecting a file.
+
+    Args:
+        title (str): The title of the file dialog.
+        file_types (list(tuple)): The file types to filter the file dialog.
+        parent_dir (str): The path to the parent directory of the file dialog.
+        multiple (bool): If True, multiple files can be selected.
+
+    Returns:
+        str: The path to the selected file.
+    
+    Warning:
+        This function is not avaliable in a streamlit cloud context.
+    """
+    root = Tk()
+    root.attributes("-topmost", True)
+    root.withdraw()
+    file_types.extend([("All files", "*.*")])
+    file_path = filedialog.askopenfilename(
+        title=title, filetypes=file_types, initialdir=parent_dir, multiple=True
+    )
+    root.destroy()
+    return file_path
 
 # General warning/error messages
 WARNINGS = {
@@ -370,3 +549,4 @@ ERRORS = {
     "workflow": "Something went wrong during workflow execution.",
     "visualization": "Something went wrong during visualization of results.",
 }
+

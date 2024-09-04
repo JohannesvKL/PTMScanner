@@ -21,7 +21,7 @@ Returns:
 from pathlib import Path
 import streamlit as st
 
-from src.common import page_setup, v_space
+from src.common.common import page_setup, v_space
 
 page_setup(page="main")
 
@@ -77,11 +77,11 @@ st.page_link(
 
 st.markdown(
     """##  Workspaces and Settings
-The **sidebar** contains to boxes, one for **workspaces** and one for **settings**.
+The **sidebar** contains to boxes, one for **workspaces** (in local mode) and one for **settings**.
 
 🖥️ **Workspaces** store user inputs, parameters and results for a specific session or analysis task.
 
-In **online mode** where the app is hosted on a remote server the workspace has a unique identifier number which can be shared with collaboration partners or stored for later access.
+In **online mode** where the app is hosted on a remote server the workspace has a unique identifier number embedded within the URL. To share your data analysis with collaboration partners simply share the URL.
 
 In **local mode** where the app is run locally on a PC (e.g. via Windows executable) the user can create and delete separate workspaces for different projects.
 
@@ -101,7 +101,7 @@ In general there are two options for building workflows.
             
 Use this option if you want a standardized framework for building your workflow.
 
-- **Pre-defined user interface** all in one streamlit page with all steps in different tabs:
+- **Pre-defined user interface** all in one streamlit page with all steps on different pages:
     - **File Upload**: upload, download and delete input files
     - **Configure**: Automatically display input widgets for all paramters in TOPP tools and custom Python scripts
     - **Run**: Start and stop workflow execution, includes continous log
@@ -117,7 +117,7 @@ st.page_link(
     icon="➡️",
 )
 st.page_link(
-    "content/topp_workflow.py", label="Play around with the example workflow.", icon="➡️"
+    "content/topp_workflow_file_upload.py", label="Play around with the example workflow.", icon="➡️"
 )
 st.markdown(
     """

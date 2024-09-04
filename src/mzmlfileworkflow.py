@@ -4,7 +4,7 @@ import pyopenms as poms
 import pandas as pd
 import time
 from datetime import datetime
-from src.common import reset_directory, show_fig, show_table
+from src.common.common import reset_directory, show_fig, show_table
 import plotly.express as px
 
 
@@ -70,13 +70,21 @@ def run_workflow(params, result_dir):
     )
     df.to_csv(Path(result_dir, "result.tsv"), sep="\t", index=False)
 
-@st.experimental_fragment
+@st.fragment
 def result_section(result_dir):
+    if not Path(result_dir).exists():
+        st.error("No results to show yet. Please run a workflow first!")
+        return
+
     date_strings = [f.name for f in Path(result_dir).iterdir() if f.is_dir()]
 
     result_dirs = sorted(date_strings, key=lambda date: datetime.strptime(date, "%Y-%m-%d %H:%M:%S"))[::-1]
 
     run_dir = st.selectbox("select result from run", result_dirs)
+
+    if run_dir is None:
+        st.error("Please select a result from a run!")
+        return
 
     result_dir = Path(result_dir, run_dir)
     # visualize workflow results if there are any

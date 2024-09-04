@@ -5,8 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 import pyopenms as poms
-from .common import show_fig
-
+from src.common.common import show_fig
 from typing import Union
 
 
@@ -167,7 +166,7 @@ def plot_ms_spectrum(df, title, bin_peaks, num_x_bins):
     return fig
 
 
-@st.experimental_fragment
+@st.fragment
 def view_peak_map():
     df = st.session_state.view_ms1
     if "view_peak_map_selection" in st.session_state:
@@ -223,13 +222,13 @@ def view_peak_map():
             st.plotly_chart(peak_map_3D, use_container_width=True)
 
 
-@st.experimental_fragment
+@st.fragment
 def view_spectrum():
     cols = st.columns([0.34, 0.66])
     with cols[0]:
         df = st.session_state.view_spectra.copy()
         df["spectrum ID"] = df.index + 1
-        event = st.dataframe(
+        event = display_large_dataframe(
             df,
             column_order=[
                 "spectrum ID",
@@ -266,10 +265,10 @@ def view_spectrum():
                         "intensity": df["intarray"],
                     }
                 )
-                df_selected['RT'] = df['RT']
-                df_selected['MS level'] = df['MS level']
-                df_selected['precursor m/z'] = df['precursor m/z']
-                df_selected['max intensity m/z'] = df['max intensity m/z']
+                df_selected["RT"] = df["RT"]
+                df_selected["MS level"] = df["MS level"]
+                df_selected["precursor m/z"] = df["precursor m/z"]
+                df_selected["max intensity m/z"] = df["max intensity m/z"]
 
                 fig = plot_ms_spectrum(
                     df_selected,
@@ -286,7 +285,7 @@ def view_spectrum():
             st.info("💡 Select rows in the spectrum table to display plot.")
 
 
-@st.experimental_fragment()
+@st.fragment()
 def view_bpc_tic():
     cols = st.columns(5)
     cols[0].checkbox(
@@ -296,7 +295,10 @@ def view_bpc_tic():
         "Base Peak Chromatogram (BPC)", True, key="view_bpc", help="Plot BPC."
     )
     cols[2].checkbox(
-        "Extracted Ion Chromatogram (EIC/XIC)", True, key="view_eic", help="Plot extracted ion chromatogram with specified m/z."
+        "Extracted Ion Chromatogram (EIC/XIC)",
+        True,
+        key="view_eic",
+        help="Plot extracted ion chromatogram with specified m/z.",
     )
     cols[3].text_input(
         "XIC m/z",
@@ -306,9 +308,12 @@ def view_bpc_tic():
     )
     cols[4].number_input(
         "XIC ppm tolerance",
-        0.1, 50.0, 10.0, 1.0,
+        0.1,
+        50.0,
+        10.0,
+        1.0,
         help="Tolerance for XIC calculation (ppm).",
-        key="view_eic_ppm"
+        key="view_eic_ppm",
     )
     fig = plot_bpc_tic()
     show_fig(fig, f"BPC-TIC-{st.session_state.view_selected_file}")

@@ -2,7 +2,7 @@ import streamlit as st
 
 from pathlib import Path
 
-from src.common import page_setup, save_params
+from src.common.common import page_setup, save_params
 from src import mzmlfileworkflow
 
 # Page name "workflow" will show mzML file selector in sidebar
@@ -20,9 +20,20 @@ This is great for large parameter sections.
 
 with st.form("workflow-with-mzML-form"):
     st.markdown("**Parameters**")
+    
+    file_options = [f.stem for f in Path(st.session_state.workspace, "mzML-files").glob("*.mzML") if "external_files.txt" not in f.name]
+    
+    # Check if local files are available
+    external_files = Path(Path(st.session_state.workspace, "mzML-files"), "external_files.txt")
+    if external_files.exists():
+        with open(external_files, "r") as f_handle:
+            external_files = f_handle.readlines()
+            external_files = [str(Path(f.strip()).with_suffix('')) for f in external_files]
+            file_options += external_files
+
     st.multiselect(
         "**input mzML files**",
-        [f.stem for f in Path(st.session_state.workspace, "mzML-files").glob("*.mzML")],
+        file_options,
         params["example-workflow-selected-mzML-files"],
         key="example-workflow-selected-mzML-files",
     )

@@ -1,11 +1,11 @@
 import streamlit as st
-from .workflow.WorkflowManager import WorkflowManager
+from src.workflow.WorkflowManager import WorkflowManager
 
 # for result section:
 from pathlib import Path
 import pandas as pd
 import plotly.express as px
-from .common import show_fig
+from src.common.common import show_fig
 
 
 class Workflow(WorkflowManager):
@@ -22,11 +22,11 @@ class Workflow(WorkflowManager):
             self.ui.upload_widget(
                 key="mzML-files",
                 name="MS data",
-                file_type="mzML",
+                file_types="mzML",
                 fallback=[str(f) for f in Path("example-data", "mzML").glob("*.mzML")],
             )
 
-    @st.experimental_fragment
+    @st.fragment
     def configure(self) -> None:
         # Allow users to select mzML files for the analysis.
         self.ui.select_input_file("mzML-files", multiple=True)
@@ -51,7 +51,6 @@ class Workflow(WorkflowManager):
             # Parameters are specified within the file in the DEFAULTS dictionary.
             self.ui.input_python("example")
 
-    @st.experimental_fragment
     def execution(self) -> None:
         # Any parameter checks, here simply checking if mzML files are selected
         if not self.params["mzML-files"]:
@@ -95,9 +94,9 @@ class Workflow(WorkflowManager):
             # Example for a custom Python tool, which is located in src/python-tools.
             self.executor.run_python("example", {"in": in_mzML})
 
-    @st.experimental_fragment
+    @st.fragment
     def results(self) -> None:
-        @st.experimental_fragment
+        @st.fragment
         def show_consensus_features():
             df = pd.read_csv(file, sep="\t", index_col=0)
             st.metric("number of consensus features", df.shape[0])
