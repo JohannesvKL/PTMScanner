@@ -44,7 +44,7 @@ c1.markdown(
 v_space(1, c2)
 c2.image("assets/pyopenms_transparent_background.png", width=300)
 if Path("OpenMS-App.zip").exists():
-    st.subsubheader(
+    st.subheader(
         """
 Download the latest version for Windows here by clicking the button below.
 """
