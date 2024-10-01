@@ -32,12 +32,12 @@ RUN apt-get install -y --no-install-recommends --no-install-suggests libboost-da
                                                                      libboost-random1.74-dev
 RUN apt-get install -y --no-install-recommends --no-install-suggests qtbase5-dev libqt5svg5-dev libqt5opengl5-dev
 
-# Download and install mamba.
-ENV PATH="/root/mambaforge/bin:${PATH}"
+# Download and install miniforge.
+ENV PATH="/root/miniforge3/bin:${PATH}"
 RUN wget -q \
-    https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh \
-    && bash Mambaforge-Linux-x86_64.sh -b \
-    && rm -f Mambaforge-Linux-x86_64.sh
+    https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh \
+    && bash Miniforge3-Linux-x86_64.sh -b \
+    && rm -f Miniforge3-Linux-x86_64.sh
 RUN mamba --version
 
 # Setup mamba environment.
@@ -124,7 +124,7 @@ COPY .streamlit/config.toml /app/.streamlit/config.toml
 COPY clean-up-workspaces.py /app/clean-up-workspaces.py
 
 # add cron job to the crontab
-RUN echo "0 3 * * * /root/mambaforge/envs/streamlit-env/bin/python /app/clean-up-workspaces.py >> /app/clean-up-workspaces.log 2>&1" | crontab -
+RUN echo "0 3 * * * /root/miniforge3/envs/streamlit-env/bin/python /app/clean-up-workspaces.py >> /app/clean-up-workspaces.log 2>&1" | crontab -
 
 # create entrypoint script to start cron service and launch streamlit app
 RUN echo "#!/bin/bash" > /app/entrypoint.sh
