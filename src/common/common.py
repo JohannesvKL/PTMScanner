@@ -33,7 +33,7 @@ def load_params(default: bool = False) -> dict[str, Any]:
     Load parameters from a JSON file and return a dictionary containing them.
 
     If a 'params.json' file exists in the workspace, load the parameters from there.
-    Otherwise, load the default parameters from 'assets/default-params.json'.
+    Otherwise, load the default parameters from 'default-parameters.json'.
 
     Additionally, check if any parameters have been modified by the user during the current session
     and update the values in the parameter dictionary accordingly. Also make sure that all items from
@@ -53,7 +53,7 @@ def load_params(default: bool = False) -> dict[str, Any]:
         with open(path, "r", encoding="utf-8") as f:
             params = json.load(f)
     else:
-        with open("assets/default-params.json", "r", encoding="utf-8") as f:
+        with open("default-parameters.json", "r", encoding="utf-8") as f:
             params = json.load(f)
 
     # Return the parameter dictionary
@@ -150,13 +150,18 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     window.dataLayer = window.dataLayer || [];
                     function gtag(){{dataLayer.push(arguments);}}
                     gtag('js', new Date());
+
                     gtag('consent', 'default', {{
                         'ad_storage': 'denied',
                         'ad_user_data': 'denied',
                         'ad_personalization': 'denied',
                         'analytics_storage': 'granted'
                     }});
-                    gtag('config', '{st.session_state.settings['google_analytics']['tag']}');
+                    gtag('config', '{st.session_state.settings['google_analytics']['tag']}' , {{
+                         'debug_mode': true,
+                         'cookie_flags': 'samesite=none;secure'
+                    }});
+                    console.log('Done!')
                     </script>
                 </head>
                 <body></body>
@@ -212,7 +217,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
 
     # If run in hosted mode, show captcha as long as it has not been solved
     if not "local" in sys.argv:
-        if "controllo" not in st.session_state or params["controllo"] is False:
+        if "controllo" not in st.session_state:
             # Apply captcha by calling the captcha_control function
             captcha_control()
 
@@ -372,6 +377,7 @@ def display_large_dataframe(
     # Calculate the index based on the current page and chunk size
     base_index = (page - 1) * chunk_size
     return base_index + rows[0]
+
 
 
 def show_table(df: pd.DataFrame, download_name: str = "") -> None:
