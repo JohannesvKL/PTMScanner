@@ -158,35 +158,34 @@ def page_setup(page: str = "") -> dict[str, Any]:
                         'analytics_storage': 'granted'
                     }});
                     // Check if running in an iFrame and get parent window details
-                    var page_location = window.parent.location.pathname;
+                    var page_location = window.parent.document.location;
                     var page_title = window.parent.document.title;
             
                     gtag('config', '{st.session_state.settings['google_analytics']['tag']}', {{
                         'page_location': page_location,
                         'page_title': page_title,
-                        'cookie_flags': 'samesite=none;secure',
-                        'debug_mode': true
+                        'cookie_flags': 'SameSite=None;Secure',
                     }});
                     </script>
                 </head>
                 <body>
-                <script defer>
+                <script>
                     gtag('event', 'test_event', {{
-                            'event_category': 'test_category',
-                            'event_label': 'test_label'
-                        }});
-                
-                        // Manually trigger the page view event with parent window details
-                        gtag('event', 'page_view', {{
-                            'page_location': page_location,
-                            'page_title': page_title
-                        }});
-                        
-                        console.log(gtag);
-                        console.log(page_location);
-                        console.log(page_title);
-                        console.log(window.dataLayer);
-                        console.log('Page view event triggered');
+                        'event_category': 'test_category',
+                        'event_label': 'test_label'
+                    }});
+            
+                    // Manually trigger the page view event with parent window details
+                    gtag('event', 'page_view', {{
+                        'page_location': page_location,
+                        'page_title': page_title
+                    }});
+                    
+                    console.log(gtag);
+                    console.log(page_location);
+                    console.log(page_title);
+                    console.log(window.dataLayer);
+                    console.log('Page view event triggered');
                 </script>
                 </body>
             </html>
