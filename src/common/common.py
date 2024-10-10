@@ -145,8 +145,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
             <html lang="en">
                 <head>
                     <!-- Google tag (gtag.js) -->
-                    <script async src="https://www.googletagmanager.com/gtag/js?id={st.session_state.settings['google_analytics']['tag']}" crossorigin='anonymous'></script>
-                    <script crossorigin='anonymous'>
+                    <script async src="https://www.googletagmanager.com/gtag/js?id={st.session_state.settings['google_analytics']['tag']}"></script>
+                    <script>
                     window.dataLayer = window.dataLayer || [];
                     function gtag(){{dataLayer.push(arguments);}}
                     gtag('js', new Date());
@@ -178,7 +178,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
                         'page_location': page_location,
                         'page_title': page_title
                     }});
-            
+                    
+                    console.log(gtag);
                     console.log(page_location);
                     console.log(page_title);
                     console.log(window.dataLayer);
