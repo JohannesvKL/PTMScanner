@@ -299,6 +299,14 @@ def render_sidebar(page: str = "") -> None:
                 img_formats.index(params["image-format"]),
                 key="image-format",
             )
+            st.markdown("## Spectrum Plotting")
+            st.selectbox("Bin Peaks", ["auto", True, False], key="spectrum_bin_peaks")
+            if st.session_state["spectrum_bin_peaks"] == True:
+                st.number_input(
+                    "Number of Bins (m/z)", 1, 10000, 50, key="spectrum_num_bins"
+                )
+            else:
+                st.session_state["spectrum_num_bins"] = 50
     return params
 
 
@@ -321,7 +329,7 @@ def v_space(n: int, col=None) -> None:
 
 
 def display_large_dataframe(
-    df, chunk_sizes: list[int] = [100, 1_000, 10_000], **kwargs
+    df, chunk_sizes: list[int] = [10, 100, 1_000, 10_000], **kwargs
 ):
     """
     Displays a large DataFrame in chunks with pagination controls and row selection.
@@ -332,22 +340,19 @@ def display_large_dataframe(
         ...: Additional keyword arguments to pass to the `st.dataframe` function. See: https://docs.streamlit.io/develop/api-reference/data/st.dataframe
 
     Returns:
-        Selected rows from the current chunk.
+        Index of selected row.
     """
 
-    def update_on_change():
-        # Initialize session state for pagination
-        if "current_chunk" not in st.session_state:
-            st.session_state.current_chunk = 0
-        st.session_state.current_chunk = 0
-
     # Dropdown for selecting chunk size
-    chunk_size = st.selectbox(
-        "Select Number of Rows to Display", chunk_sizes, on_change=update_on_change
-    )
+    chunk_size = st.selectbox("Select Number of Rows to Display", chunk_sizes)
 
     # Calculate total number of chunks
     total_chunks = (len(df) + chunk_size - 1) // chunk_size
+
+    if total_chunks > 1:
+        page = int(st.number_input("Select Page", 1, total_chunks, 1, step=1))
+    else:
+        page = 1
 
     # Function to get the current chunk of the DataFrame
     def get_current_chunk(df, chunk_size, chunk_index):
@@ -358,9 +363,7 @@ def display_large_dataframe(
         return df.iloc[start:end], start, end
 
     # Display the current chunk
-    current_chunk_df, start_row, end_row = get_current_chunk(
-        df, chunk_size, st.session_state.current_chunk
-    )
+    current_chunk_df, start_row, end_row = get_current_chunk(df, chunk_size, page - 1)
 
     event = st.dataframe(current_chunk_df, **kwargs)
 
@@ -368,20 +371,13 @@ def display_large_dataframe(
         f"Showing rows {start_row + 1} to {end_row} of {len(df)} ({get_dataframe_mem_useage(current_chunk_df):.2f} MB)"
     )
 
-    # Pagination buttons
-    col1, col2, col3 = st.columns([1, 2, 1])
+    rows = event["selection"]["rows"]
+    if not rows:
+        return None
+    # Calculate the index based on the current page and chunk size
+    base_index = (page - 1) * chunk_size
+    return base_index + rows[0]
 
-    with col1:
-        if st.button("Previous") and st.session_state.current_chunk > 0:
-            st.session_state.current_chunk -= 1
-
-    with col3:
-        if st.button("Next") and st.session_state.current_chunk < total_chunks - 1:
-            st.session_state.current_chunk += 1
-
-    if event is not None:
-        return event
-    return None
 
 
 def show_table(df: pd.DataFrame, download_name: str = "") -> None:
