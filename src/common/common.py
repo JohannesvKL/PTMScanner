@@ -188,8 +188,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
                 <body></body>
             </html>
             """,
-            width=1,
-            height=1,
+            width=200,
+            height=200,
         )
 
     # Determine the workspace for the current session
