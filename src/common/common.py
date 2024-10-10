@@ -167,26 +167,28 @@ def page_setup(page: str = "") -> dict[str, Any]:
                         'cookie_flags': 'samesite=none;secure',
                         'debug_mode': true
                     }});
-
-                    gtag('event', 'test_event', {{
-                        'event_category': 'test_category',
-                        'event_label': 'test_label'
-                    }});
-            
-                    // Manually trigger the page view event with parent window details
-                    gtag('event', 'page_view', {{
-                        'page_location': page_location,
-                        'page_title': page_title
-                    }});
-                    
-                    console.log(gtag);
-                    console.log(page_location);
-                    console.log(page_title);
-                    console.log(window.dataLayer);
-                    console.log('Page view event triggered');
                     </script>
                 </head>
-                <body></body>
+                <body>
+                <script defer>
+                    gtag('event', 'test_event', {{
+                            'event_category': 'test_category',
+                            'event_label': 'test_label'
+                        }});
+                
+                        // Manually trigger the page view event with parent window details
+                        gtag('event', 'page_view', {{
+                            'page_location': page_location,
+                            'page_title': page_title
+                        }});
+                        
+                        console.log(gtag);
+                        console.log(page_location);
+                        console.log(page_title);
+                        console.log(window.dataLayer);
+                        console.log('Page view event triggered');
+                </script>
+                </body>
             </html>
             """,
             width=200,
