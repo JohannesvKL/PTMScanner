@@ -165,6 +165,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
                         'page_location': page_location,
                         'page_title': page_title,
                         'cookie_flags': 'SameSite=None;Secure',
+                        'debug_mode': true
                     }});
                     </script>
                 </head>
