@@ -158,7 +158,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
                         'analytics_storage': 'granted'
                     }});
                     // Check if running in an iFrame and get parent window details
-                    var page_location = window.parent.document.location;
+                    var page_location = document.location.origin+document.location.pathname;
                     var page_title = window.parent.document.title;
             
                     gtag('config', '{st.session_state.settings['google_analytics']['tag']}', {{
