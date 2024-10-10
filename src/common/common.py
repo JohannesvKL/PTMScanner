@@ -157,17 +157,25 @@ def page_setup(page: str = "") -> dict[str, Any]:
                         'ad_personalization': 'denied',
                         'analytics_storage': 'granted'
                     }});
-                    gtag('config', '{st.session_state.settings['google_analytics']['tag']}' , {{
-                         'debug_mode': true,
-                         'cookie_flags': 'samesite=none;secure'
+                    // Check if running in an iFrame and get parent window details
+                    var page_path = window.parent.location.pathname;
+                    var page_title = window.parent.document.title;
+            
+                    gtag('config', '{st.session_state.settings['google_analytics']['tag']}', {{
+                        'page_path': page_path,
+                        'page_title': page_title,
+                        'cookie_flags': 'samesite=none;secure'
                     }});
+            
+                    // Manually trigger the page view event with parent window details
                     gtag('event', 'page_view', {{
-                        'page_path': window.location.pathname,
-                        'page_title': document.title
+                        'page_path': page_path,
+                        'page_title': page_title
                     }});
-                    console.log(window.location.pathname)
-                    console.log(document.title)
-                    console.log('Done!')
+            
+                    console.log(page_path);
+                    console.log(page_title);
+                    console.log('Page view event triggered');
                     </script>
                 </head>
                 <body></body>
