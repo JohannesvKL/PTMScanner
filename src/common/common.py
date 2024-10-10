@@ -152,9 +152,9 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     gtag('js', new Date());
 
                     gtag('consent', 'default', {{
-                        'ad_storage': 'denied',
-                        'ad_user_data': 'denied',
-                        'ad_personalization': 'denied',
+                        'ad_storage': 'granted',
+                        'ad_user_data': 'granted',
+                        'ad_personalization': 'granted',
                         'analytics_storage': 'granted'
                     }});
                     // Check if running in an iFrame and get parent window details
@@ -165,11 +165,11 @@ def page_setup(page: str = "") -> dict[str, Any]:
                         'page_path': page_path,
                         'page_title': page_title,
                         'cookie_flags': 'samesite=none;secure',
-                        'debug_mode':true
+                        'debug_mode': true
                     }});
             
                     // Manually trigger the page view event with parent window details
-                    gtag('event', 'page_view', {{
+                    gtag('event', 'page_viewx', {{
                         'page_path': page_path,
                         'page_title': page_title
                     }});
