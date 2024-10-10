@@ -167,6 +167,11 @@ def page_setup(page: str = "") -> dict[str, Any]:
                         'cookie_flags': 'samesite=none;secure',
                         'debug_mode': true
                     }});
+
+                    gtag('event', 'test_event', {{
+                        'event_category': 'test_category',
+                        'event_label': 'test_label'
+                    }});
             
                     // Manually trigger the page view event with parent window details
                     gtag('event', 'page_view', {{
