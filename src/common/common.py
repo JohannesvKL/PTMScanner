@@ -161,6 +161,12 @@ def page_setup(page: str = "") -> dict[str, Any]:
                          'debug_mode': true,
                          'cookie_flags': 'samesite=none;secure'
                     }});
+                    gtag('event', 'page_view', {{
+                        'page_path': window.location.pathname,
+                        'page_title': document.title
+                    }});
+                    console.log(window.location.pathname)
+                    console.log(document.title)
                     console.log('Done!')
                     </script>
                 </head>
