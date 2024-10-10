@@ -158,23 +158,23 @@ def page_setup(page: str = "") -> dict[str, Any]:
                         'analytics_storage': 'granted'
                     }});
                     // Check if running in an iFrame and get parent window details
-                    var page_path = window.parent.location.pathname;
+                    var page_location = window.parent.location.pathname;
                     var page_title = window.parent.document.title;
             
                     gtag('config', '{st.session_state.settings['google_analytics']['tag']}', {{
-                        'page_path': page_path,
+                        'page_location': page_location,
                         'page_title': page_title,
                         'cookie_flags': 'samesite=none;secure',
                         'debug_mode': true
                     }});
             
                     // Manually trigger the page view event with parent window details
-                    gtag('event', 'page_viewx', {{
-                        'page_path': page_path,
+                    gtag('event', 'page_view', {{
+                        'page_location': page_location,
                         'page_title': page_title
                     }});
             
-                    console.log(page_path);
+                    console.log(page_location);
                     console.log(page_title);
                     console.log('Page view event triggered');
                     </script>
