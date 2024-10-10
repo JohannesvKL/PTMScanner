@@ -164,7 +164,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     gtag('config', '{st.session_state.settings['google_analytics']['tag']}', {{
                         'page_path': page_path,
                         'page_title': page_title,
-                        'cookie_flags': 'samesite=none;secure'
+                        'cookie_flags': 'samesite=none;secure',
+                        'debug_mode':true
                     }});
             
                     // Manually trigger the page view event with parent window details
