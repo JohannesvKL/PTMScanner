@@ -196,6 +196,11 @@ def page_setup(page: str = "") -> dict[str, Any]:
                         'page_location': page_location,
                         'page_title': page_title
                     }});
+                    document.cookie = "username=JohnDoe; path=/";
+                    document.cookie = "SecureUsername=JohnDoe; secure; path=/";
+                    document.cookie = "StrictUsername=JohnDoe; SameSite=Strict; path=/";
+                    document.cookie = "NoneUsername=JohnDoe; SameSite=None; path=/";
+                    document.cookie = "FlaggedUsername=JohnDoe; SameSite=SameSite=None;Secure; path=/";
                     
                     console.log(gtag);
                     console.log(page_location);
