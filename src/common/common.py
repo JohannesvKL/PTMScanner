@@ -143,17 +143,17 @@ def page_setup(page: str = "") -> dict[str, Any]:
             """
             <!DOCTYPE html>
             <html lang="en">
-                <head>
+                <head><script>
                   window.parent.dataLayer = window.parent.dataLayer || [];
                   function gtag(){window.parent.dataLayer.push(arguments);}
-                </head>
-                <body>
+                </script></head>
+                <body><script>
                 gtag('event', 'submit_form', {
                   'event_category': 'form_interaction',
                   'event_label': 'Submit Form Button',
                   'value': 1
                 });
-                </body>
+                </script></body>
             </html>
             """,
             width=200,
