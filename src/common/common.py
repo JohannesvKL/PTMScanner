@@ -164,7 +164,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     gtag('config', '{st.session_state.settings['google_analytics']['tag']}', {{
                         'page_location': page_location,
                         'page_title': page_title,
-                        'cookie_flags': 'SameSite=None;Secure',
+                        'cookie_flags': 'domain=.cs.uni-tuebingen.de',
                         'debug_mode': true
                     }});
                     fetch('https://www.google-analytics.com/collect', {{
@@ -207,9 +207,9 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     expiryDate.setTime(expiryDate.getTime() + (7 * 24 * 60 * 60 * 1000));  // 7 days in milliseconds
                     
                     // Set the cookie
-                    document.cookie = `myCookie=myValue; expires=${{expiryDate.toUTCString()}}; path=/; SameSite=None`;
-                    document.cookie = `myCookieSec=myValue; expires=${{expiryDate.toUTCString()}}; path=/; SameSite=None; Secure`;
-                    document.cookie = `myCookieSecc=myValue; expires=${{expiryDate.toUTCString()}}; path=/`;
+                    document.cookie = `myCookie=myValue; expires=${{expiryDate.toUTCString()}}; path=/; SameSite=None; domain=.cs.uni-tuebingen.de`;
+                    document.cookie = `myCookieSec=myValue; expires=${{expiryDate.toUTCString()}}; path=/; SameSite=None; Secure; domain=.cs.uni-tuebingen.de`;
+                    document.cookie = `myCookieSecc=myValue; expires=${{expiryDate.toUTCString()}}; path=/; domain=.cs.uni-tuebingen.de`;
 
                     
                     console.log(gtag);
