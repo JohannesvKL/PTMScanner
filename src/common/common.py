@@ -223,6 +223,19 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     console.log(page_title);
                     console.log(window.dataLayer);
                     console.log('Page view event triggered');
+
+                    gtag('get', 'G-Q3FKFWQR3T', 'client_id', (field) => console.log(field))
+                    gtag('get', 'G-Q3FKFWQR3T', 'session_id', (field) => console.log(field))
+                    gtag('get', 'G-Q3FKFWQR3T', 'gclid', (field) => console.log(field))
+                    gtag('set', {{campaign_name: 'Spring_Sale'}});
+                    gtag('get', 'G-Q3FKFWQR3T', 'campaign_name', (campaign_name) => {
+                      // Do something with currency value you set earlier.
+                    })
+
+                    
+                    
+                    
+                    
                 </script>
                 <script>
                     // Function to log the dataLayer every 3 seconds
