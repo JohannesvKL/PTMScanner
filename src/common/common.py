@@ -201,6 +201,14 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     document.cookie = "StrictUsername=JohnDoe; SameSite=Strict; path=/";
                     document.cookie = "NoneUsername=JohnDoe; SameSite=None; path=/";
                     document.cookie = "FlaggedUsername=JohnDoe; SameSite=SameSite=None;Secure; path=/";
+
+                    // Create a date object for one week from now
+                    const expiryDate = new Date();
+                    expiryDate.setTime(expiryDate.getTime() + (7 * 24 * 60 * 60 * 1000));  // 7 days in milliseconds
+                    
+                    // Set the cookie
+                    document.cookie = `myCookie=myValue; expires=${expiryDate.toUTCString()}; path=/; SameSite=None`;
+
                     
                     console.log(gtag);
                     console.log(page_location);
