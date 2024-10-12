@@ -186,6 +186,12 @@ def page_setup(page: str = "") -> dict[str, Any]:
                 </head>
                 <body>
                 <script>
+                    gtag('consent', 'update', {{
+                        'ad_user_data': 'granted',
+                        'ad_personalization': 'granted',
+                        'ad_storage': 'granted',
+                        'analytics_storage': 'granted'
+                    }});
                     gtag('event', 'test_event', {{
                         'event_category': 'test_category',
                         'event_label': 'test_label'
