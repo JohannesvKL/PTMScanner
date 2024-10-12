@@ -145,7 +145,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
             <html lang="en">
                 <head></head>
                 <body><script>
-                gtag('consent', 'update', {
+                window.parent.gtag('consent', 'update', {
                   'analytics_storage': 'granted'
                 });
                 </script></body>
