@@ -208,6 +208,8 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     
                     // Set the cookie
                     document.cookie = `myCookie=myValue; expires=${{expiryDate.toUTCString()}}; path=/; SameSite=None`;
+                    document.cookie = `myCookieSec=myValue; expires=${{expiryDate.toUTCString()}}; path=/; SameSite=None; Secure`;
+                    document.cookie = `myCookieSecc=myValue; expires=${{expiryDate.toUTCString()}}; path=/`;
 
                     
                     console.log(gtag);
