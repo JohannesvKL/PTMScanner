@@ -164,7 +164,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     gtag('config', '{st.session_state.settings['google_analytics']['tag']}', {{
                         'page_location': page_location,
                         'page_title': page_title,
-                        'cookie_flags': 'domain=.cs.uni-tuebingen.de',
+                        'cookie_domain': '.cs.uni-tuebingen.de',
                         'debug_mode': true
                     }});
                     fetch('https://www.google-analytics.com/collect', {{
