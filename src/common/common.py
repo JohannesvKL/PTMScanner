@@ -147,41 +147,28 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     <!-- Google tag (gtag.js) -->
                     <script async src="https://www.googletagmanager.com/gtag/js?id={st.session_state.settings['google_analytics']['tag']}" onload="initGtag()"></script>
                     <script>
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){{dataLayer.push(arguments);}}
-                    gtag('js', new Date());
-
-                    gtag('consent', 'default', {{
-                        'ad_storage': 'granted',
-                        'ad_user_data': 'granted',
-                        'ad_personalization': 'granted',
-                        'analytics_storage': 'granted'
-                    }});
-                    // Check if running in an iFrame and get parent window details
-                    var page_location = window.parent.document.location.origin+window.parent.document.location.pathname;
-                    var page_title = window.parent.document.title;
-            
-                    gtag('config', '{st.session_state.settings['google_analytics']['tag']}', {{
-                        'page_location': page_location,
-                        'page_title': page_title,
-                        'cookie_domain': '.cs.uni-tuebingen.de',
-                        'debug_mode': true
-                    }});
-                    fetch('https://www.google-analytics.com/collect', {{
-                        method: 'POST',
-                        body: new URLSearchParams({{
-                            'v': '1', // API Version
-                            'tid': 'G-Q3FKFWQR3T', // Tracking ID
-                            'cid': '555', // Client ID (you can generate a random or static ID)
-                            't': 'pageviewtest', // Pageview hit type
-                            'dp': window.parent.location.pathname, // Document path
-                            'dt': window.parent.document.title // Document title
-                        }})
-                    }}).then(response => {{
-                        console.log('Page view event sent:', response);
-                    }}).catch(error => {{
-                        console.error('Error sending page view event:', error);
-                    }});
+                    function initGtag() {{
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){{dataLayer.push(arguments);}}
+                        gtag('js', new Date());
+    
+                        gtag('consent', 'default', {{
+                            'ad_storage': 'granted',
+                            'ad_user_data': 'granted',
+                            'ad_personalization': 'granted',
+                            'analytics_storage': 'granted'
+                        }});
+                        // Check if running in an iFrame and get parent window details
+                        var page_location = window.parent.document.location.origin+window.parent.document.location.pathname;
+                        var page_title = window.parent.document.title;
+                
+                        gtag('config', '{st.session_state.settings['google_analytics']['tag']}', {{
+                            'page_location': page_location,
+                            'page_title': page_title,
+                            'cookie_domain': '.cs.uni-tuebingen.de',
+                            'debug_mode': true
+                        }});
+                    }}
                     </script>
                 </head>
                 <body>
