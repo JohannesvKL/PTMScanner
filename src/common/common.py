@@ -140,96 +140,24 @@ def page_setup(page: str = "") -> dict[str, Any]:
         st.session_state.tracking_consent == True
     ):
         html(
-            f"""
+            """
             <!DOCTYPE html>
             <html lang="en">
                 <head>
-                    <!-- Google tag (gtag.js) -->
-                    <script async src="https://www.googletagmanager.com/gtag/js?id={st.session_state.settings['google_analytics']['tag']}" onload="initGtag()"></script>
-                    <script>
-                    function initGtag() {{
-                        window.dataLayer = window.dataLayer || [];
-                        function gtag(){{dataLayer.push(arguments);}}
-                        gtag('js', new Date());
-    
-                        gtag('consent', 'default', {{
-                            'ad_storage': 'granted',
-                            'ad_user_data': 'granted',
-                            'ad_personalization': 'granted',
-                            'analytics_storage': 'granted'
-                        }});
-                        // Check if running in an iFrame and get parent window details
-                        var page_location = window.parent.document.location.origin+window.parent.document.location.pathname;
-                        var page_title = window.parent.document.title;
-                
-                        gtag('config', '{st.session_state.settings['google_analytics']['tag']}', {{
-                            'page_location': page_location,
-                            'page_title': page_title,
-                            'cookie_domain': '.cs.uni-tuebingen.de',
-                            'debug_mode': true
-                        }});
-                    }}
-                    </script>
+                    <!-- Google Tag Manager -->
+                    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                    })(window,document,'script','dataLayer','GTM-NRXGDF5H');</script>
+                    <!-- End Google Tag Manager -->
                 </head>
                 <body>
-                <script>
-                    gtag('consent', 'update', {{
-                        'ad_user_data': 'granted',
-                        'ad_personalization': 'granted',
-                        'ad_storage': 'granted',
-                        'analytics_storage': 'granted'
-                    }});
-                    gtag('event', 'test_event', {{
-                        'event_category': 'test_category',
-                        'event_label': 'test_label'
-                    }});
-            
-                    // Manually trigger the page view event with parent window details
-                    gtag('event', 'page_view', {{
-                        'page_location': page_location,
-                        'page_title': page_title
-                    }});
-                    document.cookie = "username=JohnDoe; path=/";
-                    document.cookie = "SecureUsername=JohnDoe; secure; path=/";
-                    document.cookie = "StrictUsername=JohnDoe; SameSite=Strict; path=/";
-                    document.cookie = "NoneUsername=JohnDoe; SameSite=None; path=/";
-                    document.cookie = "FlaggedUsername=JohnDoe; SameSite=SameSite=None;Secure; path=/";
-
-                    // Create a date object for one week from now
-                    const expiryDate = new Date();
-                    expiryDate.setTime(expiryDate.getTime() + (7 * 24 * 60 * 60 * 1000));  // 7 days in milliseconds
-                    
-                    // Set the cookie
-                    document.cookie = `myCookie=myValue; expires=${{expiryDate.toUTCString()}}; path=/; SameSite=None; domain=.cs.uni-tuebingen.de`;
-                    document.cookie = `myCookieSec=myValue; expires=${{expiryDate.toUTCString()}}; path=/; SameSite=None; Secure; domain=.cs.uni-tuebingen.de`;
-                    document.cookie = `myCookieSecc=myValue; expires=${{expiryDate.toUTCString()}}; path=/; domain=.cs.uni-tuebingen.de`;
-
-                    
-                    console.log(gtag);
-                    console.log(page_location);
-                    console.log(page_title);
-                    console.log(window.dataLayer);
-                    console.log('Page view event triggered');
-
-                    gtag('get', 'G-Q3FKFWQR3T', 'client_id', (field) => console.log(field))
-                    gtag('get', 'G-Q3FKFWQR3T', 'session_id', (field) => console.log(field))
-                    gtag('get', 'G-Q3FKFWQR3T', 'gclid', (field) => console.log(field))
-                    gtag('set', {{campaign_name: 'Spring_Sale'}});
-                    gtag('get', 'G-Q3FKFWQR3T', 'campaign_name', (campaign_name) => {{
-                      // Do something with currency value you set earlier.
-                    }})
-
-                    
-                    
-                    
-                    
-                </script>
-                <script>
-                    // Function to log the dataLayer every 3 seconds
-                    setInterval(function() {{
-                        console.log('Current dataLayer:', window.dataLayer);
-                    }}, 3000);
-                </script>
+                <!-- Google Tag Manager (noscript) -->
+                <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRXGDF5H"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+                <!-- End Google Tag Manager (noscript) -->
+                Test
                 </body>
             </html>
             """,
