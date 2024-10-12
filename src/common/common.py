@@ -145,7 +145,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
             <html lang="en">
                 <head>
                     <!-- Google tag (gtag.js) -->
-                    <script async src="https://www.googletagmanager.com/gtag/js?id={st.session_state.settings['google_analytics']['tag']}"></script>
+                    <script async src="https://www.googletagmanager.com/gtag/js?id={st.session_state.settings['google_analytics']['tag']}" onload="initGtag()"></script>
                     <script>
                     window.dataLayer = window.dataLayer || [];
                     function gtag(){{dataLayer.push(arguments);}}
