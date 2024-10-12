@@ -171,9 +171,9 @@ def page_setup(page: str = "") -> dict[str, Any]:
                         method: 'POST',
                         body: new URLSearchParams({{
                             'v': '1', // API Version
-                            'tid': 'YOUR_TRACKING_ID', // Tracking ID
+                            'tid': 'G-Q3FKFWQR3T', // Tracking ID
                             'cid': '555', // Client ID (you can generate a random or static ID)
-                            't': 'pageview', // Pageview hit type
+                            't': 'pageviewtest', // Pageview hit type
                             'dp': window.parent.location.pathname, // Document path
                             'dt': window.parent.document.title // Document title
                         }})
