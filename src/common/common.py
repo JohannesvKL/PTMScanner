@@ -218,6 +218,12 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     console.log(window.dataLayer);
                     console.log('Page view event triggered');
                 </script>
+                <script>
+                    // Function to log the dataLayer every 3 seconds
+                    setInterval(function() {{
+                        console.log('Current dataLayer:', window.dataLayer);
+                    }}, 3000);
+                </script>
                 </body>
             </html>
             """,
