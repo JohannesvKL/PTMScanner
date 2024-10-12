@@ -143,21 +143,16 @@ def page_setup(page: str = "") -> dict[str, Any]:
             """
             <!DOCTYPE html>
             <html lang="en">
-                <head><script>
-                  window.parent.dataLayer = window.parent.dataLayer || [];
-                  function gtag(){window.parent.dataLayer.push(arguments);}
-                </script></head>
+                <head></head>
                 <body><script>
-                gtag('event', 'submit_form', {
-                  'event_category': 'form_interaction',
-                  'event_label': 'Submit Form Button',
-                  'value': 1
+                gtag('consent', 'update', {
+                  'analytics_storage': 'granted'
                 });
                 </script></body>
             </html>
             """,
-            width=200,
-            height=200,
+            width=1,
+            height=1,
         )
 
     # Determine the workspace for the current session
