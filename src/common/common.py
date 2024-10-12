@@ -207,7 +207,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     expiryDate.setTime(expiryDate.getTime() + (7 * 24 * 60 * 60 * 1000));  // 7 days in milliseconds
                     
                     // Set the cookie
-                    document.cookie = `myCookie=myValue; expires=${expiryDate.toUTCString()}; path=/; SameSite=None`;
+                    document.cookie = `myCookie=myValue; expires=${{expiryDate.toUTCString()}}; path=/; SameSite=None`;
 
                     
                     console.log(gtag);
