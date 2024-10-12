@@ -228,9 +228,9 @@ def page_setup(page: str = "") -> dict[str, Any]:
                     gtag('get', 'G-Q3FKFWQR3T', 'session_id', (field) => console.log(field))
                     gtag('get', 'G-Q3FKFWQR3T', 'gclid', (field) => console.log(field))
                     gtag('set', {{campaign_name: 'Spring_Sale'}});
-                    gtag('get', 'G-Q3FKFWQR3T', 'campaign_name', (campaign_name) => {
+                    gtag('get', 'G-Q3FKFWQR3T', 'campaign_name', (campaign_name) => {{
                       // Do something with currency value you set earlier.
-                    })
+                    }})
 
                     
                     
