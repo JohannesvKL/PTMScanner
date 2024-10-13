@@ -135,7 +135,7 @@ RUN echo "mamba run --no-capture-output -n streamlit-env streamlit run app.py" >
 RUN chmod +x /app/entrypoint.sh
 
 # Patch Analytics
-RUN mamba run -n streamlit-env python hooks/hook_analytics.py
+RUN mamba run -n streamlit-env python hooks/hook-analytics.py
 
 # Download latest OpenMS App executable for Windows from Github actions workflow.
 RUN WORKFLOW_ID=$(curl -s "https://api.github.com/repos/$GITHUB_USER/$GITHUB_REPO/actions/workflows" | jq -r '.workflows[] | select(.name == "Build executable for Windows") | .id') \
