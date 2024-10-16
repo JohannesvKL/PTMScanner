@@ -43,18 +43,23 @@ def google_analytics_body(gtm_tag):
 
 
 if __name__ == '__main__':
-    index_path = os.path.join(os.path.dirname(st.__file__), 'static', 'index.html')
-    settings_path = os.path.join(os.path.dirname(__file__), '..', 'settings.json')
     
+    # Load configuration
+    settings_path = os.path.join(os.path.dirname(__file__), '..', 'settings.json')
     with open(settings_path, 'r') as f:
         settings = json.load(f)
-    gtm_tag = settings['analytics']['google_analytics']['tag']
 
+    # Load index.html
+    index_path = os.path.join(os.path.dirname(st.__file__), 'static', 'index.html')
     with open(index_path, 'r') as f:
         index = f.read()
     
-    index = patch_head(index, google_analytics_head(gtm_tag))
-    index = patch_body(index, google_analytics_body(gtm_tag))
+    # Configure google analytics
+    if settings['analytics']['google_analytics']['enabled']:
+        gtm_tag = settings['analytics']['google_analytics']['tag']
+        index = patch_head(index, google_analytics_head(gtm_tag))
+        index = patch_body(index, google_analytics_body(gtm_tag))
     
+    # Save index.html
     with open(index_path, 'w') as f:
         f.write(index)
