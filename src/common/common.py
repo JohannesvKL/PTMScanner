@@ -136,7 +136,7 @@ def page_setup(page: str = "") -> dict[str, Any]:
     # Create google analytics if consent was given
     if "tracking_consent" not in st.session_state:
         st.session_state.tracking_consent = None
-    if (st.session_state.settings["google_analytics"]["enabled"]) and (
+    if (st.session_state.settings["analytics"]["google_analytics"]["enabled"]) and (
         st.session_state.tracking_consent == True
     ):
         html(

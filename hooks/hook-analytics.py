@@ -48,7 +48,7 @@ if __name__ == '__main__':
     
     with open(settings_path, 'r') as f:
         settings = json.load(f)
-    gtm_tag = settings['google_analytics']['tag']
+    gtm_tag = settings['analytics']['google_analytics']['tag']
 
     with open(index_path, 'r') as f:
         index = f.read()

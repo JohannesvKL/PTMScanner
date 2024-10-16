@@ -200,7 +200,7 @@ def captcha_control():
     if "controllo" not in st.session_state or st.session_state["controllo"] == False:
         
         # Check if consent for tracking was given
-        if (st.session_state.settings['google_analytics']['enabled']) and (st.session_state.tracking_consent is None):
+        if (st.session_state.settings['analytics']['google_analytics']['enabled']) and (st.session_state.tracking_consent is None):
             with st.spinner():
                 # Ask for consent
                 st.session_state.tracking_consent = consent_component()
