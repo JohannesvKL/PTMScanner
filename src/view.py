@@ -188,8 +188,7 @@ def view_peak_map():
         bin_peaks=True,
         backend="ms_plotly",
     )
-    peak_map.fig.update_layout(template="simple_white", dragmode="select")
-    peak_map = peak_map.fig
+    peak_map.update_layout(template="simple_white", dragmode="select")
     c1, c2 = st.columns(2)
     with c1:
         st.info(
