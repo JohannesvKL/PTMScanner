@@ -614,7 +614,9 @@ class StreamlitUI:
             }
             # Parameter sections and subsections as string (e.g. "section:subsection")
             if display_subsections:
-                p["sections"] = ":".join(p["key"].decode().split(":1:")[1].split(":")[:-1])
+                p["sections"] = ":".join(
+                    p["key"].decode().split(":1:")[1].split(":")[:-1]
+                )
             params.append(p)
 
         # for each parameter in params_decoded
@@ -658,7 +660,14 @@ class StreamlitUI:
         for section, params in param_sections.items():
             # Display section name and help text (section description) if required
             if section and display_subsections:
-                st.markdown(f"**{section}**", help=section_descriptions[section] if section in section_descriptions else None)
+                st.markdown(
+                    f"{''.join(section.split(':')[:-1])}:**{section.split(':')[-1]}**",
+                    help=(
+                        section_descriptions[section]
+                        if section in section_descriptions
+                        else None
+                    ),
+                )
             cols = st.columns(num_cols)
             i = 0
             for p in params:
@@ -718,7 +727,8 @@ class StreamlitUI:
                     # lists
                     elif isinstance(p["value"], list):
                         p["value"] = [
-                            v.decode() if isinstance(v, bytes) else v for v in p["value"]
+                            v.decode() if isinstance(v, bytes) else v
+                            for v in p["value"]
                         ]
                         cols[i].text_area(
                             name,
