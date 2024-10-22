@@ -660,8 +660,11 @@ class StreamlitUI:
         for section, params in param_sections.items():
             # Display section name and help text (section description) if required
             if section and display_subsections:
+                parts = section.split(":")
                 st.markdown(
-                    f"{''.join(section.split(':')[:-1])}:**{section.split(':')[-1]}**",
+                    ":".join(parts[:-1])
+                    + (":" if len(parts) > 1 else "")
+                    + f"**{parts[-1]}**",
                     help=(
                         section_descriptions[section]
                         if section in section_descriptions
