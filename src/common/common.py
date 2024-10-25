@@ -154,6 +154,33 @@ def page_setup(page: str = "") -> dict[str, Any]:
             width=1,
             height=1,
         )
+    if (st.session_state.settings["analytics"]["piwik_pro"]["enabled"]) and (
+        st.session_state.tracking_consent == True
+    ):
+        html(
+            """
+            <!DOCTYPE html>
+            <html lang="en">
+                <head></head>
+                <body><script>
+                <script type="text/javascript">
+                var consentSettings = {
+                    analytics: { status: 1 } // Set Analytics consent to 'on' (1 for on, 0 for off)
+                };
+
+                // Apply the settings using Piwik PRO APIa
+                window.parent.ppms.cm.api('setComplianceSettings', { consents: consentSettings }, function() {
+                    console.log("Analytics consent set to on.");
+                }, function(error) {
+                    console.error("Failed to set analytics consent:", error);
+                });
+                </script>
+                </script></body>
+            </html>
+            """,
+            width=1,
+            height=1,
+        )
 
     # Determine the workspace for the current session
     if ("workspace" not in st.session_state) or (
