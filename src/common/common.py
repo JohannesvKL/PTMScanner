@@ -163,7 +163,6 @@ def page_setup(page: str = "") -> dict[str, Any]:
             <html lang="en">
                 <head></head>
                 <body><script>
-                <script type="text/javascript">
                 var consentSettings = {
                     analytics: { status: 1 } // Set Analytics consent to 'on' (1 for on, 0 for off)
                 };
@@ -174,7 +173,6 @@ def page_setup(page: str = "") -> dict[str, Any]:
                 }, function(error) {
                     console.error("Failed to set analytics consent:", error);
                 });
-                </script>
                 </script></body>
             </html>
             """,
