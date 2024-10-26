@@ -69,14 +69,14 @@ if __name__ == '__main__':
         index = f.read()
     
     # Configure google analytics
-    if settings['analytics']['google_analytics']['enabled']:
-        gtm_tag = settings['analytics']['google_analytics']['tag']
+    if settings['analytics']['google-analytics']['enabled']:
+        gtm_tag = settings['analytics']['google-analytics']['tag']
         index = patch_head(index, google_analytics_head(gtm_tag))
         index = patch_body(index, google_analytics_body(gtm_tag))
 
     # Configure piwik pro
-    if settings['analytics']['piwik_pro']['enabled']:
-        piwik_tag = settings['analytics']['piwik_pro']['tag']
+    if settings['analytics']['piwik-pro']['enabled']:
+        piwik_tag = settings['analytics']['piwik-pro']['tag']
         index = patch_body(index, piwik_pro_body(piwik_tag))
     
     # Save index.html
