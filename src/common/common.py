@@ -134,26 +134,54 @@ def page_setup(page: str = "") -> dict[str, Any]:
     st.logo("assets/pyopenms_transparent_background.png")
 
     # Create google analytics if consent was given
-    if "tracking_consent" not in st.session_state:
-        st.session_state.tracking_consent = None
-    if (st.session_state.settings["google_analytics"]["enabled"]) and (
-        st.session_state.tracking_consent == True
+    if (
+        ("tracking_consent" not in st.session_state) 
+        or (st.session_state.tracking_consent is None)
+        or (not st.session_state.settings['online_deployment'])
     ):
-        html(
-            """
-            <!DOCTYPE html>
-            <html lang="en">
-                <head></head>
-                <body><script>
-                window.parent.gtag('consent', 'update', {
-                  'analytics_storage': 'granted'
-                });
-                </script></body>
-            </html>
-            """,
-            width=1,
-            height=1,
-        )
+        st.session_state.tracking_consent = None
+    else:
+        if (st.session_state.settings["analytics"]["google-analytics"]["enabled"]) and (
+            st.session_state.tracking_consent["google-analytics"] == True
+        ):
+            html(
+                """
+                <!DOCTYPE html>
+                <html lang="en">
+                    <head></head>
+                    <body><script>
+                    window.parent.gtag('consent', 'update', {
+                    'analytics_storage': 'granted'
+                    });
+                    </script></body>
+                </html>
+                """,
+                width=1,
+                height=1,
+            )
+        if (st.session_state.settings["analytics"]["piwik-pro"]["enabled"]) and (
+            st.session_state.tracking_consent["piwik-pro"] == True
+        ):
+            html(
+                """
+                <!DOCTYPE html>
+                <html lang="en">
+                    <head></head>
+                    <body><script>
+                    var consentSettings = {
+                        analytics: { status: 1 } // Set Analytics consent to 'on' (1 for on, 0 for off)
+                    };
+                    window.parent.ppms.cm.api('setComplianceSettings', { consents: consentSettings }, function() {
+                        console.log("PiwikPro Analytics consent set to on.");
+                    }, function(error) {
+                        console.error("Failed to set PiwikPro analytics consent:", error);
+                    });
+                    </script></body>
+                </html>
+                """,
+                width=1,
+                height=1,
+            )
 
     # Determine the workspace for the current session
     if ("workspace" not in st.session_state) or (

@@ -59,6 +59,7 @@ COPY content/ /app/content
 COPY docs/ /app/docs
 COPY example-data/ /app/example-data
 COPY gdpr_consent/ /app/gdpr_consent
+COPY hooks/ /app/hooks
 COPY src/ /app/src
 COPY app.py /app/app.py
 COPY settings.json /app/settings.json
@@ -78,6 +79,12 @@ RUN echo "service cron start" >> /app/entrypoint.sh
 RUN echo "mamba run --no-capture-output -n streamlit-env streamlit run app.py" >> /app/entrypoint.sh
 # make the script executable
 RUN chmod +x /app/entrypoint.sh
+
+# Patch Analytics
+RUN mamba run -n streamlit-env python hooks/hook-analytics.py
+
+# Set Online Deployment
+RUN jq '.online_deployment = true' settings.json > tmp.json && mv tmp.json settings.json
 
 # Download latest OpenMS App executable for Windows from Github actions workflow.
 RUN WORKFLOW_ID=$(curl -s "https://api.github.com/repos/$GITHUB_USER/$GITHUB_REPO/actions/workflows" | jq -r '.workflows[] | select(.name == "Build executable for Windows") | .id') \
