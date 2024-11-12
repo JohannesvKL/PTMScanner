@@ -3,7 +3,7 @@ import pyopenms as poms
 from pathlib import Path
 import shutil
 import subprocess
-from typing import Any, Union, List
+from typing import Any, Union, List, Literal
 import json
 import os
 import sys
@@ -536,6 +536,7 @@ class StreamlitUI:
         include_parameters: List[str] = [],
         display_tool_name: bool = True,
         display_subsections: bool = True,
+        display_subsection_tabs: bool = False,
         custom_defaults: dict = {},
     ) -> None:
         """
@@ -550,8 +551,15 @@ class StreamlitUI:
             include_parameters (List[str], optional): List of parameter names to include in the widget. Defaults to an empty list.
             display_tool_name (bool, optional): Whether to display the TOPP tool name. Defaults to True.
             display_subsections (bool, optional): Whether to split parameters into subsections based on the prefix. Defaults to True.
+            display_subsection_tabs (bool, optional): Whether to display main subsections in separate tabs (if more than one main section). Defaults to False.
             custom_defaults (dict, optional): Dictionary of custom defaults to use. Defaults to an empty dict.
         """
+
+        if not display_subsections:
+            display_subsection_tabs = False
+        if display_subsection_tabs:
+            display_subsections = True
+
         # write defaults ini files
         ini_file_path = Path(self.parameter_manager.ini_dir, f"{topp_tool_name}.ini")
         if not ini_file_path.exists():
@@ -644,6 +652,8 @@ class StreamlitUI:
                 if p["section_description"]:
                     section_descriptions[p["sections"]] = p["section_description"]
                 # Add parameter to appropriate section in param_sections dictionary
+                if not p["sections"]:
+                    p["sections"] = "General"
                 if p["sections"] in param_sections:
                     param_sections[p["sections"]].append(p)
                 else:
@@ -656,8 +666,13 @@ class StreamlitUI:
         if display_tool_name:
             st.markdown(f"**{topp_tool_name}**")
 
+        tab_names = [k for k in param_sections.keys() if ":" not in k]
+        tabs = None
+        if tab_names and display_subsection_tabs:
+            tabs = st.tabs([k for k in param_sections.keys() if ":" not in k])
+
         # Show input widgets
-        for section, params in param_sections.items():
+        def show_subsection_header(section: str, display_subsections: bool):
             # Display section name and help text (section description) if required
             if section and display_subsections:
                 parts = section.split(":")
@@ -671,6 +686,9 @@ class StreamlitUI:
                         else None
                     ),
                 )
+
+        def display_TOPP_params(params: dict, num_cols):
+            """Displays individual TOPP parameters in given number of columns"""
             cols = st.columns(num_cols)
             i = 0
             for p in params:
@@ -748,6 +766,18 @@ class StreamlitUI:
                 except Exception as e:
                     cols[i].error(f"Error in parameter **{p['name']}**.")
                     print('Error parsing "' + p["name"] + '": ' + str(e))
+
+
+        for section, params in param_sections.items():
+            if tabs is None:
+                show_subsection_header(section, display_subsections)
+                display_TOPP_params(params, num_cols)
+            else:
+                tab_name = section.split(":")[0]
+                with tabs[tab_names.index(tab_name)]:
+                    show_subsection_header(section, display_subsections)
+                    display_TOPP_params(params, num_cols)
+            
 
     def input_python(
         self,
