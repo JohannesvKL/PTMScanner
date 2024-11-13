@@ -3,7 +3,7 @@ import pyopenms as poms
 from pathlib import Path
 import shutil
 import subprocess
-from typing import Any, Union, List
+from typing import Any, Union, List, Literal
 import json
 import os
 import sys
@@ -536,8 +536,9 @@ class StreamlitUI:
         num_cols: int = 4,
         exclude_parameters: List[str] = [],
         include_parameters: List[str] = [],
-        display_full_parameter_names: bool = False,
-        display_subsections: bool = False,
+        display_tool_name: bool = True,
+        display_subsections: bool = True,
+        display_subsection_tabs: bool = False,
         custom_defaults: dict = {},
     ) -> None:
         """
@@ -550,14 +551,25 @@ class StreamlitUI:
             num_cols (int, optional): Number of columns to use for the layout. Defaults to 3.
             exclude_parameters (List[str], optional): List of parameter names to exclude from the widget. Defaults to an empty list.
             include_parameters (List[str], optional): List of parameter names to include in the widget. Defaults to an empty list.
-            display_full_parameter_names (bool, optional): Whether to display the full parameter names. Defaults to False.
-            display_subsections (bool, optional): Whether to split parameters into subsections based on the prefix (disables display_full_parameter_names). Defaults to False.
+            display_tool_name (bool, optional): Whether to display the TOPP tool name. Defaults to True.
+            display_subsections (bool, optional): Whether to split parameters into subsections based on the prefix. Defaults to True.
+            display_subsection_tabs (bool, optional): Whether to display main subsections in separate tabs (if more than one main section). Defaults to False.
             custom_defaults (dict, optional): Dictionary of custom defaults to use. Defaults to an empty dict.
         """
+
+        if not display_subsections:
+            display_subsection_tabs = False
+        if display_subsection_tabs:
+            display_subsections = True
+
         # write defaults ini files
         ini_file_path = Path(self.parameter_manager.ini_dir, f"{topp_tool_name}.ini")
         if not ini_file_path.exists():
-            subprocess.call([topp_tool_name, "-write_ini", str(ini_file_path)])
+            try:
+                subprocess.call([topp_tool_name, "-write_ini", str(ini_file_path)])
+            except FileNotFoundError:
+                st.error(f"TOPP tool **'{topp_tool_name}'** not found.")
+                return
             # update custom defaults if necessary
             if custom_defaults:
                 param = poms.Param()
@@ -596,10 +608,10 @@ class StreamlitUI:
                     or any([k.encode() in key for k in excluded_keys])
                 )
             ]
-        params_decoded = []
+        params = []
         for key in valid_keys:
             entry = param.getEntry(key)
-            tmp = {
+            p = {
                 "name": entry.name.decode(),
                 "key": key,
                 "value": entry.value,
@@ -610,12 +622,17 @@ class StreamlitUI:
                     ":".join(key.decode().split(":")[:-1])
                 ),
             }
-            params_decoded.append(tmp)
+            # Parameter sections and subsections as string (e.g. "section:subsection")
+            if display_subsections:
+                p["sections"] = ":".join(
+                    p["key"].decode().split(":1:")[1].split(":")[:-1]
+                )
+            params.append(p)
 
         # for each parameter in params_decoded
         # if a parameter with custom default value exists, use that value
         # else check if the parameter is already in self.params, if yes take the value from self.params
-        for p in params_decoded:
+        for p in params:
             name = p["key"].decode().split(":1:")[1]
             if topp_tool_name in self.params:
                 if name in self.params[topp_tool_name]:
@@ -625,102 +642,146 @@ class StreamlitUI:
             elif name in custom_defaults:
                 p["value"] = custom_defaults[name]
 
-        # show input widgets
-        section_description = None
-        cols = st.columns(num_cols)
-        i = 0
+        # Split into subsections if required
+        param_sections = {}
+        section_descriptions = {}
+        if display_subsections:
+            for p in params:
+                # Skip adavnaced parameters if not selected
+                if not st.session_state["advanced"] and p["advanced"]:
+                    continue
+                # Add section description to section_descriptions dictionary if it exists
+                if p["section_description"]:
+                    section_descriptions[p["sections"]] = p["section_description"]
+                # Add parameter to appropriate section in param_sections dictionary
+                if not p["sections"]:
+                    p["sections"] = "General"
+                if p["sections"] in param_sections:
+                    param_sections[p["sections"]].append(p)
+                else:
+                    param_sections[p["sections"]] = [p]
+        else:
+            # Simply put all parameters in "all" section if no subsections required
+            param_sections["all"] = params
 
-        for p in params_decoded:
-            # skip avdanced parameters if not selected
-            if not st.session_state["advanced"] and p["advanced"]:
-                continue
+        # Display tool name if required
+        if display_tool_name:
+            st.markdown(f"**{topp_tool_name}**")
 
-            key = f"{self.parameter_manager.topp_param_prefix}{p['key'].decode()}"
-            if display_subsections:
+        tab_names = [k for k in param_sections.keys() if ":" not in k]
+        tabs = None
+        if tab_names and display_subsection_tabs:
+            tabs = st.tabs([k for k in param_sections.keys() if ":" not in k])
+
+        # Show input widgets
+        def show_subsection_header(section: str, display_subsections: bool):
+            # Display section name and help text (section description) if required
+            if section and display_subsections:
+                parts = section.split(":")
+                st.markdown(
+                    ":".join(parts[:-1])
+                    + (":" if len(parts) > 1 else "")
+                    + f"**{parts[-1]}**",
+                    help=(
+                        section_descriptions[section]
+                        if section in section_descriptions
+                        else None
+                    ),
+                )
+
+        def display_TOPP_params(params: dict, num_cols):
+            """Displays individual TOPP parameters in given number of columns"""
+            cols = st.columns(num_cols)
+            i = 0
+            for p in params:
+                # get key and name
+                key = f"{self.parameter_manager.topp_param_prefix}{p['key'].decode()}"
                 name = p["name"]
-                if section_description is None:
-                    section_description = p["section_description"]
-
-                elif section_description != p["section_description"]:
-                    section_description = p["section_description"]
-                    st.markdown(f"**{section_description}**")
-                    cols = st.columns(num_cols)
-                    i = 0
-            elif display_full_parameter_names:
-                name = key.split(":1:")[1].replace("algorithm:", "").replace(":", " : ")
-            else:
-                name = p["name"]
-            try:
-                # # sometimes strings with newline, handle as list
-                if isinstance(p["value"], str) and "\n" in p["value"]:
-                    p["value"] = p["value"].split("\n")
-                # bools
-                if isinstance(p["value"], bool):
-                    cols[i].markdown("##")
-                    cols[i].checkbox(
-                        name,
-                        value=(
-                            (p["value"] == "true")
-                            if type(p["value"]) == str
-                            else p["value"]
-                        ),
-                        help=p["description"],
-                        key=key,
-                    )
-
-                # strings
-                elif isinstance(p["value"], str):
-                    # string options
-                    if p["valid_strings"]:
-                        cols[i].selectbox(
+                try:
+                    # sometimes strings with newline, handle as list
+                    if isinstance(p["value"], str) and "\n" in p["value"]:
+                        p["value"] = p["value"].split("\n")
+                    # bools
+                    if isinstance(p["value"], bool):
+                        cols[i].markdown("##")
+                        cols[i].checkbox(
                             name,
-                            options=p["valid_strings"],
-                            index=p["valid_strings"].index(p["value"]),
+                            value=(
+                                (p["value"] == "true")
+                                if type(p["value"]) == str
+                                else p["value"]
+                            ),
                             help=p["description"],
                             key=key,
                         )
-                    else:
-                        cols[i].text_input(
-                            name, value=p["value"], help=p["description"], key=key
+
+                    # strings
+                    elif isinstance(p["value"], str):
+                        # string options
+                        if p["valid_strings"]:
+                            cols[i].selectbox(
+                                name,
+                                options=p["valid_strings"],
+                                index=p["valid_strings"].index(p["value"]),
+                                help=p["description"],
+                                key=key,
+                            )
+                        else:
+                            cols[i].text_input(
+                                name, value=p["value"], help=p["description"], key=key
+                            )
+
+                    # ints
+                    elif isinstance(p["value"], int):
+                        cols[i].number_input(
+                            name, value=int(p["value"]), help=p["description"], key=key
                         )
 
-                # ints
-                elif isinstance(p["value"], int):
-                    cols[i].number_input(
-                        name, value=int(p["value"]), help=p["description"], key=key
-                    )
+                    # floats
+                    elif isinstance(p["value"], float):
+                        cols[i].number_input(
+                            name,
+                            value=float(p["value"]),
+                            step=1.0,
+                            help=p["description"],
+                            key=key,
+                        )
 
-                # floats
-                elif isinstance(p["value"], float):
-                    cols[i].number_input(
-                        name,
-                        value=float(p["value"]),
-                        step=1.0,
-                        help=p["description"],
-                        key=key,
-                    )
+                    # lists
+                    elif isinstance(p["value"], list):
+                        p["value"] = [
+                            v.decode() if isinstance(v, bytes) else v
+                            for v in p["value"]
+                        ]
+                        cols[i].text_area(
+                            name,
+                            value="\n".join([str(val) for val in p["value"]]),
+                            help=p["description"],
+                            key=key,
+                        )
 
-                # lists
-                elif isinstance(p["value"], list):
-                    p["value"] = [
-                        v.decode() if isinstance(v, bytes) else v for v in p["value"]
-                    ]
-                    cols[i].text_area(
-                        name,
-                        value="\n".join([str(val) for val in p["value"]]),
-                        help=p["description"],
-                        key=key,
-                    )
+                    # increment number of columns, create new cols object if end of line is reached
+                    i += 1
+                    if i == num_cols:
+                        i = 0
+                        cols = st.columns(num_cols)
+                except Exception as e:
+                    cols[i].error(f"Error in parameter **{p['name']}**.")
+                    print('Error parsing "' + p["name"] + '": ' + str(e))
 
-                # increment number of columns, create new cols object if end of line is reached
-                i += 1
-                if i == num_cols:
-                    i = 0
-                    cols = st.columns(num_cols)
-            except Exception as e:
-                cols[i].error(f"Error in parameter **{p['name']}**.")
-                print('Error parsing "' + p["name"] + '": ' + str(e))
+
+        for section, params in param_sections.items():
+            if tabs is None:
+                show_subsection_header(section, display_subsections)
+                display_TOPP_params(params, num_cols)
+            else:
+                tab_name = section.split(":")[0]
+                with tabs[tab_names.index(tab_name)]:
+                    show_subsection_header(section, display_subsections)
+                    display_TOPP_params(params, num_cols)
+        
         self.parameter_manager.save_parameters()
+            
 
     @st.fragment
     def input_python(
@@ -886,15 +947,16 @@ class StreamlitUI:
                 self.parameter_manager.reset_to_default_parameters()
                 streamlit_js_eval(js_expressions="parent.window.location.reload()")
         with cols[1]:
-            with open(self.parameter_manager.params_file, "rb") as f:
-                st.download_button(
-                    "⬇️ Export parameters",
-                    data=f,
-                    file_name="parameters.json",
-                    mime="text/json",
-                    help="Export parameter, can be used to import to this workflow.",
-                    use_container_width=True,
-                )
+            if self.parameter_manager.params_file.exists():
+                with open(self.parameter_manager.params_file, "rb") as f:
+                    st.download_button(
+                        "⬇️ Export parameters",
+                        data=f,
+                        file_name="parameters.json",
+                        mime="text/json",
+                        help="Export parameter, can be used to import to this workflow.",
+                        use_container_width=True,
+                    )
         with cols[1]:
             text = self.export_parameters_markdown()
             st.download_button(
