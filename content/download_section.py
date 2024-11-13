@@ -3,10 +3,10 @@ import streamlit as st
 from pathlib import Path
 import shutil
 
-from src.common.common import page_setup, save_params
+from src.common.common import page_setup
 from zipfile import ZipFile, ZIP_DEFLATED
 
-params = page_setup()
+page_setup()
 
 # Define output folder here; all subfolders will be handled as downloadable
 # directories
@@ -72,5 +72,3 @@ else:
             if st.button(f"🗑️ {directory.name}", use_container_width=True):
                 shutil.rmtree(directory)
                 st.rerun()
-
-save_params(params)

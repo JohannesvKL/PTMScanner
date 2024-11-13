@@ -57,6 +57,3 @@ if run_workflow_button:
 
 
 mzmlfileworkflow.result_section(result_dir)
-
-
-save_params(params)
