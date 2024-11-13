@@ -2,7 +2,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from src.common.common import page_setup
+from src.common.common import page_setup, save_params
 from src import view
 
 
@@ -42,3 +42,6 @@ if selected_file:
         view.view_spectrum()
     with tabs[2]:
         view.view_bpc_tic()
+
+
+save_params(params)

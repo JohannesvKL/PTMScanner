@@ -1,5 +1,5 @@
 import streamlit as st
-from src.common.common import page_setup
+from src.common.common import page_setup, save_params
 from src.Workflow import Workflow
 
 
@@ -11,4 +11,5 @@ st.title(wf.name)
 
 wf.show_execution_section()
 
+save_params(params)
 

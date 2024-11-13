@@ -21,9 +21,9 @@ Returns:
 from pathlib import Path
 import streamlit as st
 
-from src.common.common import page_setup, v_space
+from src.common.common import page_setup, v_space, save_params
 
-page_setup(page="main")
+params = page_setup(page="main")
 
 st.markdown("# 👋 Quick Start")
 st.markdown("## Template for OpenMS web apps using the **streamlit** framework")
@@ -163,3 +163,5 @@ st.page_link(
     label="How to run any command line tool as subprocess from within the OpenMS web app.",
     icon="➡️",
 )
+
+save_params(params)

@@ -1,9 +1,9 @@
 import streamlit as st
-from src.common.common import page_setup
+from src.common.common import page_setup, save_params
 from pathlib import Path
 from docs.toppframework import content as topp_framework_content
 
-page_setup()
+params = page_setup()
 
 
 st.title("Documentation")
@@ -107,3 +107,6 @@ if page == pages[5]:
     with open(Path("docs", "deployment.md"), "r", encoding="utf-8") as f:
         content = f.read()
     st.markdown(content) 
+
+
+save_params(params)
