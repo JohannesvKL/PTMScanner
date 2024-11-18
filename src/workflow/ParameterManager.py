@@ -82,16 +82,17 @@ class ParameterManager:
             return {}
         else:
             # Load parameters from json file
-            with open(self.params_file, "r", encoding="utf-8") as f:
-                return json.load(f)
+            try:
+                with open(self.params_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except:
+                st.error("**ERROR**: Attempting to load an invalid JSON parameter file. Reset to defaults.")
+                return {}
 
     def reset_to_default_parameters(self) -> None:
         """
         Resets the parameters to their default values by deleting the custom parameters
-        JSON file and the directory containing .ini files for TOPP tools. This method
-        also triggers a Streamlit rerun to refresh the application state.
+        JSON file.
         """
         # Delete custom params json file
         self.params_file.unlink(missing_ok=True)
-        shutil.rmtree(self.ini_dir)
-        st.rerun()

@@ -12,6 +12,7 @@ import time
 from io import BytesIO
 import zipfile
 from datetime import datetime
+from streamlit_js_eval import streamlit_js_eval
 
 
 from src.common.common import (
@@ -31,11 +32,11 @@ class StreamlitUI:
     """
 
     # Methods for Streamlit UI components
-    def __init__(self, workflow_dir, logger, executor, paramter_manager):
+    def __init__(self, workflow_dir, logger, executor, parameter_manager):
         self.workflow_dir = workflow_dir
         self.logger = logger
         self.executor = executor
-        self.parameter_manager = paramter_manager
+        self.parameter_manager = parameter_manager
         self.params = self.parameter_manager.get_parameters_from_json()
 
     def upload_widget(
@@ -528,6 +529,7 @@ class StreamlitUI:
         else:
             st.error(f"Unsupported widget type '{widget_type}'")
 
+    @st.fragment
     def input_TOPP(
         self,
         topp_tool_name: str,
@@ -777,8 +779,11 @@ class StreamlitUI:
                 with tabs[tab_names.index(tab_name)]:
                     show_subsection_header(section, display_subsections)
                     display_TOPP_params(params, num_cols)
+        
+        self.parameter_manager.save_parameters()
             
 
+    @st.fragment
     def input_python(
         self,
         script_file: str,
@@ -852,8 +857,6 @@ class StreamlitUI:
                 options = entry["options"] if "options" in entry else None
 
                 with cols[i]:
-                    if isinstance(value, bool):
-                        st.markdown("#")
                     self.input_widget(
                         key=key,
                         default=value,
@@ -870,6 +873,7 @@ class StreamlitUI:
                 if i == num_cols:
                     i = 0
                     cols = st.columns(num_cols)
+        self.parameter_manager.save_parameters()
 
     def zip_and_download_files(self, directory: str):
         """
@@ -926,54 +930,56 @@ class StreamlitUI:
         if c1.button("⬇️ Download all uploaded files", use_container_width=True):
             self.zip_and_download_files(Path(self.workflow_dir, "input-files"))
 
-    def parameter_section(self, custom_paramter_function) -> None:
+    def parameter_section(self, custom_parameter_function) -> None:
         st.toggle("Show advanced parameters", value=False, key="advanced")
 
-        form = st.form(
-            key=f"{self.workflow_dir.stem}-input-form",
-            clear_on_submit=True,
-        )
+        custom_parameter_function()
 
-        with form:
-            cols = st.columns(4)
-
-            cols[2].form_submit_button(
-                label="Save parameters",
-                on_click=self.parameter_manager.save_parameters,
-                type="primary",
+        # File Import / Export section       
+        st.markdown("---")
+        cols = st.columns(3)
+        with cols[0]:
+            if st.button(
+                "⚠️ Load default parameters",
+                help="Reset paramter section to default.",
+                use_container_width=True,
+            ):
+                self.parameter_manager.reset_to_default_parameters()
+                streamlit_js_eval(js_expressions="parent.window.location.reload()")
+        with cols[1]:
+            if self.parameter_manager.params_file.exists():
+                with open(self.parameter_manager.params_file, "rb") as f:
+                    st.download_button(
+                        "⬇️ Export parameters",
+                        data=f,
+                        file_name="parameters.json",
+                        mime="text/json",
+                        help="Export parameter, can be used to import to this workflow.",
+                        use_container_width=True,
+                    )
+        with cols[1]:
+            text = self.export_parameters_markdown()
+            st.download_button(
+                "📑 Method summary",
+                data=text,
+                file_name="method-summary.md",
+                mime="text/md",
+                help="Download method summary for publications.",
                 use_container_width=True,
             )
 
-            if cols[3].form_submit_button(
-                label="Load default parameters", use_container_width=True
-            ):
-                self.parameter_manager.reset_to_default_parameters()
-
-            custom_paramter_function()
-        # Save parameters
-        self.parameter_manager.save_parameters()
+        with cols[2]:
+            up = st.file_uploader(
+                "⬆️ Import parameters", help="Reset parameter section to default."
+            )
+            if up is not None:
+                with open(self.parameter_manager.params_file, "w") as f:
+                    f.write(up.read().decode("utf-8"))
+                streamlit_js_eval(js_expressions="parent.window.location.reload()")
 
     def execution_section(self, start_workflow_function) -> None:
-        # Display a summary of non-default TOPP paramters and all others (custom and python scripts)
-        summary_text = ""
-        for key, value in self.params.items():
-            if not isinstance(value, dict):
-                summary_text += f"""
-
-{key}: **{value}**                
-"""
-            elif value:
-                summary_text += f"""
-**{key}**:
-
-"""
-                for k, v in value.items():
-                    summary_text += f"""
-{key}: **{v}**
-
-"""
-        with st.expander("**Parameter Summary**"):
-            st.markdown(summary_text)
+        with st.expander("**Summary**"):
+            st.markdown(self.export_parameters_markdown())
 
         c1, c2 = st.columns(2)
         # Select log level, this can be changed at run time or later without re-running the workflow
@@ -992,7 +998,11 @@ class StreamlitUI:
             if self.executor.pid_dir.exists():
                 with st.spinner("**Workflow running...**"):
                     with open(log_path, "r", encoding="utf-8") as f:
-                        st.code(f.read(), language="neon", line_numbers=True)
+                        st.code(
+                            "".join(f.readlines()[-30:]),
+                            language="neon",
+                            line_numbers=False,
+                        )
                     time.sleep(2)
                 st.rerun()
             else:
@@ -1003,8 +1013,103 @@ class StreamlitUI:
                     content = f.read()
                     # Check if workflow finished successfully
                     if not "WORKFLOW FINISHED" in content:
-                        st.error("**Errors occured, check log file.**")
-                    st.code(content, language="neon", line_numbers=True)
+                        st.error("**Errors occurred, check log file.**")
+                    st.code(content, language="neon", line_numbers=False)
 
     def results_section(self, custom_results_function) -> None:
         custom_results_function()
+
+    def non_default_params_summary(self):
+        # Display a summary of non-default TOPP parameters and all others (custom and python scripts)
+
+        def remove_full_paths(d: dict) -> dict:
+            # Create a copy to avoid modifying the original dictionary
+            cleaned_dict = {}
+
+            for key, value in d.items():
+                if isinstance(value, dict):
+                    # Recursively clean nested dictionaries
+                    nested_cleaned = remove_full_paths(value)
+                    if nested_cleaned:  # Only add non-empty dictionaries
+                        cleaned_dict[key] = nested_cleaned
+                elif isinstance(value, list):
+                    # Filter out existing paths from the list
+                    filtered_list = [
+                        item if not Path(str(item)).exists() else Path(str(item)).name
+                        for item in value
+                    ]
+                    if filtered_list:  # Only add non-empty lists
+                        cleaned_dict[key] = ", ".join(filtered_list)
+                elif not Path(str(value)).exists():
+                    # Add entries that are not existing paths
+                    cleaned_dict[key] = value
+
+            return cleaned_dict
+
+        # Don't want file paths to be shown in summary for export
+        params = remove_full_paths(self.params)
+
+        summary_text = ""
+        python = {}
+        topp = {}
+        general = {}
+
+        for k, v in params.items():
+            # skip if v is a file path
+            if Path(str(v)).exists():
+                continue
+            if isinstance(v, dict):
+                topp[k] = v
+            elif ".py" in k:
+                script = k.split(".py")[0] + ".py"
+                if script not in python:
+                    python[script] = {}
+                python[script][k.split(".py")[1][1:]] = v
+            else:
+                general[k] = v
+
+        markdown = []
+
+        def dict_to_markdown(d: dict):
+            for key, value in d.items():
+                if isinstance(value, dict):
+                    # Add a header for nested dictionaries
+                    markdown.append(f"> **{key}**\n")
+                    dict_to_markdown(value)
+                else:
+                    # Add key-value pairs as list items
+                    markdown.append(f">> {key}: **{value}**\n")
+
+        markdown.append("**General**")
+        dict_to_markdown(general)
+        markdown.append("**OpenMS TOPP Tools**\n")
+        dict_to_markdown(topp)
+        markdown.append("**Python Scripts**")
+        dict_to_markdown(python)
+        return "\n".join(markdown)
+
+    def export_parameters_markdown(self):
+        markdown = []
+
+        url = f"https://github.com/{st.session_state.settings['github-user']}/{st.session_state.settings['repository-name']}"
+        tools = [p.stem for p in Path(self.parameter_manager.ini_dir).iterdir()]
+        if len(tools) > 1:
+            tools = ", ".join(tools[:-1]) + " and " + tools[-1]
+
+        result = subprocess.run(
+            "FileFilter --help", shell=True, text=True, capture_output=True
+        )
+        version = ""
+        if result.returncode == 0:
+            version = result.stderr.split("Version: ")[1].split("-")[0]
+
+        markdown.append(
+            f"""Data was processed using **{st.session_state.settings['app-name']}** ([{url}]({url})), a web application based on the OpenMS WebApps framework.
+OpenMS ([https://www.openms.de](https://www.openms.de)) is a free and open-source software for LC-MS data analysis [1].
+The workflow includes the **OpenMS {version}** TOPP tools {tools} as well as Python scripts. Non-default parameters are listed in the supplementary section below.
+
+[1] Sachsenberg, Timo, et al. "OpenMS 3 expands the frontiers of open-source computational mass spectrometry." (2023).
+"""
+        )
+        markdown.append(self.non_default_params_summary())
+        return "\n".join(markdown)
