@@ -957,7 +957,6 @@ class StreamlitUI:
                         help="Export parameter, can be used to import to this workflow.",
                         use_container_width=True,
                     )
-        with cols[1]:
             text = self.export_parameters_markdown()
             st.download_button(
                 "📑 Method summary",
@@ -1080,12 +1079,15 @@ class StreamlitUI:
                     # Add key-value pairs as list items
                     markdown.append(f">> {key}: **{value}**\n")
 
-        markdown.append("**General**")
-        dict_to_markdown(general)
-        markdown.append("**OpenMS TOPP Tools**\n")
-        dict_to_markdown(topp)
-        markdown.append("**Python Scripts**")
-        dict_to_markdown(python)
+        if len(general) > 0:
+            markdown.append("**General**")
+            dict_to_markdown(general)
+        if len(topp) > 0:
+            markdown.append("**OpenMS TOPP Tools**\n")
+            dict_to_markdown(topp)
+        if len(python) > 0:
+            markdown.append("**Python Scripts**")
+            dict_to_markdown(python)
         return "\n".join(markdown)
 
     def export_parameters_markdown(self):
