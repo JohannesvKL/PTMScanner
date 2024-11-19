@@ -37,6 +37,11 @@ class ParameterManager:
             for k, v in st.session_state.items()
             if k.startswith(self.param_prefix)
         }
+
+        # Merge with parameters from json
+        # Advanced parameters are only in session state if the view is active
+        json_params = json_params | self.get_parameters_from_json()
+
         # get a list of TOPP tools which are in session state
         current_topp_tools = list(
             set(
@@ -49,7 +54,8 @@ class ParameterManager:
         )
         # for each TOPP tool, open the ini file
         for tool in current_topp_tools:
-            json_params[tool] = {}
+            if tool not in json_params:
+                json_params[tool] = {}
             # load the param object
             param = poms.Param()
             poms.ParamXMLFile().load(str(Path(self.ini_dir, f"{tool}.ini")), param)
