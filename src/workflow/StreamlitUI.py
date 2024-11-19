@@ -957,7 +957,6 @@ class StreamlitUI:
                         help="Export parameter, can be used to import to this workflow.",
                         use_container_width=True,
                     )
-        with cols[1]:
             text = self.export_parameters_markdown()
             st.download_button(
                 "📑 Method summary",
