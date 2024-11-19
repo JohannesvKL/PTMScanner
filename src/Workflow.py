@@ -42,7 +42,7 @@ class Workflow(WorkflowManager):
                 custom_defaults={"algorithm:common:noise_threshold_int": 1000.0},
             )
         with t[1]:
-            # Paramters for MetaboliteAdductDecharger TOPP tool.
+            # Parameters for MetaboliteAdductDecharger TOPP tool.
             self.ui.input_TOPP("FeatureLinkerUnlabeledKD")
         with t[2]:
             # A single checkbox widget for workflow logic.
