@@ -1,7 +1,7 @@
 name: Debug
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "install_all_dependencies" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
