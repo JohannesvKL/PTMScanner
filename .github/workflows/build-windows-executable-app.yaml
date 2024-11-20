@@ -221,7 +221,7 @@ jobs:
         cp -r content streamlit_exe
         cp -r assets streamlit_exe
         cp -r example-data streamlit_exe
-        cp openms-bin/*.dll streamlit_exe/bin/
+        cp openms-bin/*.dll streamlit_exe
         cp -r .streamlit streamlit_exe
         cp -r share streamlit_exe/share
         cp app.py streamlit_exe
@@ -230,7 +230,7 @@ jobs:
 
         $files = $env:TOPP_TOOLS -split ' '
         foreach ($file in $files) {
-          Copy-Item "openms-bin/${file}.exe" -Destination "streamlit_exe/bin/${file}.exe"
+          Copy-Item "openms-bin/${file}.exe" -Destination "streamlit_exe/${file}.exe"
         }
 
     - name: Delete OpenMS bin artifact
