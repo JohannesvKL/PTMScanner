@@ -228,6 +228,7 @@ jobs:
         
         cp -r .streamlit dist/.streamlit
         cp -r content dist/content
+        cp -r docs dist/docs
         cp -r src dist/src
         cp -r assets dist/assets
         cp -r example-data dist/example-data
