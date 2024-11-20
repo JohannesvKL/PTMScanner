@@ -15,7 +15,6 @@ env:
 jobs:
   build-executable:
     runs-on: windows-latest
-    needs: build-openms
 
     env:
       PYTHON_VERSION: 3.11.0
