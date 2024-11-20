@@ -2,10 +2,10 @@ name: Debug
 on:
   push:
     branches:
-      - "**"
+      - "*"
   pull_request:
     branches:
-      - "**"
+      - "*"
   workflow_dispatch:
 env:
   OPENMS_VERSION: 3.2.0 
