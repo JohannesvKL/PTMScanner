@@ -47,4 +47,5 @@ jobs:
         echo '.\\python-${{ env.PYTHON_VERSION }}\\python -m streamlit run app.py local' >> run_app.bat
   
     - name: List Root Folder
-          run: ls -al
+      run: |
+        ls -al
