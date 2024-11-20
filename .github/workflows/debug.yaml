@@ -51,9 +51,10 @@ jobs:
         dir
 
     - name: Move All Files to Folder
+      shell: powershell
       run: |
-        mkdir artifact_folder
-        move * artifact_folder
+        New-Item -ItemType Directory -Force -Path artifact_folder
+        Get-ChildItem -File | ForEach-Object { Move-Item $_.FullName artifact_folder }
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
