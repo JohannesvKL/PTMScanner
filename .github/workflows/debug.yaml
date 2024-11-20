@@ -49,3 +49,14 @@ jobs:
     - name: List Root Folder
       run: |
         dir
+
+    - name: Move All Files to Folder
+      run: |
+        mkdir artifact_folder
+        move * artifact_folder
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: my-artifact
+        path: artifact_folder
