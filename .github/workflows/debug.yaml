@@ -48,4 +48,4 @@ jobs:
   
     - name: List Root Folder
       run: |
-        ls -al
+        dir
