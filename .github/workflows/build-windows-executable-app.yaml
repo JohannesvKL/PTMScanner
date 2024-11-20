@@ -226,6 +226,7 @@ jobs:
         cp -r share streamlit_exe/share
         cp app.py streamlit_exe
         cp settings.json streamlit_exe
+        cp default-parameters.json streamlit_exe
 
         $files = $env:TOPP_TOOLS -split ' '
         foreach ($file in $files) {
