@@ -219,6 +219,7 @@ jobs:
         cp -r src streamlit_exe
         cp -r gdpr_consent streamlit_exe
         cp -r content streamlit_exe
+        cp -r docs streamlit_exe
         cp -r assets streamlit_exe
         cp -r example-data streamlit_exe
         cp openms-bin/*.dll streamlit_exe
