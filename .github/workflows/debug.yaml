@@ -1,4 +1,4 @@
-name: Build executable for Windows
+name: Debug
 on:
   push:
     branches: [ "main" ]
