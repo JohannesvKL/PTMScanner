@@ -222,7 +222,7 @@ jobs:
 
     - name: Set to offline deployment
       run: |
-        jq '.online_deployment = true' settings.json > tmp.json && mv tmp.json settings.json
+        jq '.online_deployment = false' settings.json > tmp.json && mv tmp.json settings.json
 
     - name: Copy everything to dist directory
       run: |
