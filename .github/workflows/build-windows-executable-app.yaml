@@ -208,7 +208,11 @@ jobs:
       run: |
         echo '@echo off' > run_app.bat
         echo '.\\python-${{ env.PYTHON_VERSION }}\\python -m streamlit run app.py local' >> run_app.bat
-      
+    
+    - name: Set to offline deployment
+      run: |
+        jq '.online_deployment = true' settings.json > tmp.json && mv tmp.json settings.json
+
     - name: Create All-in-one executable folder
       run: |
         mkdir streamlit_exe

@@ -220,6 +220,9 @@ jobs:
         call myenv\Scripts\activate.bat 
         pyinstaller --onefile --additional-hooks-dir ./hooks run_app.py --clean
 
+    - name: Set to offline deployment
+      run: |
+        jq '.online_deployment = true' settings.json > tmp.json && mv tmp.json settings.json
 
     - name: Copy everything to dist directory
       run: |
