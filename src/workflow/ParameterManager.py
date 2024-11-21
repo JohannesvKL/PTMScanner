@@ -40,7 +40,7 @@ class ParameterManager:
 
         # Merge with parameters from json
         # Advanced parameters are only in session state if the view is active
-        json_params = json_params | self.get_parameters_from_json()
+        json_params = self.get_parameters_from_json() | json_params
 
         # get a list of TOPP tools which are in session state
         current_topp_tools = list(
