@@ -212,7 +212,6 @@ jobs:
     - name: Create All-in-one executable folder
       run: |
         mkdir streamlit_exe
-        mkdir streamlit_exe/bin
 
         mv python-${{ env.PYTHON_VERSION }} streamlit_exe
         mv run_app.bat streamlit_exe
