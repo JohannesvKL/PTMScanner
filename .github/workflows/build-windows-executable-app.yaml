@@ -211,7 +211,9 @@ jobs:
     
     - name: Set to offline deployment
       run: |
-        jq '.online_deployment = false' settings.json > tmp.json && mv tmp.json settings.json
+        $content = Get-Content -Raw settings.json | ConvertFrom-Json
+        $content.online_deployment = $false
+        $content | ConvertTo-Json -Depth 100 | Set-Content settings.json
 
     - name: Create All-in-one executable folder
       run: |
