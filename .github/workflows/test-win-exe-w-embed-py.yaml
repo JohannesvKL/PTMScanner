@@ -50,7 +50,6 @@ jobs:
         run: |
           mkdir streamlit_exe
           mv python-${{ env.PYTHON_VERSION }} streamlit_exe
-          mv run_app.bat streamlit_exe
           cp -r src streamlit_exe
           cp -r content streamlit_exe
           cp -r assets streamlit_exe
@@ -67,6 +66,12 @@ jobs:
       - name: build .wxs for streamlit_exe folder
         run: |
             ./wix/heat.exe dir streamlit_exe -gg -sfrag -sreg -template component -cg StreamlitExeFolder -dr INSTALLFOLDER -out streamlit_exe_files.wxs
+      
+      - name: CopytoSrcDir
+        run: |
+          mkdir SourceDir
+          cp -r streamlit_exe/* SourceDir
+          mv run_app.bat SourceDir
 
       - name: Generate WiX XML file
         run: |
