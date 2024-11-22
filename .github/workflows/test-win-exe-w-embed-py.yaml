@@ -100,6 +100,11 @@ jobs:
           echo '  </Product>' >> streamlit_exe.wxs
           echo '</Wix>' >> streamlit_exe.wxs
 
+      - name: Generate wixobj files
+        run: |
+          ./wix/candle.exe streamlit_exe.wxs streamlit_exe_files.wxs
+
+
       - name: Archive streamlit_exe folder
         uses: actions/upload-artifact@v4
         with:
