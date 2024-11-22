@@ -100,13 +100,13 @@ jobs:
           echo '  </Product>' >> streamlit_exe.wxs
           echo '</Wix>' >> streamlit_exe.wxs
 
-      - name: Generate wixobj files
+      - name: Build msi
         run: |
           ./wix/candle.exe streamlit_exe.wxs streamlit_exe_files.wxs
-
-
-      - name: Archive streamlit_exe folder
+          ./wix/light.exe -o streamlit_app.msi streamlit_exe.wixobj streamlit_exe_files.wixobj
+    
+      - name: Archive .msi file
         uses: actions/upload-artifact@v4
         with:
           name: streamlit_exe
-          path: streamlit_exe
+          path: streamlit_app.msi 
