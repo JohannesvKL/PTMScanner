@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Download python embeddable version
         run: |
@@ -65,7 +65,7 @@ jobs:
           rm wix311-binaries.zip
           
       - name: Archive streamlit_exe folder
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: streamlit_exe
           path: streamlit_exe
