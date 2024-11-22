@@ -105,8 +105,11 @@ jobs:
           ./wix/candle.exe streamlit_exe.wxs streamlit_exe_files.wxs
           ./wix/light.exe -ext WixUIExtension -o streamlit_app.msi streamlit_exe.wixobj streamlit_exe_files.wixobj
     
-      - name: Archive .msi file
+      - name: Archive build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: streamlit_exe
-          path: streamlit_app.msi 
+          name: build_artifacts
+          path: |
+            *.wixobj
+            *.wxs
+            SourceDir/**
