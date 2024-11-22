@@ -112,3 +112,4 @@ jobs:
             *.wixobj
             *.wxs
             SourceDir/**
+            streamlit_exe/**
