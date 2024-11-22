@@ -63,6 +63,29 @@ jobs:
           curl -LO https://github.com/wixtoolset/wix3/releases/download/wix3111rtm/wix311-binaries.zip
           unzip wix311-binaries.zip -d wix
           rm wix311-binaries.zip
+
+      - name: Generate WiX XML file
+        run: |
+          echo '<?xml version="1.0"?>' > streamlit_exe.wxs
+          echo '<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">' >> streamlit_exe.wxs
+          echo '  <Product Id="*" Name="StreamlitApp" Language="1033" Version="1.0.0.0" Manufacturer="OpenMS" UpgradeCode="8d28e8c7-45dc-446c-b889-99a6aea2f1a5">' >> streamlit_exe.wxs
+          echo '    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />' >> streamlit_exe.wxs
+          echo '    <Media Id="1" Cabinet="streamlit.cab" EmbedCab="yes" />' >> streamlit_exe.wxs
+          echo '    <Directory Id="TARGETDIR" Name="SourceDir">' >> streamlit_exe.wxs
+          echo '      <Directory Id="ProgramFilesFolder">' >> streamlit_exe.wxs
+          echo '        <Directory Id="INSTALLFOLDER" Name="StreamlitApp">' >> streamlit_exe.wxs
+          echo '          <Component Id="StreamlitFiles" Guid="d6d72df0-9692-4881-b02c-d709580774ef">' >> streamlit_exe.wxs
+          echo '            <File Id="ExeFiles" Source="streamlit_exe/run_app.bat" KeyPath="yes" />' >> streamlit_exe.wxs
+          echo '            <File Id="AppFile" Source="streamlit_exe/app.py" />' >> streamlit_exe.wxs
+          echo '          </Component>' >> streamlit_exe.wxs
+          echo '        </Directory>' >> streamlit_exe.wxs
+          echo '      </Directory>' >> streamlit_exe.wxs
+          echo '    </Directory>' >> streamlit_exe.wxs
+          echo '    <Feature Id="DefaultFeature" Level="1">' >> streamlit_exe.wxs
+          echo '      <ComponentRef Id="StreamlitFiles" />' >> streamlit_exe.wxs
+          echo '    </Feature>' >> streamlit_exe.wxs
+          echo '  </Product>' >> streamlit_exe.wxs
+          echo '</Wix>' >> streamlit_exe.wxs
           
       - name: Archive streamlit_exe folder
         uses: actions/upload-artifact@v4
