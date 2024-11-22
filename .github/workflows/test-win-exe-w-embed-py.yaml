@@ -63,6 +63,10 @@ jobs:
           curl -LO https://github.com/wixtoolset/wix3/releases/download/wix3111rtm/wix311-binaries.zip
           unzip wix311-binaries.zip -d wix
           rm wix311-binaries.zip
+      
+      - name: build .wxs for streamlit_exe folder
+        run: |
+            ./wix/heat.exe dir streamlit_exe -gg -sfrag -sreg -template component -cg StreamlitExeFolder -dr INSTALLFOLDER -out streamlit_exe_files.wxs
 
       - name: Generate WiX XML file
         run: |
