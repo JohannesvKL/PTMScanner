@@ -54,6 +54,12 @@ jobs:
           cp -r .streamlit streamlit_exe
           cp app.py streamlit_exe
 
+      - name: Install WiX Toolset
+        run: |
+          curl -LO https://github.com/wixtoolset/wix3/releases/download/wix3111rtm/wix311-binaries.zip
+          unzip wix311-binaries.zip -d wix
+          rm wix311-binaries.zip
+          
       - name: Archive streamlit_exe folder
         uses: actions/upload-artifact@v2
         with:
