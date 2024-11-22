@@ -75,22 +75,26 @@ jobs:
           echo '  <Product Id="*" Name="StreamlitApp" Language="1033" Version="1.0.0.0" Manufacturer="OpenMS" UpgradeCode="8d28e8c7-45dc-446c-b889-99a6aea2f1a5">' >> streamlit_exe.wxs
           echo '    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />' >> streamlit_exe.wxs
           echo '    <Media Id="1" Cabinet="streamlit.cab" EmbedCab="yes" />' >> streamlit_exe.wxs
+          echo '    <Property Id="INSTALLFOLDER" Value="C:\Program Files\StreamlitApp" />' >> streamlit_exe.wxs
           echo '    <Directory Id="TARGETDIR" Name="SourceDir">' >> streamlit_exe.wxs
           echo '      <Directory Id="ProgramFilesFolder">' >> streamlit_exe.wxs
-          echo '        <Directory Id="INSTALLFOLDER" Name="StreamlitApp">' >> streamlit_exe.wxs
-          echo '          <Component Id="StreamlitFiles" Guid="d6d72df0-9692-4881-b02c-d709580774ef">' >> streamlit_exe.wxs
-          echo '            <File Id="ExeFiles" Source="streamlit_exe/run_app.bat" KeyPath="yes" />' >> streamlit_exe.wxs
-          echo '            <File Id="AppFile" Source="streamlit_exe/app.py" />' >> streamlit_exe.wxs
-          echo '          </Component>' >> streamlit_exe.wxs
-          echo '        </Directory>' >> streamlit_exe.wxs
+          echo '        <Directory Id="INSTALLFOLDER" Name="StreamlitApp" />' >> streamlit_exe.wxs
           echo '      </Directory>' >> streamlit_exe.wxs
           echo '    </Directory>' >> streamlit_exe.wxs
-          echo '    <Feature Id="DefaultFeature" Level="1">' >> streamlit_exe.wxs
-          echo '      <ComponentRef Id="StreamlitFiles" />' >> streamlit_exe.wxs
+          echo '    <Feature Id="MainFeature" Title="Main Application" Level="1">' >> streamlit_exe.wxs
+          echo '      <ComponentGroupRef Id="StreamlitExeFiles" />' >> streamlit_exe.wxs
+          echo '      <ComponentRef Id="BatFileComponent" />' >> streamlit_exe.wxs
           echo '    </Feature>' >> streamlit_exe.wxs
+          echo '    <Component Id="BatFileComponent" Guid="7aa6c3dc-f78e-40ce-b6a1-e11240af3c84" Directory="INSTALLFOLDER">' >> streamlit_exe.wxs
+          echo '      <File Id="BatFile" Source="SourceDir\run_app.bat" KeyPath="yes" />' >> streamlit_exe.wxs
+          echo '    </Component>' >> streamlit_exe.wxs
+          echo '    <UI>' >> streamlit_exe.wxs
+          echo '      <UIRef Id="WixUI_InstallDir" />' >> streamlit_exe.wxs
+          echo '    </UI>' >> streamlit_exe.wxs
+          echo '    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />' >> streamlit_exe.wxs
           echo '  </Product>' >> streamlit_exe.wxs
           echo '</Wix>' >> streamlit_exe.wxs
-          
+
       - name: Archive streamlit_exe folder
         uses: actions/upload-artifact@v4
         with:
