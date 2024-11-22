@@ -103,7 +103,6 @@ jobs:
       - name: Build msi
         run: |
           ./wix/candle.exe streamlit_exe.wxs streamlit_exe_files.wxs
-          ./wix/light.exe -ext WixUIExtension -o streamlit_app.msi streamlit_exe.wixobj streamlit_exe_files.wixobj
     
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
