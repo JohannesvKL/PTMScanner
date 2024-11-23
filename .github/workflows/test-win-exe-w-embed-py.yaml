@@ -114,11 +114,11 @@ jobs:
       - name: Build msi
         run: |
           ./wix/candle.exe streamlit_exe.wxs streamlit_exe_files.wxs
-          ./wix/light.exe -ext WixUIExtension -sice:ICE60 -o Streamlit-template-installer-test.msi streamlit_exe_files.wixobj streamlit_exe.wixobj
+          ./wix/light.exe -ext WixUIExtension -sice:ICE60 -o OpenMS-StreamlitTemplateApp.msi streamlit_exe_files.wixobj streamlit_exe.wixobj
     
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Streamlit-template-installer-test
+          name: OpenMS-StreamlitTemplateApp
           path: |
-            Streamlit-template-installer-test.msi
+            OpenMS-StreamlitTemplateApp.msi
