@@ -52,10 +52,13 @@ jobs:
           mv python-${{ env.PYTHON_VERSION }} streamlit_exe
           cp -r src streamlit_exe
           cp -r content streamlit_exe
+          cp -r docs streamlit_exe
           cp -r assets streamlit_exe
           cp -r example-data streamlit_exe
           cp -r .streamlit streamlit_exe
           cp app.py streamlit_exe
+          cp settings.json streamlit_exe
+          cp default-parameters.json streamlit_exe
 
       - name: Install WiX Toolset
         run: |
@@ -78,7 +81,7 @@ jobs:
         run: |
           echo '<?xml version="1.0"?>' > streamlit_exe.wxs
           echo '<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">' >> streamlit_exe.wxs
-          echo '  <Product Id="*" Name="StreamlitApp" Language="1033" Version="1.0.0.0" Manufacturer="OpenMS" UpgradeCode="8d28e8c7-45dc-446c-b889-99a6aea2f1a5">' >> streamlit_exe.wxs
+          echo '  <Product Id="*" Name="OpenMS-StreamlitTemplateApp" Language="1033" Version="1.0.0.0" Manufacturer="OpenMS" UpgradeCode="8d28e8c7-45dc-446c-b889-99a6aea2f1a5">' >> streamlit_exe.wxs
           echo '    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine"/>' >> streamlit_exe.wxs
           echo '    <Media Id="1" Cabinet="streamlit.cab" EmbedCab="yes" />' >> streamlit_exe.wxs
           echo '    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />' >> streamlit_exe.wxs
@@ -111,15 +114,11 @@ jobs:
       - name: Build msi
         run: |
           ./wix/candle.exe streamlit_exe.wxs streamlit_exe_files.wxs
-          ./wix/light.exe -ext WixUIExtension -sice:ICE60 -o Streamlit-template-installer.msi streamlit_exe_files.wixobj streamlit_exe.wixobj
+          ./wix/light.exe -ext WixUIExtension -sice:ICE60 -o Streamlit-template-installer-test.msi streamlit_exe_files.wixobj streamlit_exe.wixobj
     
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Streamlit-template-installer
+          name: Streamlit-template-installer-test
           path: |
-            *.wixobj
-            *.wxs
-            SourceDir/**
-            streamlit_exe/**
-            Streamlit-template-installer.msi
+            Streamlit-template-installer-test.msi
