@@ -19,10 +19,10 @@ jobs:
 
       - name: Download python embeddable version
         run: |
-           mkdir python-${{ env.PYTHON_VERSION }}
-           curl -O https://www.python.org/ftp/python/${{ env.PYTHON_VERSION }}/python-${{ env.PYTHON_VERSION }}-embed-amd64.zip
-           unzip python-${{ env.PYTHON_VERSION }}-embed-amd64.zip -d python-${{ env.PYTHON_VERSION }}
-           rm python-${{ env.PYTHON_VERSION }}-embed-amd64.zip
+          mkdir python-${{ env.PYTHON_VERSION }}
+          curl -O https://www.python.org/ftp/python/${{ env.PYTHON_VERSION }}/python-${{ env.PYTHON_VERSION }}-embed-amd64.zip
+          unzip python-${{ env.PYTHON_VERSION }}-embed-amd64.zip -d python-${{ env.PYTHON_VERSION }}
+          rm python-${{ env.PYTHON_VERSION }}-embed-amd64.zip
 
       - name: Install pip
         run: |
@@ -57,7 +57,7 @@ jobs:
           cp -r .streamlit streamlit_exe
           cp app.py streamlit_exe
 
-       - name: Install WiX Toolset
+      - name: Install WiX Toolset
         run: |
           curl -LO https://github.com/wixtoolset/wix3/releases/download/wix3111rtm/wix311-binaries.zip
           unzip wix311-binaries.zip -d wix
@@ -65,7 +65,7 @@ jobs:
       
       - name: build .wxs for streamlit_exe folder
         run: |
-            ./wix/heat.exe dir streamlit_exe -gg -sfrag -sreg -srd -template component -cg StreamlitExeFiles -dr INSTALLFOLDER -out streamlit_exe_files.wxs
+          ./wix/heat.exe dir streamlit_exe -gg -sfrag -sreg -srd -template component -cg StreamlitExeFiles -dr INSTALLFOLDER -out streamlit_exe_files.wxs
       
       - name: CopytoSrcDir
         run: |
