@@ -70,10 +70,10 @@ jobs:
         run: |
           ./wix/heat.exe dir streamlit_exe -gg -sfrag -sreg -srd -template component -cg StreamlitExeFiles -dr INSTALLFOLDER -out streamlit_exe_files.wxs
       
-      - name: CopytoSrcDir
+      - name: Prepare SourceDir
         run: |
           mkdir SourceDir
-          cp -r streamlit_exe/* SourceDir
+          mv streamlit_exe/* SourceDir
           mv run_app.bat SourceDir
           cp dummy_license.rtf SourceDir
 
