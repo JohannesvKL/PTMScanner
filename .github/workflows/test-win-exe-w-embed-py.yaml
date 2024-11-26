@@ -10,6 +10,7 @@ jobs:
 
     env:
       PYTHON_VERSION: 3.11.9
+      APP_NAME: OpenMS-StreamlitTemplateApp
 
     steps:
       - name: Checkout code
@@ -73,7 +74,7 @@ jobs:
         run: |
           echo '<?xml version="1.0"?>' > streamlit_exe.wxs
           echo '<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">' >> streamlit_exe.wxs
-          echo '  <Product Id="*" Name="OpenMS-StreamlitTemplateApp" Language="1033" Version="1.0.0.0" Manufacturer="OpenMS" UpgradeCode="8d28e8c7-45dc-446c-b889-99a6aea2f1a5">' >> streamlit_exe.wxs
+          echo '  <Product Id="*" Name="${{ env.APP_NAME }}" Language="1033" Version="1.0.0.0" Manufacturer="OpenMS" UpgradeCode="8d28e8c7-45dc-446c-b889-99a6aea2f1a5">' >> streamlit_exe.wxs
           echo '    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine"/>' >> streamlit_exe.wxs
           echo '    <Media Id="1" Cabinet="streamlit.cab" EmbedCab="yes" />' >> streamlit_exe.wxs
           echo '    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />' >> streamlit_exe.wxs
@@ -89,7 +90,7 @@ jobs:
           echo '    <CustomAction Id="ReadMeFile" Directory="INSTALLFOLDER" Execute="deferred" Return="check"' >> streamlit_exe.wxs
           echo '                  ExeCommand="cmd.exe /c echo This is readme &gt; [INSTALLFOLDER]Readme.txt" />' >> streamlit_exe.wxs
           echo '    <CustomAction Id="CreateBatFile" Directory="INSTALLFOLDER" Execute="deferred" Return="check"' >> streamlit_exe.wxs
-          echo '                  ExeCommand="cmd.exe /c echo @echo off &gt; [INSTALLFOLDER]temp.bat &amp;&amp; echo [INSTALLFOLDER]python-3.11.0\\python.exe -m streamlit run [INSTALLFOLDER]app.py local &gt;&gt; [INSTALLFOLDER]OpenMS-StreamlitTemplateApp.bat" />' >> streamlit_exe.wxs
+          echo '                  ExeCommand="cmd.exe /c echo @echo off &gt; [INSTALLFOLDER]temp.bat &amp;&amp; echo [INSTALLFOLDER]python-${{ env.PYTHON_VERSION }}\\python.exe -m streamlit run [INSTALLFOLDER]app.py local &gt;&gt; [INSTALLFOLDER]${{ env.APP_NAME }}.bat" />' >> streamlit_exe.wxs
           echo '    <CustomAction Id="RunBatchFile" Directory="INSTALLFOLDER" Execute="deferred" Return="asyncNoWait"' >> streamlit_exe.wxs
           echo '                  ExeCommand="cmd.exe /c &quot;[INSTALLFOLDER]run_app.bat&quot;" />' >> streamlit_exe.wxs
           echo '    <InstallExecuteSequence>' >> streamlit_exe.wxs
@@ -109,11 +110,11 @@ jobs:
       - name: Build msi
         run: |
           ./wix/candle.exe streamlit_exe.wxs streamlit_exe_files.wxs
-          ./wix/light.exe -ext WixUIExtension -sice:ICE60 -o OpenMS-StreamlitTemplateApp.msi streamlit_exe_files.wixobj streamlit_exe.wixobj
+          ./wix/light.exe -ext WixUIExtension -sice:ICE60 -o ${{ env.APP_NAME }}.msi streamlit_exe_files.wixobj streamlit_exe.wixobj
     
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: OpenMS-StreamlitTemplateApp
+          name: ${{ env.APP_NAME }}
           path: |
-            OpenMS-StreamlitTemplateApp.msi
+            ${{ env.APP_NAME }}.msi
