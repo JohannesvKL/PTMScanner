@@ -83,6 +83,7 @@ jobs:
           echo '      <Directory Id="ProgramFilesFolder">' >> streamlit_exe.wxs
           echo '        <Directory Id="INSTALLFOLDER" Name="StreamlitApp" />' >> streamlit_exe.wxs
           echo '      </Directory>' >> streamlit_exe.wxs
+          echo '      <Directory Id="DesktopFolder" />' >> streamlit_exe.wxs
           echo '    </Directory>' >> streamlit_exe.wxs
           echo '    <Feature Id="MainFeature" Title="Main Application" Level="1">' >> streamlit_exe.wxs
           echo '      <ComponentGroupRef Id="StreamlitExeFiles" />' >> streamlit_exe.wxs
