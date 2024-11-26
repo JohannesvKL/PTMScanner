@@ -1,5 +1,7 @@
 name: Test streamlit executable for Windows with embeddable python
 on: 
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
