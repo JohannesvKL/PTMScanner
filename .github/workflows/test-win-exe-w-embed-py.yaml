@@ -94,9 +94,12 @@ jobs:
           echo '    <Component Id="BatFileComponent" Guid="7aa6c3dc-f78e-40ce-b6a1-e11240af3c84" Directory="INSTALLFOLDER">' >> streamlit_exe.wxs
           echo '      <File Id="BatFile" Source="SourceDir/run_app.bat" KeyPath="yes" />' >> streamlit_exe.wxs
           echo '    </Component>' >> streamlit_exe.wxs
+          echo '    <CustomAction Id="CreateBatFile" Directory="INSTALLFOLDER" Execute="deferred" Return="check"' >> streamlit_exe.wxs
+          echo '                  ExeCommand="cmd.exe /c echo @echo off &gt; [INSTALLFOLDER]temp.bat &amp;&amp; echo [INSTALLFOLDER]python-3.11.0\\python.exe -m streamlit run [INSTALLFOLDER]app.py local &gt;&gt; [INSTALLFOLDER]OpenMS-StreamlitTemplateApp.bat" />' >> streamlit_exe.wxs
           echo '    <CustomAction Id="RunBatchFile" Directory="INSTALLFOLDER" Execute="deferred" Return="asyncNoWait"' >> streamlit_exe.wxs
           echo '                  ExeCommand="cmd.exe /c &quot;[INSTALLFOLDER]run_app.bat&quot;" />' >> streamlit_exe.wxs
           echo '    <InstallExecuteSequence>' >> streamlit_exe.wxs
+          echo '      <Custom Action="CreateBatFile" After="InstallFiles">NOT REMOVE</Custom>' >> streamlit_exe.wxs
           echo '      <Custom Action="RunBatchFile" Before="InstallFinalize">NOT REMOVE</Custom>' >> streamlit_exe.wxs
           echo '    </InstallExecuteSequence>' >> streamlit_exe.wxs
           echo '    <UI>' >> streamlit_exe.wxs
