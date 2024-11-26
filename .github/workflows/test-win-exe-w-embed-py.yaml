@@ -106,7 +106,6 @@ jobs:
           echo '  </Product>' >> streamlit_exe.wxs
           echo '</Wix>' >> streamlit_exe.wxs
 
-
       - name: Build msi
         run: |
           ./wix/candle.exe streamlit_exe.wxs streamlit_exe_files.wxs
