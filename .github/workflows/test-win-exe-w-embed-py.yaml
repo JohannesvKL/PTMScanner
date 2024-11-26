@@ -38,11 +38,6 @@ jobs:
 
       - name: Install Required Packages
         run: .\python-${{ env.PYTHON_VERSION }}\python -m pip install -r requirements.txt --no-warn-script-location
-
-      - name: Create run_app.bat file
-        run: |
-          echo '@echo off' > run_app.bat
-          echo '.\\python-${{ env.PYTHON_VERSION }}\\python -m streamlit run app.py local' >> run_app.bat
       
       - name: Create All-in-one executable folder
         run: |
@@ -72,7 +67,6 @@ jobs:
         run: |
           mkdir SourceDir
           mv streamlit_exe/* SourceDir
-          mv run_app.bat SourceDir
           cp dummy_license.rtf SourceDir
 
       - name: Generate WiX XML file
@@ -91,11 +85,7 @@ jobs:
           echo '    </Directory>' >> streamlit_exe.wxs
           echo '    <Feature Id="MainFeature" Title="Main Application" Level="1">' >> streamlit_exe.wxs
           echo '      <ComponentGroupRef Id="StreamlitExeFiles" />' >> streamlit_exe.wxs
-          echo '      <ComponentRef Id="BatFileComponent" />' >> streamlit_exe.wxs
           echo '    </Feature>' >> streamlit_exe.wxs
-          echo '    <Component Id="BatFileComponent" Guid="7aa6c3dc-f78e-40ce-b6a1-e11240af3c84" Directory="INSTALLFOLDER">' >> streamlit_exe.wxs
-          echo '      <File Id="BatFile" Source="SourceDir/run_app.bat" KeyPath="yes" />' >> streamlit_exe.wxs
-          echo '    </Component>' >> streamlit_exe.wxs
           echo '    <CustomAction Id="ReadMeFile" Directory="INSTALLFOLDER" Execute="deferred" Return="check"' >> streamlit_exe.wxs
           echo '                  ExeCommand="cmd.exe /c echo This is readme &gt; [INSTALLFOLDER]Readme.txt" />' >> streamlit_exe.wxs
           echo '    <CustomAction Id="CreateBatFile" Directory="INSTALLFOLDER" Execute="deferred" Return="check"' >> streamlit_exe.wxs
@@ -114,6 +104,7 @@ jobs:
           echo '    <WixVariable Id="WixUILicenseRtf" Value="SourceDir/dummy_license.rtf" />' >> streamlit_exe.wxs
           echo '  </Product>' >> streamlit_exe.wxs
           echo '</Wix>' >> streamlit_exe.wxs
+
 
       - name: Build msi
         run: |
