@@ -10,7 +10,7 @@ jobs:
 
     env:
       PYTHON_VERSION: 3.11.9
-      APP_NAME: OpenMS-StreamlitTemplateApp
+      APP_NAME: OpenMS-StreamlitTemplateApp-Test
 
     steps:
       - name: Checkout code

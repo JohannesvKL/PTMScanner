@@ -1,9 +1,9 @@
 name: Build executable for Windows
 on:
-  #push:
-  #  branches: [ "main" ]
-  #pull_request:
-  #  branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
   
 env:
@@ -167,6 +167,7 @@ jobs:
 
     env:
       PYTHON_VERSION: 3.11.0
+      APP_NAME: OpenMS-StreamlitTemplateApp
 
     steps:
     - name: Checkout
@@ -205,11 +206,6 @@ jobs:
     - name: Install Required Packages
       run: .\python-${{ env.PYTHON_VERSION }}\python -m pip install --force-reinstall -r requirements.txt --no-warn-script-location
 
-    - name: Create run_app.bat file
-      run: |
-        echo '@echo off' > run_app.bat
-        echo '.\\python-${{ env.PYTHON_VERSION }}\\python -m streamlit run app.py local' >> run_app.bat
-    
     - name: Set to offline deployment
       run: |
         $content = Get-Content -Raw settings.json | ConvertFrom-Json
@@ -221,7 +217,6 @@ jobs:
         mkdir streamlit_exe
 
         mv python-${{ env.PYTHON_VERSION }} streamlit_exe
-        #mv run_app.bat streamlit_exe
         cp -r src streamlit_exe
         cp -r content streamlit_exe
         cp -r docs streamlit_exe
@@ -253,14 +248,14 @@ jobs:
       run: |
         mkdir SourceDir
         mv streamlit_exe/* SourceDir
-        mv run_app.bat SourceDir
         cp dummy_license.rtf SourceDir
+        cp assets/openms.ico SourceDir
 
     - name: Generate WiX XML file
       run: |
         echo '<?xml version="1.0"?>' > streamlit_exe.wxs
         echo '<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">' >> streamlit_exe.wxs
-        echo '  <Product Id="*" Name="OpenMS-StreamlitTemplateApp" Language="1033" Version="1.0.0.0" Manufacturer="OpenMS" UpgradeCode="8d28e8c7-45dc-446c-b889-99a6aea2f1a5">' >> streamlit_exe.wxs
+        echo '  <Product Id="*" Name="${{ env.APP_NAME }}" Language="1033" Version="1.0.0.0" Manufacturer="OpenMS" UpgradeCode="8d28e8c7-45dc-446c-b889-99a6aea2f1a5">' >> streamlit_exe.wxs
         echo '    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine"/>' >> streamlit_exe.wxs
         echo '    <Media Id="1" Cabinet="streamlit.cab" EmbedCab="yes" />' >> streamlit_exe.wxs
         echo '    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />' >> streamlit_exe.wxs
@@ -269,18 +264,27 @@ jobs:
         echo '      <Directory Id="ProgramFilesFolder">' >> streamlit_exe.wxs
         echo '        <Directory Id="INSTALLFOLDER" Name="StreamlitApp" />' >> streamlit_exe.wxs
         echo '      </Directory>' >> streamlit_exe.wxs
+        echo '      <Directory Id="DesktopFolder" />' >> streamlit_exe.wxs
         echo '    </Directory>' >> streamlit_exe.wxs
         echo '    <Feature Id="MainFeature" Title="Main Application" Level="1">' >> streamlit_exe.wxs
         echo '      <ComponentGroupRef Id="StreamlitExeFiles" />' >> streamlit_exe.wxs
-        echo '      <ComponentRef Id="BatFileComponent" />' >> streamlit_exe.wxs
+        echo '      <ComponentRef Id="DesktopShortcutComponent" />' >> streamlit_exe.wxs
         echo '    </Feature>' >> streamlit_exe.wxs
-        echo '    <Component Id="BatFileComponent" Guid="7aa6c3dc-f78e-40ce-b6a1-e11240af3c84" Directory="INSTALLFOLDER">' >> streamlit_exe.wxs
-        echo '      <File Id="BatFile" Source="SourceDir/run_app.bat" KeyPath="yes" />' >> streamlit_exe.wxs
+        echo '    <Component Id="DesktopShortcutComponent" Guid="3597b243-9180-4d0b-b105-30d8b0d1a334" Directory="DesktopFolder">' >> streamlit_exe.wxs
+        echo '      <Shortcut Id="DesktopShortcut" Name="${{ env.APP_NAME }}" Description="Launch ${{ env.APP_NAME }}" Target="[INSTALLFOLDER]${{ env.APP_NAME }}.bat" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon"/>' >> streamlit_exe.wxs
+        echo '      <RegistryValue Root="HKCU" Key="Software\OpenMS\${{ env.APP_NAME }}" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />' >> streamlit_exe.wxs
         echo '    </Component>' >> streamlit_exe.wxs
-        echo '    <CustomAction Id="RunBatchFile" Directory="INSTALLFOLDER" Execute="deferred" Return="asyncNoWait"' >> streamlit_exe.wxs
-        echo '                  ExeCommand="cmd.exe /c &quot;[INSTALLFOLDER]run_app.bat&quot;" />' >> streamlit_exe.wxs
+        echo '    <Icon Id="AppIcon" SourceFile="SourceDir/openms.ico" />' >> streamlit_exe.wxs
+        echo '    <CustomAction Id="ReadMeFile" Directory="INSTALLFOLDER" Execute="deferred" Return="check"' >> streamlit_exe.wxs
+        echo '                  ExeCommand="cmd.exe /c echo Launch the ${{ env.APP_NAME }} by double-clicking the ${{ env.APP_NAME }}.bat file &gt; [INSTALLFOLDER]Readme.txt" />' >> streamlit_exe.wxs
+        echo '    <CustomAction Id="CreateBatFile" Directory="INSTALLFOLDER" Execute="deferred" Return="check"' >> streamlit_exe.wxs
+        echo '                  ExeCommand="cmd.exe /c echo @echo off &gt; [INSTALLFOLDER]${{ env.APP_NAME }}.bat &amp;&amp; echo [INSTALLFOLDER]python-${{ env.PYTHON_VERSION }}\\python.exe -m streamlit run [INSTALLFOLDER]app.py local &gt;&gt; [INSTALLFOLDER]${{ env.APP_NAME }}.bat" />' >> streamlit_exe.wxs
+        echo '    <CustomAction Id="RunApp" Directory="INSTALLFOLDER" Execute="deferred" Return="asyncNoWait"' >> streamlit_exe.wxs
+        echo '                  ExeCommand="cmd.exe /c &quot;[INSTALLFOLDER]${{ env.APP_NAME }}.bat&quot;" />' >> streamlit_exe.wxs
         echo '    <InstallExecuteSequence>' >> streamlit_exe.wxs
-        echo '      <Custom Action="RunBatchFile" Before="InstallFinalize">NOT REMOVE</Custom>' >> streamlit_exe.wxs
+        echo '      <Custom Action="ReadMeFile" After="InstallFiles">NOT REMOVE</Custom>' >> streamlit_exe.wxs
+        echo '      <Custom Action="CreateBatFile" After="InstallFiles">NOT REMOVE</Custom>' >> streamlit_exe.wxs
+        echo '      <Custom Action="RunApp" Before="InstallFinalize">NOT REMOVE</Custom>' >> streamlit_exe.wxs #todo remove these files during uninstallation
         echo '    </InstallExecuteSequence>' >> streamlit_exe.wxs
         echo '    <UI>' >> streamlit_exe.wxs
         echo '      <UIRef Id="WixUI_InstallDir" />' >> streamlit_exe.wxs
@@ -293,7 +297,7 @@ jobs:
     - name: Build msi
       run: |
         ./wix/candle.exe streamlit_exe.wxs streamlit_exe_files.wxs
-        ./wix/light.exe -ext WixUIExtension -sice:ICE60 -o OpenMS-StreamlitTemplateApp.msi streamlit_exe_files.wixobj streamlit_exe.wixobj
+        ./wix/light.exe -ext WixUIExtension -sice:ICE60 -o ${{ env.APP_NAME }}.msi streamlit_exe_files.wixobj streamlit_exe.wixobj
           
     - name: Delete OpenMS bin artifact
       uses: geekyeggo/delete-artifact@v5
@@ -303,6 +307,6 @@ jobs:
     - name: Archive build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: OpenMS-StreamlitTemplateApp
+        name: ${{ env.APP_NAME }}
         path: |
-          OpenMS-StreamlitTemplateApp.msi
+          ${{ env.APP_NAME }}.msi
