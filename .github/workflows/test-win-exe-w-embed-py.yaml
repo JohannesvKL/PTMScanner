@@ -89,18 +89,23 @@ jobs:
           echo '    <Feature Id="MainFeature" Title="Main Application" Level="1">' >> streamlit_exe.wxs
           echo '      <ComponentGroupRef Id="StreamlitExeFiles" />' >> streamlit_exe.wxs
           echo '      <ComponentRef Id="DesktopShortcutComponent" />' >> streamlit_exe.wxs
+          echo '      <ComponentRef Id="InstallDirShortcutComponent" />' >> streamlit_exe.wxs
           echo '    </Feature>' >> streamlit_exe.wxs
           echo '    <Component Id="DesktopShortcutComponent" Guid="3597b243-9180-4d0b-b105-30d8b0d1a334" Directory="DesktopFolder">' >> streamlit_exe.wxs
           echo '      <Shortcut Id="DesktopShortcut" Name="${{ env.APP_NAME }}" Description="Launch ${{ env.APP_NAME }}" Target="[INSTALLFOLDER]${{ env.APP_NAME }}.bat" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon"/>' >> streamlit_exe.wxs
           echo '      <RegistryValue Root="HKCU" Key="Software\OpenMS\${{ env.APP_NAME }}" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />' >> streamlit_exe.wxs
           echo '    </Component>' >> streamlit_exe.wxs
+          echo '    <Component Id="InstallDirShortcutComponent" Guid="c2df9472-3b45-4558-a56d-6034cf7c8b72" Directory="INSTALLFOLDER">' >> streamlit_exe.wxs
+          echo '      <Shortcut Id="DesktopShortcut" Name="${{ env.APP_NAME }}" Description="Launch ${{ env.APP_NAME }}" Target="[INSTALLFOLDER]${{ env.APP_NAME }}.bat" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon"/>' >> streamlit_exe.wxs
+          echo '      <RegistryValue Root="HKCU" Key="Software\OpenMS\${{ env.APP_NAME }}" Name="InstallFolderShortcut" Type="integer" Value="1" KeyPath="yes" />' >> streamlit_exe.wxs
+          echo '    </Component>' >> streamlit_exe.wxs
           echo '    <Icon Id="AppIcon" SourceFile="SourceDir/openms.ico" />' >> streamlit_exe.wxs
           echo '    <CustomAction Id="ReadMeFile" Directory="INSTALLFOLDER" Execute="deferred" Return="check"' >> streamlit_exe.wxs
-          echo '                  ExeCommand="cmd.exe /c echo Welcome to ${{ env.APP_NAME }}! > [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
+          echo '                  ExeCommand="cmd.exe /c echo Welcome to OpenMS-StreamlitTemplateApp! > [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
           echo '                           &amp;&amp; echo. >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
           echo '                           &amp;&amp; echo To launch the application: >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
           echo '                           &amp;&amp; echo 1. Navigate to the installation directory. >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
-          echo '                           &amp;&amp; echo 2. Double-click on the file: ${{ env.APP_NAME }}.bat. >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
+          echo '                           &amp;&amp; echo 2. Double-click on the file: ${{ env.APP_NAME }}.bat or  ${{ env.APP_NAME }} shortcut. >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
           echo '                           &amp;&amp; echo. >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
           echo '                           &amp;&amp; echo Additional Information: >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
           echo '                           &amp;&amp; echo - If multiple Streamlit apps are running on your computer and you encounter a port conflict, you can change the port in the .streamlit\config.toml file located in your user directory. >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
@@ -109,9 +114,11 @@ jobs:
           echo '                           &amp;&amp; echo       port = 8502 >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
           echo '                           &amp;&amp; echo - For more details on Streamlit, visit: https://streamlit.io/ >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
           echo '                           &amp;&amp; echo. >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
-          echo '                           &amp;&amp; echo Thank you for using ${{ env.APP_NAME }}! >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
+          echo '                           &amp;&amp; echo Need Help? >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
+          echo '                           &amp;&amp; echo - Join our Discord server for support and community discussions: >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
+          echo '                           &amp;&amp; echo   https://discord.com/invite/your-discord-invite-code >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
           echo '                           &amp;&amp; echo. >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
-          echo '                           &amp;&amp; echo Please feel free to reach out to the OpenMS team for support or inquiries. >> [INSTALLFOLDER]Readme.txt" />' >> streamlit_exe.wxs 
+          echo '                           &amp;&amp; echo Thank you for using OpenMS-StreamlitTemplateApp! >> [INSTALLFOLDER]Readme.txt ^' >> streamlit_exe.wxs
           echo '    <CustomAction Id="CreateBatFile" Directory="INSTALLFOLDER" Execute="deferred" Return="check"' >> streamlit_exe.wxs
           echo '                  ExeCommand="cmd.exe /c echo @echo off &gt; [INSTALLFOLDER]${{ env.APP_NAME }}.bat &amp;&amp; echo [INSTALLFOLDER]python-${{ env.PYTHON_VERSION }}\\python.exe -m streamlit run [INSTALLFOLDER]app.py local &gt;&gt; [INSTALLFOLDER]${{ env.APP_NAME }}.bat" />' >> streamlit_exe.wxs
           echo '    <CustomAction Id="RunApp" Directory="INSTALLFOLDER" Execute="deferred" Return="asyncNoWait"' >> streamlit_exe.wxs
