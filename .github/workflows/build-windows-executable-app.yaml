@@ -186,12 +186,34 @@ jobs:
         cp -r openms-package/bin ../openms-bin
         cp -r openms-package/share ../share
 
+    - name: Set up Python (regular distribution)
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }} # Use the same version as the embeddable version
+    
     - name: Setup python embeddable version
       run: |
+        # Create a directory for the embeddable Python version
         mkdir python-${{ env.PYTHON_VERSION }}
+        
+        # Download and unzip the embeddable Python version
         curl -O https://www.python.org/ftp/python/${{ env.PYTHON_VERSION }}/python-${{ env.PYTHON_VERSION }}-embed-amd64.zip
         unzip python-${{ env.PYTHON_VERSION }}-embed-amd64.zip -d python-${{ env.PYTHON_VERSION }}
         rm python-${{ env.PYTHON_VERSION }}-embed-amd64.zip
+
+        # Define paths for the regular Python distribution and the embeddable distribution
+        $PYTHON_DIR="${{ runner.tool_cache }}/Python/${{ env.PYTHON_VERSION }}/x64" # Path from actions/setup-python
+        $EMBED_DIR="python-${{ env.PYTHON_VERSION }}"
+        
+        mkdir -p $EMBED_DIR/Lib/site-packages/tkinter
+        mkdir -p $EMBED_DIR/tcl
+
+        # Copy necessary Tkinter files from the regular Python distribution
+        cp -r $PYTHON_DIR/Lib/tkinter/* $EMBED_DIR/Lib/site-packages/tkinter/
+        cp -r $PYTHON_DIR/tcl/* $EMBED_DIR/tcl/
+        cp $PYTHON_DIR/DLLs/_tkinter.pyd $EMBED_DIR/
+        cp $PYTHON_DIR/DLLs/tcl86t.dll $EMBED_DIR/
+        cp $PYTHON_DIR/DLLs/tk86t.dll $EMBED_DIR/
 
     - name: Install pip
       run: |
