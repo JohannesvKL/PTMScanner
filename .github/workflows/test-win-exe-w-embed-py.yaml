@@ -97,7 +97,7 @@ jobs:
           echo '  <Product Id="*" Name="${{ env.APP_NAME }}" Language="1033" Version="1.0.0.0" Manufacturer="OpenMS" UpgradeCode="8d28e8c7-45dc-446c-b889-99a6aea2f1a5">' >> streamlit_exe.wxs
           echo '    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine"/>' >> streamlit_exe.wxs
           echo '    <Media Id="1" Cabinet="streamlit.cab" EmbedCab="yes" />' >> streamlit_exe.wxs
-          
+
                     # Folder used 
           echo '    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />' >> streamlit_exe.wxs
           echo '    <Property Id="INSTALLFOLDER" Secure="yes" />' >> streamlit_exe.wxs
@@ -128,13 +128,13 @@ jobs:
           echo '    </Component>' >> streamlit_exe.wxs
           
                     # Provide icon here, should exists in SourceDir folder
-          echo '    <Icon Id="AppIcon" SourceFile="SourceDir/favicon.ico" />' >> streamlit_exe.wxs
+          echo '    <Icon Id="AppIcon" SourceFile="SourceDir/openms.ico" />' >> streamlit_exe.wxs
           
                     # Create Bat file during installtion
           echo '    <CustomAction Id="CreateBatFile" Directory="INSTALLFOLDER" Execute="deferred" Return="check"' >> streamlit_exe.wxs
           echo '                  ExeCommand="cmd.exe /c echo @echo off &gt; [INSTALLFOLDER]${{ env.APP_NAME }}.bat &amp;&amp; echo [INSTALLFOLDER]python-${{ env.PYTHON_VERSION }}\\python.exe -m streamlit run [INSTALLFOLDER]app.py local &gt;&gt; [INSTALLFOLDER]${{ env.APP_NAME }}.bat" />' >> streamlit_exe.wxs
                     
-                    # Run app directly after installtion
+                    # Run app directly after installation
           echo '    <CustomAction Id="RunApp" Directory="INSTALLFOLDER" Execute="deferred" Return="asyncNoWait"' >> streamlit_exe.wxs
           echo '                  ExeCommand="cmd.exe /c &quot;[INSTALLFOLDER]${{ env.APP_NAME }}.bat&quot;" />' >> streamlit_exe.wxs
                     
