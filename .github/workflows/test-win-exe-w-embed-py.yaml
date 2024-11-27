@@ -137,11 +137,16 @@ jobs:
                     # Run app directly after installation
           echo '    <CustomAction Id="RunApp" Directory="INSTALLFOLDER" Execute="deferred" Return="asyncNoWait"' >> streamlit_exe.wxs
           echo '                  ExeCommand="cmd.exe /c &quot;[INSTALLFOLDER]${{ env.APP_NAME }}.bat&quot;" />' >> streamlit_exe.wxs
+
+                    # Run Bat file during uninstallation
+          echo '    <CustomAction Id="RemoveBatFile" Directory="INSTALLFOLDER" Execute="deferred" Return="ignore"' >> streamlit_exe.wxs 
+          echo '                  ExeCommand="cmd.exe /c del /f /q [INSTALLFOLDER]${{ env.APP_NAME }}.bat&quot;" />' >> streamlit_exe.wxs
                     
                     # Add all Custom action
           echo '    <InstallExecuteSequence>' >> streamlit_exe.wxs
           echo '      <Custom Action="CreateBatFile" After="InstallFiles">NOT REMOVE</Custom>' >> streamlit_exe.wxs
           echo '      <Custom Action="RunApp" Before="InstallFinalize">NOT REMOVE</Custom>' >> streamlit_exe.wxs
+          echo '      <Custom Action="RemoveBatFile" Before="RemoveFiles">REMOVE="ALL"</Custom>' >> streamlit_exe.wxs
           echo '    </InstallExecuteSequence>' >> streamlit_exe.wxs
           echo '    <UI>' >> streamlit_exe.wxs
           echo '      <UIRef Id="WixUI_InstallDir" />' >> streamlit_exe.wxs
