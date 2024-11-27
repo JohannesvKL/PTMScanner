@@ -87,7 +87,7 @@ jobs:
         run: |
           mkdir SourceDir
           mv streamlit_exe/* SourceDir
-          cp dummy_license.rtf SourceDir
+          cp assets/openms_license.rtf SourceDir
           cp assets/openms.ico SourceDir
 
       - name: Generate WiX XML file
@@ -154,7 +154,7 @@ jobs:
           echo '    </UI>' >> streamlit_exe.wxs
                     
                     # Provide license should exists in SourceDir folder
-          echo '    <WixVariable Id="WixUILicenseRtf" Value="SourceDir/dummy_license.rtf" />' >> streamlit_exe.wxs
+          echo '    <WixVariable Id="WixUILicenseRtf" Value="SourceDir/openms_license.rtf" />' >> streamlit_exe.wxs
           echo '  </Product>' >> streamlit_exe.wxs
           echo '</Wix>' >> streamlit_exe.wxs
 
