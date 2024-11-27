@@ -257,23 +257,23 @@ jobs:
         }
 
     - name: Generate Readme.txt
-        run: |
-          echo "Welcome to ${{ env.APP_NAME }}!" > streamlit_exe/Readme.txt
-          echo "" >> streamlit_exe/Readme.txt
-          echo "To launch the application:" >> streamlit_exe/Readme.txt
-          echo "1. Navigate to the installation directory." >> streamlit_exe/Readme.txt
-          echo "2. Double-click on the file: ${{ env.APP_NAME }}.bat or ${{ env.APP_NAME }} shortcut." >> streamlit_exe/Readme.txt
-          echo "" >> streamlit_exe/Readme.txt
-          echo "Additional Information:" >> streamlit_exe/Readme.txt
-          echo "- If multiple Streamlit apps are running, you can change the port in the .streamlit/config.toml file." >> streamlit_exe/Readme.txt
-          echo "  Example:" >> streamlit_exe/Readme.txt
-          echo "    [server]" >> streamlit_exe/Readme.txt
-          echo "    port = 8502" >> streamlit_exe/Readme.txt
-          echo "" >> streamlit_exe/Readme.txt
-          echo "Need Help?" >> streamlit_exe/Readme.txt
-          echo "- Join our Discord server for support and community discussions: https://discord.com/invite/4TAGhqJ7s5" >> streamlit_exe/Readme.txt
-          echo "" >> streamlit_exe/Readme.txt
-          echo "Thank you for using ${{ env.APP_NAME }}!" >> streamlit_exe/Readme.txt
+      run: |
+        echo "Welcome to ${{ env.APP_NAME }}!" > streamlit_exe/Readme.txt
+        echo "" >> streamlit_exe/Readme.txt
+        echo "To launch the application:" >> streamlit_exe/Readme.txt
+        echo "1. Navigate to the installation directory." >> streamlit_exe/Readme.txt
+        echo "2. Double-click on the file: ${{ env.APP_NAME }}.bat or ${{ env.APP_NAME }} shortcut." >> streamlit_exe/Readme.txt
+        echo "" >> streamlit_exe/Readme.txt
+        echo "Additional Information:" >> streamlit_exe/Readme.txt
+        echo "- If multiple Streamlit apps are running, you can change the port in the .streamlit/config.toml file." >> streamlit_exe/Readme.txt
+        echo "  Example:" >> streamlit_exe/Readme.txt
+        echo "    [server]" >> streamlit_exe/Readme.txt
+        echo "    port = 8502" >> streamlit_exe/Readme.txt
+        echo "" >> streamlit_exe/Readme.txt
+        echo "Need Help?" >> streamlit_exe/Readme.txt
+        echo "- Join our Discord server for support and community discussions: https://discord.com/invite/4TAGhqJ7s5" >> streamlit_exe/Readme.txt
+        echo "" >> streamlit_exe/Readme.txt
+        echo "Thank you for using ${{ env.APP_NAME }}!" >> streamlit_exe/Readme.txt
     
     - name: Install WiX Toolset
       run: |
@@ -299,6 +299,8 @@ jobs:
         echo '  <Product Id="*" Name="${{ env.APP_NAME }}" Language="1033" Version="1.0.0.0" Manufacturer="OpenMS" UpgradeCode="8d28e8c7-45dc-446c-b889-99a6aea2f1a5">' >> streamlit_exe.wxs
         echo '    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine"/>' >> streamlit_exe.wxs
         echo '    <Media Id="1" Cabinet="streamlit.cab" EmbedCab="yes" />' >> streamlit_exe.wxs
+
+                  # Folder used 
         echo '    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />' >> streamlit_exe.wxs
         echo '    <Property Id="INSTALLFOLDER" Secure="yes" />' >> streamlit_exe.wxs
         echo '    <Directory Id="TARGETDIR" Name="SourceDir">' >> streamlit_exe.wxs
@@ -307,32 +309,48 @@ jobs:
         echo '      </Directory>' >> streamlit_exe.wxs
         echo '      <Directory Id="DesktopFolder" />' >> streamlit_exe.wxs
         echo '    </Directory>' >> streamlit_exe.wxs
+
+                  # Add component 
         echo '    <Feature Id="MainFeature" Title="Main Application" Level="1">' >> streamlit_exe.wxs
         echo '      <ComponentGroupRef Id="StreamlitExeFiles" />' >> streamlit_exe.wxs
         echo '      <ComponentRef Id="DesktopShortcutComponent" />' >> streamlit_exe.wxs
         echo '      <ComponentRef Id="InstallDirShortcutComponent" />' >> streamlit_exe.wxs
         echo '    </Feature>' >> streamlit_exe.wxs
+        
+                  # Create shortcut for run App on Desktop
         echo '    <Component Id="DesktopShortcutComponent" Guid="3597b243-9180-4d0b-b105-30d8b0d1a334" Directory="DesktopFolder">' >> streamlit_exe.wxs
         echo '      <Shortcut Id="DesktopShortcut" Name="${{ env.APP_NAME }}" Description="Launch ${{ env.APP_NAME }}" Target="[INSTALLFOLDER]${{ env.APP_NAME }}.bat" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon"/>' >> streamlit_exe.wxs
         echo '      <RegistryValue Root="HKCU" Key="Software\OpenMS\${{ env.APP_NAME }}" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />' >> streamlit_exe.wxs
         echo '    </Component>' >> streamlit_exe.wxs
+        
+                  # Create shortcut for run App in Installer folder
         echo '    <Component Id="InstallDirShortcutComponent" Guid="c2df9472-3b45-4558-a56d-6034cf7c8b72" Directory="INSTALLFOLDER">' >> streamlit_exe.wxs
-        echo '      <Shortcut Id="DesktopShortcut" Name="${{ env.APP_NAME }}" Description="Launch ${{ env.APP_NAME }}" Target="[INSTALLFOLDER]${{ env.APP_NAME }}.bat" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon"/>' >> streamlit_exe.wxs
+        echo '      <Shortcut Id="InstallDirShortcut" Name="${{ env.APP_NAME }}" Description="Launch ${{ env.APP_NAME }}" Target="[INSTALLFOLDER]${{ env.APP_NAME }}.bat" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon"/>' >> streamlit_exe.wxs
         echo '      <RegistryValue Root="HKCU" Key="Software\OpenMS\${{ env.APP_NAME }}" Name="InstallFolderShortcut" Type="integer" Value="1" KeyPath="yes" />' >> streamlit_exe.wxs
         echo '    </Component>' >> streamlit_exe.wxs
-        echo '    <Icon Id="AppIcon" SourceFile="SourceDir/openms.ico" />' >> streamlit_exe.wxs
+        
+                  # Provide icon here, should exists in SourceDir folder
+        echo '    <Icon Id="AppIcon" SourceFile="SourceDir/favicon.ico" />' >> streamlit_exe.wxs
+        
+                  # Create Bat file during installtion
         echo '    <CustomAction Id="CreateBatFile" Directory="INSTALLFOLDER" Execute="deferred" Return="check"' >> streamlit_exe.wxs
         echo '                  ExeCommand="cmd.exe /c echo @echo off &gt; [INSTALLFOLDER]${{ env.APP_NAME }}.bat &amp;&amp; echo [INSTALLFOLDER]python-${{ env.PYTHON_VERSION }}\\python.exe -m streamlit run [INSTALLFOLDER]app.py local &gt;&gt; [INSTALLFOLDER]${{ env.APP_NAME }}.bat" />' >> streamlit_exe.wxs
+                  
+                  # Run app directly after installtion
         echo '    <CustomAction Id="RunApp" Directory="INSTALLFOLDER" Execute="deferred" Return="asyncNoWait"' >> streamlit_exe.wxs
         echo '                  ExeCommand="cmd.exe /c &quot;[INSTALLFOLDER]${{ env.APP_NAME }}.bat&quot;" />' >> streamlit_exe.wxs
+                  
+                  # Add all Custom action
         echo '    <InstallExecuteSequence>' >> streamlit_exe.wxs
         echo '      <Custom Action="CreateBatFile" After="InstallFiles">NOT REMOVE</Custom>' >> streamlit_exe.wxs
-        echo '      <Custom Action="RunApp" Before="InstallFinalize">NOT REMOVE</Custom>' >> streamlit_exe.wxs #todo remove these files during uninstallation
+        echo '      <Custom Action="RunApp" Before="InstallFinalize">NOT REMOVE</Custom>' >> streamlit_exe.wxs
         echo '    </InstallExecuteSequence>' >> streamlit_exe.wxs
         echo '    <UI>' >> streamlit_exe.wxs
         echo '      <UIRef Id="WixUI_InstallDir" />' >> streamlit_exe.wxs
         echo '      <UIRef Id="WixUI_ErrorProgressText" />' >> streamlit_exe.wxs
         echo '    </UI>' >> streamlit_exe.wxs
+                  
+                  # Provide license should exists in SourceDir folder
         echo '    <WixVariable Id="WixUILicenseRtf" Value="SourceDir/dummy_license.rtf" />' >> streamlit_exe.wxs
         echo '  </Product>' >> streamlit_exe.wxs
         echo '</Wix>' >> streamlit_exe.wxs
