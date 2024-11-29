@@ -68,37 +68,40 @@ jobs:
           echo "    [server]" >> streamlit_exe/Readme.txt
           echo "    port = 8502" >> streamlit_exe/Readme.txt
           echo "" >> streamlit_exe/Readme.txt
-          echo "Need Help?" >> streamlit_exe/Readme.txt
+          echo "Reach out to us:" >> streamlit_exe/Readme.txt
           echo "- Join our Discord server for support and community discussions: https://discord.com/invite/4TAGhqJ7s5" >> streamlit_exe/Readme.txt
+          echo "- Contribute or stay updated with the latest OpenMS web app developments on GitHub: https://github.com/OpenMS/streamlit-template" >> streamlit_exe/Readme.txt
+          echo "- Visit our website for more information: https://openms.de/" >> streamlit_exe/Readme.txt
           echo "" >> streamlit_exe/Readme.txt
           echo "Thank you for using ${{ env.APP_NAME }}!" >> streamlit_exe/Readme.txt
-
+          
       - name: Install WiX Toolset
         run: |
           curl -LO https://github.com/wixtoolset/wix3/releases/download/wix3111rtm/wix311-binaries.zip
           unzip wix311-binaries.zip -d wix
           rm wix311-binaries.zip
       
-      - name: build .wxs for streamlit_exe folder
+      - name: Build .wxs for streamlit_exe folder
         run: |
-          ./wix/heat.exe dir streamlit_exe -gg -sfrag -sreg -srd -template component -cg StreamlitExeFiles -dr INSTALLFOLDER -out streamlit_exe_files.wxs
+          ./wix/heat.exe dir streamlit_exe -gg -sfrag -sreg -srd -template component -cg StreamlitExeFiles -dr AppSubFolder -out streamlit_exe_files.wxs
       
       - name: Prepare SourceDir
         run: |
           mkdir SourceDir
           mv streamlit_exe/* SourceDir
           cp assets/openms_license.rtf SourceDir
+          # Logo of app
           cp assets/openms.ico SourceDir
-
+          
       - name: Generate WiX XML file
         run: |
           echo '<?xml version="1.0"?>' > streamlit_exe.wxs
           echo '<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">' >> streamlit_exe.wxs
-          echo '  <Product Id="*" Name="${{ env.APP_NAME }}" Language="1033" Version="1.0.0.0" Manufacturer="OpenMS" UpgradeCode="8d28e8c7-45dc-446c-b889-99a6aea2f1a5">' >> streamlit_exe.wxs
-          echo '    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine"/>' >> streamlit_exe.wxs
+          echo '  <Product Id="8434b940-a943-40f1-ab1f-4db3feedb4ba" Name="${{ env.APP_NAME }}" Language="1033" Version="1.0.0.0" Codepage="1252" Manufacturer="OpenMS Developer Team" UpgradeCode="8d28e8c7-45dc-446c-b889-99a6aea2f1a5">' >> streamlit_exe.wxs
+          echo '    <Package Id="*" InstallerVersion="300" Compressed="yes" InstallPrivileges="elevated" Platform="x64" />' >> streamlit_exe.wxs
           echo '    <Media Id="1" Cabinet="streamlit.cab" EmbedCab="yes" />' >> streamlit_exe.wxs
-                    
-                    # Folder Structure 
+          
+                    # Folder structure
           echo '    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />' >> streamlit_exe.wxs
           echo '    <Property Id="INSTALLFOLDER" Secure="yes" />' >> streamlit_exe.wxs
           echo '    <Directory Id="TARGETDIR" Name="SourceDir">' >> streamlit_exe.wxs
@@ -109,21 +112,21 @@ jobs:
           echo '      </Directory>' >> streamlit_exe.wxs
           echo '      <Directory Id="DesktopFolder" />' >> streamlit_exe.wxs
           echo '    </Directory>' >> streamlit_exe.wxs
-                    
-                    # Add component 
+          
+                    # Add components 
           echo '    <Feature Id="MainFeature" Title="Main Application" Level="1">' >> streamlit_exe.wxs
           echo '      <ComponentGroupRef Id="StreamlitExeFiles" />' >> streamlit_exe.wxs
           echo '      <ComponentRef Id="DesktopShortcutComponent" />' >> streamlit_exe.wxs
           echo '      <ComponentRef Id="InstallDirShortcutComponent" />' >> streamlit_exe.wxs
           echo '    </Feature>' >> streamlit_exe.wxs
-                    
-                    # Create shortcut for run App on Desktop
+          
+                    # Create shortcut for run app on desktop
           echo '    <Component Id="DesktopShortcutComponent" Guid="3597b243-9180-4d0b-b105-30d8b0d1a334" Directory="DesktopFolder">' >> streamlit_exe.wxs
           echo '      <Shortcut Id="DesktopShortcut" Name="${{ env.APP_NAME }}" Description="Launch ${{ env.APP_NAME }}" Target="[AppSubFolder]${{ env.APP_NAME }}.bat" WorkingDirectory="AppSubFolder" Icon="AppIcon"/>' >> streamlit_exe.wxs
           echo '      <RegistryValue Root="HKCU" Key="Software\OpenMS\${{ env.APP_NAME }}" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />' >> streamlit_exe.wxs
           echo '    </Component>' >> streamlit_exe.wxs
           
-                    # Create shortcut for run App in Installer folder
+                    # Create shortcut for run App in installer folder
           echo '    <Component Id="InstallDirShortcutComponent" Guid="c2df9472-3b45-4558-a56d-6034cf7c8b72" Directory="AppSubFolder">' >> streamlit_exe.wxs
           echo '      <Shortcut Id="InstallDirShortcut" Name="${{ env.APP_NAME }}" Description="Launch ${{ env.APP_NAME }}" Target="[AppSubFolder]${{ env.APP_NAME }}.bat" WorkingDirectory="AppSubFolder" Icon="AppIcon"/>' >> streamlit_exe.wxs
           echo '      <RegistryValue Root="HKCU" Key="Software\OpenMS\${{ env.APP_NAME }}" Name="InstallFolderShortcut" Type="integer" Value="1" KeyPath="yes" />' >> streamlit_exe.wxs
@@ -139,7 +142,7 @@ jobs:
                     # Run app directly after installation
           echo '    <CustomAction Id="RunApp" Directory="AppSubFolder" Execute="deferred" Return="asyncNoWait"' >> streamlit_exe.wxs
           echo '                  ExeCommand="cmd.exe /c &quot;[AppSubFolder]${{ env.APP_NAME }}.bat&quot;" />' >> streamlit_exe.wxs
-                    
+                  
                     # Run Bat file during uninstallation
           echo '    <CustomAction Id="RemoveBatFile" Directory="AppSubFolder" Execute="deferred" Return="ignore"' >> streamlit_exe.wxs 
           echo '                  ExeCommand="cmd.exe /c del /f /q [AppSubFolder]${{ env.APP_NAME }}.bat&quot;" />' >> streamlit_exe.wxs
@@ -150,6 +153,8 @@ jobs:
           echo '      <Custom Action="RunApp" Before="InstallFinalize">NOT REMOVE</Custom>' >> streamlit_exe.wxs
           echo '      <Custom Action="RemoveBatFile" Before="RemoveFiles">REMOVE="ALL"</Custom>' >> streamlit_exe.wxs
           echo '    </InstallExecuteSequence>' >> streamlit_exe.wxs
+
+                    # Interface options
           echo '    <UI>' >> streamlit_exe.wxs
           echo '      <UIRef Id="WixUI_InstallDir" />' >> streamlit_exe.wxs
           echo '      <UIRef Id="WixUI_ErrorProgressText" />' >> streamlit_exe.wxs
@@ -160,14 +165,17 @@ jobs:
           echo '  </Product>' >> streamlit_exe.wxs
           echo '</Wix>' >> streamlit_exe.wxs
 
-      - name: Build msi
+      - name: Build .wixobj file with candle.exe
         run: |
           ./wix/candle.exe streamlit_exe.wxs streamlit_exe_files.wxs
+          
+      - name: Link .wixobj file into .msi with light.exe
+        run: |
           ./wix/light.exe -ext WixUIExtension -sice:ICE60 -o ${{ env.APP_NAME }}.msi streamlit_exe_files.wixobj streamlit_exe.wixobj
-    
+
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}
+          name: OpenMS-App-Test
           path: |
             ${{ env.APP_NAME }}.msi
