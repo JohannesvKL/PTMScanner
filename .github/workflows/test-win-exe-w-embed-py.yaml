@@ -40,6 +40,10 @@ jobs:
       - name: Install Required Packages
         run: .\python-${{ env.PYTHON_VERSION }}\python -m pip install -r requirements.txt --no-warn-script-location
       
+      - name: Create .bat file
+        run: |
+          echo ".\\python-${{ env.PYTHON_VERSION }}\\python -m streamlit run app.py local" > ${{ env.APP_NAME }}.bat
+          
       - name: Create All-in-one executable folder
         run: |
           mkdir streamlit_exe
@@ -53,7 +57,8 @@ jobs:
           cp app.py streamlit_exe
           cp settings.json streamlit_exe
           cp default-parameters.json streamlit_exe
-
+          cp ${{ env.APP_NAME }}.bat streamlit_exe
+          
       - name: Generate Readme.txt
         run: |
           echo "Welcome to ${{ env.APP_NAME }}!" > streamlit_exe/Readme.txt
@@ -103,19 +108,24 @@ jobs:
           
                     # Folder structure
           echo '    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />' >> streamlit_exe.wxs
-          echo '    <Property Id="INSTALLFOLDER" Secure="yes" />' >> streamlit_exe.wxs
           echo '    <Directory Id="TARGETDIR" Name="SourceDir">' >> streamlit_exe.wxs
-          echo '      <Directory Id="ProgramFilesFolder">' >> streamlit_exe.wxs
+          echo '      <Directory Id="ProgramFilesFolder">' >> streamlit_exe.wxs  # Using LocalAppData
           echo '        <Directory Id="INSTALLFOLDER" Name="${{ env.APP_NAME }}">' >> streamlit_exe.wxs
-          echo '          <Directory Id="AppSubFolder" Name="${{ env.APP_NAME }}" />' >> streamlit_exe.wxs
+          echo '          <Directory Id="AppSubFolder" Name="${{ env.APP_NAME }}" />' >> streamlit_exe.wxs  # App name as subfolder
+          echo '            <Component Id="CreateAppFolder" Guid="95dbfa06-d36a-427f-995c-e87769ac2e59">' >> streamlit_exe.wxs
+          echo '               <CreateFolder>' >> streamlit_exe.wxs
+          echo '                 <Permission User="Everyone" GenericAll="yes" />' >> streamlit_exe.wxs
+          echo '               </CreateFolder>' >> streamlit_exe.wxs
+          echo '             </Component>' >> streamlit_exe.wxs
+          echo '          </Directory>' >> streamlit_exe.wxs
           echo '        </Directory>' >> streamlit_exe.wxs
-          echo '      </Directory>' >> streamlit_exe.wxs
           echo '      <Directory Id="DesktopFolder" />' >> streamlit_exe.wxs
           echo '    </Directory>' >> streamlit_exe.wxs
           
                     # Add components 
           echo '    <Feature Id="MainFeature" Title="Main Application" Level="1">' >> streamlit_exe.wxs
           echo '      <ComponentGroupRef Id="StreamlitExeFiles" />' >> streamlit_exe.wxs
+          echo '      <ComponentRef Id="CreateAppFolder" />' >> streamlit_exe.wxs
           echo '      <ComponentRef Id="DesktopShortcutComponent" />' >> streamlit_exe.wxs
           echo '      <ComponentRef Id="InstallDirShortcutComponent" />' >> streamlit_exe.wxs
           echo '    </Feature>' >> streamlit_exe.wxs
@@ -135,30 +145,20 @@ jobs:
                     # Provide icon here, should exist in SourceDir folder
           echo '    <Icon Id="AppIcon" SourceFile="SourceDir/openms.ico" />' >> streamlit_exe.wxs
           
-                    # Create Bat file during installation
-          echo '    <CustomAction Id="CreateBatFile" Directory="AppSubFolder" Execute="deferred" Return="check"' >> streamlit_exe.wxs
-          echo '                  ExeCommand="cmd.exe /c echo @echo off &gt; [AppSubFolder]${{ env.APP_NAME }}.bat &amp;&amp; echo [AppSubFolder]python-${{ env.PYTHON_VERSION }}\\python.exe -m streamlit run [AppSubFolder]app.py &gt;&gt; [AppSubFolder]${{ env.APP_NAME }}.bat" />' >> streamlit_exe.wxs
-                        
                     # Run app directly after installation
-          echo '    <CustomAction Id="RunApp" Directory="AppSubFolder" Execute="deferred" Return="asyncNoWait"' >> streamlit_exe.wxs
+          echo '    <CustomAction Id="RunApp" Directory="AppSubFolder" Execute="deferred" Return="asyncNoWait" Impersonate="no"' >> streamlit_exe.wxs
           echo '                  ExeCommand="cmd.exe /c &quot;[AppSubFolder]${{ env.APP_NAME }}.bat&quot;" />' >> streamlit_exe.wxs
-                  
-                    # Run Bat file during uninstallation
-          echo '    <CustomAction Id="RemoveBatFile" Directory="AppSubFolder" Execute="deferred" Return="ignore"' >> streamlit_exe.wxs 
-          echo '                  ExeCommand="cmd.exe /c del /f /q [AppSubFolder]${{ env.APP_NAME }}.bat&quot;" />' >> streamlit_exe.wxs
-                        
+                   
                     # Add all Custom actions
           echo '    <InstallExecuteSequence>' >> streamlit_exe.wxs
-          echo '      <Custom Action="CreateBatFile" After="InstallFiles">NOT REMOVE</Custom>' >> streamlit_exe.wxs
           echo '      <Custom Action="RunApp" Before="InstallFinalize">NOT REMOVE</Custom>' >> streamlit_exe.wxs
-          echo '      <Custom Action="RemoveBatFile" Before="RemoveFiles">REMOVE="ALL"</Custom>' >> streamlit_exe.wxs
           echo '    </InstallExecuteSequence>' >> streamlit_exe.wxs
 
                     # Interface options
-          echo '    <UI>' >> streamlit_exe.wxs
-          echo '      <UIRef Id="WixUI_InstallDir" />' >> streamlit_exe.wxs
-          echo '      <UIRef Id="WixUI_ErrorProgressText" />' >> streamlit_exe.wxs
-          echo '    </UI>' >> streamlit_exe.wxs
+          #echo '    <UI>' >> streamlit_exe.wxs
+          #echo '      <UIRef Id="WixUI_InstallDir" />' >> streamlit_exe.wxs
+          #echo '      <UIRef Id="WixUI_ErrorProgressText" />' >> streamlit_exe.wxs
+          #echo '    </UI>' >> streamlit_exe.wxs
                         
                     # Provide license should exist in SourceDir folder
           echo '    <WixVariable Id="WixUILicenseRtf" Value="SourceDir/openms_license.rtf" />' >> streamlit_exe.wxs
