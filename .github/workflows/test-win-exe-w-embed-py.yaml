@@ -93,10 +93,18 @@ jobs:
         run: |
           ./wix/heat.exe dir streamlit_exe -gg -sfrag -sreg -srd -template component -cg StreamlitExeFiles -dr AppSubFolder -out streamlit_exe_files.wxs
       
+      - name: Generate VBScript file
+        shell: bash
+        run: |
+          cat <<EOF > ShowSuccessMessage.vbs
+          MsgBox " The ${{ env.APP_NAME }} application is successfully installed.", vbInformation, "Installation Complete"
+          EOF
+
       - name: Prepare SourceDir
         run: |
           mkdir SourceDir
           mv streamlit_exe/* SourceDir
+          cp ShowSuccessMessage.vbs SourceDir
           cp assets/openms_license.rtf SourceDir
           # Logo of app
           cp assets/openms.ico SourceDir
@@ -151,12 +159,19 @@ jobs:
               <Icon Id="AppIcon" SourceFile="SourceDir/openms.ico" />
           
               <!-- Run app directly after installation -->
-              <CustomAction Id="RunApp" Directory="AppSubFolder" Execute="deferred" Return="asyncNoWait" Impersonate="no"
-                            ExeCommand="cmd.exe /c &quot;[AppSubFolder]${{ env.APP_NAME }}.bat&quot;" />
+              <!-- <CustomAction Id="RunApp" Directory="AppSubFolder" Execute="deferred" Return="asyncNoWait" Impersonate="no"
+                            ExeCommand="cmd.exe /c &quot;[AppSubFolder]${{ env.APP_NAME }}.bat&quot;" /> -->
+              
+              <!-- Custom Action to Show Success Message -->
+              <Binary Id="ShowMessageScript" SourceFile="SourceDir/ShowSuccessMessage.vbs" />
+              <CustomAction Id="ShowSuccessMessage" BinaryKey="ShowMessageScript" VBScriptCall="" Execute="immediate" Return="check" />
           
               <!-- Add all Custom Actions -->
               <InstallExecuteSequence>
-                <Custom Action="RunApp" Before="InstallFinalize">NOT REMOVE</Custom>
+                <!-- Custom action display success message -->
+                <Custom Action="ShowSuccessMessage" After="InstallFinalize">NOT Installed</Custom>
+                <!-- Run app directly after installation -->
+                <!-- <Custom Action="RunApp" Before="InstallFinalize">NOT REMOVE</Custom> -->
               </InstallExecuteSequence>
           
               <!-- Interface options -->
