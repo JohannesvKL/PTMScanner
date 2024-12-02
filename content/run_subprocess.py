@@ -65,9 +65,12 @@ if st.button("Extract ids"):
 
     # Display a status message while running the analysis
     with st.status("Please wait until fetching all ids from mzML 😑"):
-        # Define the command to run as a subprocess (example: grep)
-        args = ["grep", "idRef", mzML_file_path]
 
+        # Define the command to run as a subprocess (example: grep or findstr (for windows))
+        if os.name == 'nt':  # 'nt' indicates Windows
+            args = ["findstr", "idRef", mzML_file_path]
+        else:  # Assume 'posix' for Linux and macOS
+            args =["grep", "idRef", mzML_file_path]
 
         # Display the command that will be executed
         message = f"Running command: {' '.join(args)}"
