@@ -13,13 +13,10 @@ params = page_setup()
 st.title("Run subprocess")
 st.markdown(
     """                 
-        This example demonstrates how to run an external process (in this case, the Linux command 'grep') as a subprocess to extract IDs from the selected mzML file while displaying the process output. 
+        This example demonstrates how to run an external process (in this case, the Linux command 'grep' or 'findstr' for windows) as a subprocess to extract IDs from the selected mzML file while displaying the process output. 
         It also works with longer-running processes, such as calling an OpenMS TOPP tool.
         """
 )
-
-# here can be make form to take all user parameters for OpenMS TOPP tools
-# for make more simple already write function; please see src/ini2dic.py
 
 # Define the directory where mzML files are located
 mzML_dir: Path = Path(st.session_state.workspace, "mzML-files")
@@ -67,9 +64,11 @@ if st.button("Extract ids"):
     with st.status("Please wait until fetching all ids from mzML 😑"):
 
         # Define the command to run as a subprocess (example: grep or findstr (for windows))
-        if os.name == 'nt':  # 'nt' indicates Windows
+        # 'nt' indicates Windows
+        if os.name == 'nt':  
             args = ["findstr", "idRef", mzML_file_path]
-        else:  # Assume 'posix' for Linux and macOS
+        else:  
+            # Assume 'posix' for Linux and macOS
             args =["grep", "idRef", mzML_file_path]
 
         # Display the command that will be executed
