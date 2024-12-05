@@ -43,23 +43,23 @@ c1.markdown(
 )
 v_space(1, c2)
 c2.image("assets/pyopenms_transparent_background.png", width=300)
-if Path("OpenMS-App.msi").exists():
+if Path("OpenMS-App.zip").exists():
     st.subheader(
         """
 Download the latest version for Windows here by clicking the button below.
 """
     )
-    with open("OpenMS-App.msi", "rb") as file:
+    with open("OpenMS-App.zip", "rb") as file:
         st.download_button(
             label="Download for Windows",
             data=file,
-            file_name="OpenMS-App.msi",
-            mime="application/x-ms-installer",
+            file_name="OpenMS-App.zip",
+            mime="archive/zip",
             type="primary",
         )
     st.markdown(
         """
-Run the installer (.msi) file to install the app. The app can then be launched using the corresponding desktop icon.
+Extract the zip file and run the installer (.msi) file to install the app. The app can then be launched using the corresponding desktop icon.
 """
     )
 
