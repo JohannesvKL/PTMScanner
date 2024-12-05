@@ -8,6 +8,9 @@ on:
   
 env:
   OPENMS_VERSION: 3.2.0 
+  PYTHON_VERSION: 3.11.0
+  # Name of the installer
+  APP_NAME: OpenMS-StreamlitTemplateApp
   # Define needed TOPP tools here
   TOPP_TOOLS: "FeatureFinderMetabo FeatureLinkerUnlabeledKD SiriusExport"
 
@@ -172,11 +175,7 @@ jobs:
 
   build-executable:
     runs-on: windows-latest
-    needs: build-openms
-
-    env:
-      PYTHON_VERSION: 3.11.0
-      APP_NAME: OpenMS-StreamlitTemplateApp
+    needs: build-openms  
 
     steps:
     - name: Checkout
