@@ -404,9 +404,13 @@ jobs:
       run: |
         ./wix/light.exe -ext WixUIExtension -sice:ICE60 -o ${{ env.APP_NAME }}.msi streamlit_exe_files.wixobj streamlit_exe.wixobj
 
+    - name: Compress Installer
+      run: |
+        7z a OpenMS-App.zip ${{ env.APP_NAME }}.msi
+
     - name: Archive build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: OpenMS-App
         path: |
-          ${{ env.APP_NAME }}.msi
+          OpenMS-App.zip
