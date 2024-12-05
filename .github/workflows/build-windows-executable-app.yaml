@@ -54,7 +54,7 @@ jobs:
         # Install compatible versions of tools
         choco install ccache -y
         choco install ninja -y
-        choco install cmake --version=3.31.0 -y
+        choco install cmake --version=3.31.0 --allow-downgrade -y
         choco install cmake.install --version=3.31.0 --allow-downgrade -y
         
         echo "C:/Program Files (x86)/GitHub CLI" >> $GITHUB_PATH
