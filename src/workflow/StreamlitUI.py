@@ -352,6 +352,7 @@ class StreamlitUI:
             display_file_path=display_file_path,
         )
 
+    @st.fragment
     def input_widget(
         self,
         key: str,
@@ -528,6 +529,8 @@ class StreamlitUI:
 
         else:
             st.error(f"Unsupported widget type '{widget_type}'")
+
+        self.parameter_manager.save_parameters()
 
     @st.fragment
     def input_TOPP(
