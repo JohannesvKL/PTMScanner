@@ -755,10 +755,17 @@ class StreamlitUI:
                             v.decode() if isinstance(v, bytes) else v
                             for v in p["value"]
                         ]
+                        valid_entries_info = ''
+                        if len(p['valid_strings']) > 0:
+                            valid_entries_info = (
+                                " Valid entries are: "
+                                + ', '.join(sorted(p['valid_strings']))
+                            )
+
                         cols[i].text_area(
                             name,
                             value="\n".join([str(val) for val in p["value"]]),
-                            help=p["description"],
+                            help=p["description"] + " Separate entries using the \"Enter\" key." + valid_entries_info,
                             key=key,
                         )
 
