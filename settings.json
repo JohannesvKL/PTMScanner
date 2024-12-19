@@ -1,4 +1,7 @@
 {
+    "app-name": "OpenMS WebApp Template",
+    "github-user": "OpenMS",
+    "repository-name": "streamlit-template",
     "analytics": {
         "google-analytics": {
             "enabled": false,
